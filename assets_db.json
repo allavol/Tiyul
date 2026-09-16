@@ -1,0 +1,1827 @@
+[
+  {
+    "id": 101,
+    "name": "שמורת טבע תל דן",
+    "name_en": "Tel Dan Nature Reserve",
+    "region": "גליל עליון",
+    "region_group": "north",
+    "lat": 33.2486,
+    "lng": 35.6522,
+    "type": [
+      "מים",
+      "ארכיאולוגיה",
+      "טבע"
+    ],
+    "type_en": [
+      "Water",
+      "Archaeology",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "גשם כבד",
+      "שיטפונות"
+    ],
+    "vulnerabilities_en": [
+      "Heavy Rain",
+      "Floods"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "INPA-101"
+  },
+  {
+    "id": 102,
+    "name": "גן לאומי מצדה",
+    "name_en": "Masada National Park",
+    "region": "ים המלח ומדבר יהודה",
+    "region_group": "south",
+    "lat": 31.3156,
+    "lng": 35.3537,
+    "type": [
+      "ארכיאולוגיה",
+      "מדבר"
+    ],
+    "type_en": [
+      "Archaeology",
+      "Desert"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני",
+      "שיטפונות בזק"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat",
+      "Flash Floods"
+    ],
+    "category": "desert",
+    "min_age": 7,
+    "age_group": "7+",
+    "stroller_accessible": false,
+    "authority_id": "INPA-102"
+  },
+  {
+    "id": 103,
+    "name": "שמורת טבע עין גדי",
+    "name_en": "Ein Gedi Nature Reserve",
+    "region": "ים המלח ומדבר יהודה",
+    "region_group": "south",
+    "lat": 31.4655,
+    "lng": 35.3884,
+    "type": [
+      "מים",
+      "מדבר"
+    ],
+    "type_en": [
+      "Water",
+      "Desert"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "INPA-103"
+  },
+  {
+    "id": 104,
+    "name": "גן לאומי קיסריה",
+    "name_en": "Caesarea National Park",
+    "region": "חוף הכרמל והשרון",
+    "region_group": "center",
+    "lat": 32.5005,
+    "lng": 34.895,
+    "type": [
+      "ארכיאולוגיה",
+      "חוף ים"
+    ],
+    "type_en": [
+      "Archaeology",
+      "Coast"
+    ],
+    "vulnerabilities": [
+      "רוחות חזקות",
+      "סערות ים"
+    ],
+    "vulnerabilities_en": [
+      "High Winds",
+      "Storms"
+    ],
+    "category": "coast",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "authority_id": "INPA-104"
+  },
+  {
+    "id": 105,
+    "name": "גן לאומי בית גוברין",
+    "name_en": "Beit Guvrin National Park",
+    "region": "שפלת יהודה",
+    "region_group": "center",
+    "lat": 31.6053,
+    "lng": 34.8984,
+    "type": [
+      "מערות",
+      "ארכיאולוגיה",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Archaeology",
+      "Caves",
+      "Safe Haven"
+    ],
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "vulnerabilities_en": [
+      "Safe Haven"
+    ],
+    "category": "safe_haven",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "authority_id": "INPA-105"
+  },
+  {
+    "id": 106,
+    "name": "גן לאומי ציפורי",
+    "name_en": "Tzippori National Park",
+    "region": "גליל תחתון",
+    "region_group": "north",
+    "lat": 32.7533,
+    "lng": 35.28,
+    "type": [
+      "ארכיאולוגיה",
+      "מורשת",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Archaeology",
+      "Safe Haven"
+    ],
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "vulnerabilities_en": [
+      "Safe Haven"
+    ],
+    "category": "safe_haven",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "authority_id": "INPA-106"
+  },
+  {
+    "id": 107,
+    "name": "שמורת טבע נחל תנינים",
+    "name_en": "Nahal Taninim Nature Reserve",
+    "authority_id": "INPA-107",
+    "org": "רשות הטבע והגנים",
+    "category": "water",
+    "type": [
+      "שמורת טבע",
+      "מים",
+      "נחל",
+      "סכר רומי",
+      "שביל מונגש",
+      "עגלות"
+    ],
+    "lat": 32.5358,
+    "lng": 34.9125,
+    "region": "חוף הכרמל",
+    "region_group": "haifa_carmel",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום קל"
+    ],
+    "description": "שמורת טבע מופלאה עם שביל סכר רומי מונגש ומוצל, טחנות קמח עתיקות, אמת מים ובריכות נחל צלולות. מושלם לכל המשפחה, עגלות ופעוטות (מתאים לגילאי 0+ ו-4+)."
+  },
+  {
+    "id": 201,
+    "name": "בית ספר שדה חרמון",
+    "name_en": "Hermon Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "גליל עליון - קיבוץ שניר",
+    "region_group": "north",
+    "lat": 33.2372,
+    "lng": 35.6728,
+    "type": [
+      "החברה להגנת הטבע",
+      "הרים",
+      "שלג"
+    ],
+    "type_en": [
+      "Mountain",
+      "Snow",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "שלג כבד",
+      "קיפאון"
+    ],
+    "vulnerabilities_en": [
+      "Heavy Snow",
+      "Freezing Rain"
+    ],
+    "category": "spni",
+    "min_age": 7,
+    "age_group": "7+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-201"
+  },
+  {
+    "id": 202,
+    "name": "בית ספר שדה גולן - קצרין",
+    "name_en": "Golan Field School - Katzrin (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "מרכז רמת הגולן",
+    "region_group": "north",
+    "lat": 32.9922,
+    "lng": 35.6908,
+    "type": [
+      "החברה להגנת הטבע",
+      "טבע",
+      "בזלת"
+    ],
+    "type_en": [
+      "Nature",
+      "Volcanic",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "גשם כבד",
+      "רוחות חזקות"
+    ],
+    "vulnerabilities_en": [
+      "Heavy Rain",
+      "High Winds"
+    ],
+    "category": "spni",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-202"
+  },
+  {
+    "id": 203,
+    "name": "בית ספר שדה גליל - הר מירון",
+    "name_en": "Galil Meron Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "הגליל העליון",
+    "region_group": "north",
+    "lat": 32.9972,
+    "lng": 35.419,
+    "type": [
+      "החברה להגנת הטבע",
+      "חורש",
+      "הרים"
+    ],
+    "type_en": [
+      "Forest",
+      "Mountain",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "סכנת שריפות",
+      "רוחות חזקות"
+    ],
+    "vulnerabilities_en": [
+      "Wildfires",
+      "High Winds"
+    ],
+    "category": "spni",
+    "min_age": 7,
+    "age_group": "7+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-203"
+  },
+  {
+    "id": 204,
+    "name": "בית ספר שדה אכזיב",
+    "name_en": "Achziv Coast Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "חוף הגליל המערבי",
+    "region_group": "north",
+    "lat": 33.0486,
+    "lng": 35.107,
+    "type": [
+      "החברה להגנת הטבע",
+      "חוף ים",
+      "שמורה ימית"
+    ],
+    "type_en": [
+      "Coast",
+      "Marine",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "סערות ים",
+      "רוחות חזקות"
+    ],
+    "vulnerabilities_en": [
+      "High Winds",
+      "Coastal Storms"
+    ],
+    "category": "spni",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-204"
+  },
+  {
+    "id": 205,
+    "name": "בית ספר שדה כרמל",
+    "name_en": "Carmel Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "רכס הכרמל",
+    "region_group": "north",
+    "lat": 32.748,
+    "lng": 34.992,
+    "type": [
+      "החברה להגנת הטבע",
+      "חורש ים-תיכוני"
+    ],
+    "type_en": [
+      "Forest",
+      "Mountains",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "סכנת שריפות",
+      "רוחות חזקות"
+    ],
+    "vulnerabilities_en": [
+      "Wildfires",
+      "High Winds"
+    ],
+    "category": "spni",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-205"
+  },
+  {
+    "id": 206,
+    "name": "בית ספר שדה חוף הכרמל - מעגן מיכאל",
+    "name_en": "Hof HaCarmel Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "חוף הכרמל",
+    "region_group": "center",
+    "lat": 32.5591,
+    "lng": 34.922,
+    "type": [
+      "החברה להגנת הטבע",
+      "בריכות דגים",
+      "חוף ים"
+    ],
+    "type_en": [
+      "Coast",
+      "Wetlands",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "הצפות",
+      "רוחות חזקות"
+    ],
+    "vulnerabilities_en": [
+      "Floods",
+      "High Winds"
+    ],
+    "category": "spni",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "authority_id": "SPNI-206"
+  },
+  {
+    "id": 207,
+    "name": "בית ספר שדה שקמים - ניצנים",
+    "name_en": "Shikmim Field School - Nitzanim (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "מישור החוף הדרומי",
+    "region_group": "center",
+    "lat": 31.728,
+    "lng": 34.633,
+    "type": [
+      "החברה להגנת הטבע",
+      "דיונות חול",
+      "מורשת"
+    ],
+    "type_en": [
+      "Dunes",
+      "Coast",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "סופות חול",
+      "עומס חום"
+    ],
+    "vulnerabilities_en": [
+      "Sandstorms",
+      "Extreme Heat"
+    ],
+    "category": "spni",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-207"
+  },
+  {
+    "id": 208,
+    "name": "בית ספר שדה עין גדי",
+    "name_en": "Ein Gedi Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "ים המלח ומדבר יהודה",
+    "region_group": "south",
+    "lat": 31.465,
+    "lng": 35.385,
+    "type": [
+      "החברה להגנת הטבע",
+      "נווה מדבר"
+    ],
+    "type_en": [
+      "Desert",
+      "Oasis",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "spni",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-208"
+  },
+  {
+    "id": 209,
+    "name": "בית ספר שדה הר הנגב - מצפה רמון",
+    "name_en": "Har Hanegev Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "מכתש רמון והר הנגב",
+    "region_group": "south",
+    "lat": 30.608,
+    "lng": 34.801,
+    "type": [
+      "החברה להגנת הטבע",
+      "מכתש",
+      "מדבר"
+    ],
+    "type_en": [
+      "Crater",
+      "Desert",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "קרה לילית"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Cold"
+    ],
+    "category": "spni",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-209"
+  },
+  {
+    "id": 210,
+    "name": "בית ספר שדה אילת ופארק הצפרות",
+    "name_en": "Eilat Field School & Bird Sanctuary (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "אילת והערבה",
+    "region_group": "south",
+    "lat": 29.5074,
+    "lng": 34.9195,
+    "type": [
+      "החברה להגנת הטבע",
+      "ימי",
+      "צפרות",
+      "מדבר"
+    ],
+    "type_en": [
+      "Marine",
+      "Desert",
+      "Birding",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "spni",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "authority_id": "SPNI-210"
+  },
+  {
+    "id": 211,
+    "name": "בית ספר שדה כפר עציון",
+    "name_en": "Kfar Etzion Field School (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "הרי יהודה וגוש עציון",
+    "region_group": "jerusalem",
+    "lat": 31.6495,
+    "lng": 35.116,
+    "type": [
+      "החברה להגנת הטבע",
+      "הרים",
+      "מורשת",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Mountains",
+      "Heritage",
+      "Safe Haven"
+    ],
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "vulnerabilities_en": [
+      "Safe Haven"
+    ],
+    "category": "safe_haven",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "authority_id": "SPNI-211"
+  },
+  {
+    "id": 212,
+    "name": "התחנה לחקר ציפורי ירושלים",
+    "name_en": "Jerusalem Bird Observatory (SPNI)",
+    "org": "החברה להגנת הטבע",
+    "region": "ירושלים",
+    "region_group": "jerusalem",
+    "lat": 31.7788,
+    "lng": 35.2062,
+    "type": [
+      "החברה להגנת הטבע",
+      "טבע עירוני",
+      "צפרות",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Urban Nature",
+      "Birding",
+      "Safe Haven"
+    ],
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "vulnerabilities_en": [
+      "Safe Haven"
+    ],
+    "category": "safe_haven",
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "authority_id": "SPNI-212"
+  },
+  {
+    "id": 213,
+    "name": "מרכז שדה בוקר",
+    "name_en": "Sde Boker SPNI Center",
+    "org": "החברה להגנת הטבע",
+    "region": "מרכז הנגב ורמת עבדת",
+    "region_group": "south",
+    "lat": 30.871,
+    "lng": 34.783,
+    "type": [
+      "החברה להגנת הטבע",
+      "מדבר",
+      "מורשת"
+    ],
+    "type_en": [
+      "Desert",
+      "Heritage",
+      "SPNI"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "spni",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "SPNI-213"
+  },
+  {
+    "id": 301,
+    "name": "עין מודע - עמק המעיינות",
+    "name_en": "Ein Muda Spring",
+    "authority_id": "OSM-NODE-1230491",
+    "region": "עמק המעיינות והגלבוע",
+    "region_group": "north",
+    "lat": 32.5085,
+    "lng": 35.4521,
+    "type": [
+      "מעיין",
+      "מים",
+      "בריכת שכשוך"
+    ],
+    "type_en": [
+      "Spring",
+      "Water",
+      "Pool"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "stroller_accessible": true,
+    "min_age": 0,
+    "age_group": "0+ עגלות"
+  },
+  {
+    "id": 302,
+    "name": "עין חרדלית - נחל כזיב",
+    "name_en": "Ein Hardalit - Kziv Stream",
+    "authority_id": "OSM-NODE-4592811",
+    "region": "גליל מערבי",
+    "region_group": "north",
+    "lat": 33.0411,
+    "lng": 35.2144,
+    "type": [
+      "נחל זורם",
+      "מים",
+      "חורש"
+    ],
+    "type_en": [
+      "Stream",
+      "Water",
+      "Forest"
+    ],
+    "vulnerabilities": [
+      "שיטפונות",
+      "גשם כבד"
+    ],
+    "vulnerabilities_en": [
+      "Floods",
+      "Heavy Rain"
+    ],
+    "category": "water",
+    "stroller_accessible": false,
+    "min_age": 4,
+    "age_group": "4+"
+  },
+  {
+    "id": 303,
+    "name": "עין ספיר - הרי ירושלים",
+    "name_en": "Ein Sapir Spring",
+    "authority_id": "OSM-NODE-8920194",
+    "region": "הרי יהודה וירושלים",
+    "region_group": "jerusalem",
+    "lat": 31.7602,
+    "lng": 35.1388,
+    "type": [
+      "מעיין נקבה",
+      "מערה",
+      "מים",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Cave Spring",
+      "Water",
+      "Safe Haven"
+    ],
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "vulnerabilities_en": [
+      "Safe Haven"
+    ],
+    "category": "safe_haven",
+    "stroller_accessible": true,
+    "min_age": 0,
+    "age_group": "0+ עגלות"
+  },
+  {
+    "id": 304,
+    "name": "מצפור השלום - דרום רמת הגולן",
+    "name_en": "Peace Vista Viewpoint - Golan",
+    "authority_id": "OSM-NODE-3309121",
+    "region": "דרום רמת הגולן ומבוא חמה",
+    "region_group": "north",
+    "lat": 32.7358,
+    "lng": 35.6562,
+    "type": [
+      "מצפור",
+      "נוף",
+      "תצפית הכנרת"
+    ],
+    "type_en": [
+      "Viewpoint",
+      "Panorama",
+      "Sea of Galilee"
+    ],
+    "vulnerabilities": [
+      "רוחות חזקות",
+      "סכנת שריפות"
+    ],
+    "vulnerabilities_en": [
+      "High Winds",
+      "Wildfires"
+    ],
+    "category": "desert",
+    "stroller_accessible": true,
+    "min_age": 0,
+    "age_group": "0+ עגלות"
+  },
+  {
+    "id": 305,
+    "name": "עין יורקעם - מכתש גדול",
+    "name_en": "Ein Yorkeam - Great Crater",
+    "authority_id": "OSM-NODE-9912044",
+    "region": "הנגב הצפוני והמכתש הגדול",
+    "region_group": "south",
+    "lat": 30.9392,
+    "lng": 35.0395,
+    "type": [
+      "גב מים",
+      "מדבר",
+      "קניון"
+    ],
+    "type_en": [
+      "Desert Pool",
+      "Canyon",
+      "Water"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "stroller_accessible": false,
+    "min_age": 4,
+    "age_group": "4+"
+  },
+  {
+    "id": 306,
+    "name": "עין עבדת - קניון נחל צין",
+    "name_en": "Ein Avdat Canyon Spring",
+    "authority_id": "INPA-306",
+    "region": "מרכז הנגב ורמת עבדת",
+    "region_group": "south",
+    "lat": 30.8317,
+    "lng": 34.7644,
+    "type": [
+      "נווה מדבר",
+      "מפל מים",
+      "מצוקים"
+    ],
+    "type_en": [
+      "Oasis",
+      "Waterfall",
+      "Cliffs"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "stroller_accessible": false,
+    "min_age": 4,
+    "age_group": "4+"
+  },
+  {
+    "id": 501,
+    "name": "גן לאומי חוף פלמחים",
+    "name_en": "Palmachim Beach National Park",
+    "authority_id": "INPA-501",
+    "region": "מישור החוף הדרומי",
+    "region_group": "center",
+    "lat": 31.9288,
+    "lng": 34.7042,
+    "type": [
+      "גן לאומי",
+      "חוף ים",
+      "רכס כורכר"
+    ],
+    "type_en": [
+      "National Park",
+      "Beach",
+      "Coast"
+    ],
+    "vulnerabilities": [
+      "סערות ים",
+      "רוחות חזקות"
+    ],
+    "vulnerabilities_en": [
+      "Sea Storms",
+      "High Winds"
+    ],
+    "category": "coast",
+    "stroller_accessible": true,
+    "min_age": 0,
+    "age_group": "0+ עגלות"
+  },
+  {
+    "id": 502,
+    "name": "חניון לילה שקף - יער יתיר (קק״ל)",
+    "name_en": "Yatir Forest Night Camp (KKL-JNF)",
+    "authority_id": "KKL-502",
+    "region": "דרום הר חברון ויער יתיר",
+    "region_group": "south",
+    "lat": 31.3482,
+    "lng": 35.0594,
+    "type": [
+      "חניון לילה",
+      "יער מחטני",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Night Campground",
+      "Coniferous Forest",
+      "Safe Haven"
+    ],
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "vulnerabilities_en": [
+      "Safe Haven"
+    ],
+    "category": "safe_haven",
+    "stroller_accessible": true,
+    "min_age": 0,
+    "age_group": "0+ עגלות"
+  },
+  {
+    "id": 503,
+    "name": "שמורת טבע נחל שניר (חצבני)",
+    "name_en": "Snir Stream Nature Reserve",
+    "authority_id": "INPA-503",
+    "region": "עמק החולה והגליל העליון",
+    "region_group": "north",
+    "lat": 33.2325,
+    "lng": 35.624,
+    "type": [
+      "שמורת טבע",
+      "נחל זורם",
+      "מים"
+    ],
+    "type_en": [
+      "Nature Reserve",
+      "Stream",
+      "Water"
+    ],
+    "vulnerabilities": [
+      "שיטפונות",
+      "הצפות"
+    ],
+    "vulnerabilities_en": [
+      "Floods"
+    ],
+    "category": "water",
+    "stroller_accessible": false,
+    "min_age": 4,
+    "age_group": "4+"
+  },
+  {
+    "id": 504,
+    "name": "יער ביריה ומצודת ביריה (קק״ל)",
+    "name_en": "Biriya Forest & Fortress (KKL-JNF)",
+    "authority_id": "KKL-504",
+    "region": "הגליל העליון וצפת",
+    "region_group": "north",
+    "lat": 32.9866,
+    "lng": 35.5134,
+    "type": [
+      "יער",
+      "מורשת",
+      "חורש מוצל",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Forest",
+      "Heritage",
+      "Safe Haven"
+    ],
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "vulnerabilities_en": [
+      "Safe Haven"
+    ],
+    "category": "safe_haven",
+    "stroller_accessible": true,
+    "min_age": 0,
+    "age_group": "0+ עגלות"
+  },
+  {
+    "id": 505,
+    "name": "גן לאומי ממשית",
+    "name_en": "Mamshit National Park",
+    "authority_id": "INPA-505",
+    "region": "הנגב הצפוני ודימונה",
+    "region_group": "south",
+    "lat": 31.0253,
+    "lng": 35.0642,
+    "type": [
+      "גן לאומי",
+      "ארכיאולוגיה",
+      "מדבר"
+    ],
+    "type_en": [
+      "National Park",
+      "Archaeology",
+      "Desert"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "desert",
+    "stroller_accessible": true,
+    "min_age": 0,
+    "age_group": "0+ עגלות"
+  },
+  {
+    "id": 506,
+    "name": "שמורת טבע מג׳רסה - שפך נחל דליות",
+    "name_en": "Majrase - Daliyot Stream Reserve",
+    "authority_id": "INPA-506",
+    "region": "צפון מזרח הכנרת ורמת הגולן",
+    "region_group": "north",
+    "lat": 32.887,
+    "lng": 35.653,
+    "type": [
+      "שמורת טבע",
+      "מסלול מים רטוב",
+      "קני חזרן"
+    ],
+    "type_en": [
+      "Nature Reserve",
+      "Wet Trail",
+      "Water"
+    ],
+    "vulnerabilities": [
+      "שיטפונות",
+      "עכירות מים"
+    ],
+    "vulnerabilities_en": [
+      "Floods"
+    ],
+    "category": "water",
+    "stroller_accessible": false,
+    "min_age": 4,
+    "age_group": "4+"
+  },
+  {
+    "id": 507,
+    "name": "גן לאומי ארבל ומצוק הארבל",
+    "name_en": "Mount Arbel National Park",
+    "authority_id": "INPA-507",
+    "region": "הגליל התחתון והכנרת",
+    "region_group": "north",
+    "lat": 32.8236,
+    "lng": 35.4988,
+    "type": [
+      "גן לאומי",
+      "מצוק",
+      "נוף"
+    ],
+    "type_en": [
+      "National Park",
+      "Cliffs",
+      "Viewpoint"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני",
+      "רוחות חזקות"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat",
+      "High Winds"
+    ],
+    "category": "desert",
+    "stroller_accessible": false,
+    "min_age": 10,
+    "age_group": "10+"
+  },
+  {
+    "id": 601,
+    "name": "דרך נוף רמות מנשה ועמק השלום",
+    "name_en": "Ramot Menashe & Valley of Peace Scenic Route",
+    "authority_id": "AGRI-TRAIL-601",
+    "org": "משרד החקלאות והמועצה האזורית מגידו",
+    "region": "רמות מנשה",
+    "region_group": "north",
+    "lat": 32.6105,
+    "lng": 35.092,
+    "category": "nature",
+    "type": [
+      "דרך נוף חקלאית",
+      "מטעים",
+      "שביל עגלות",
+      "פריחה",
+      "עמק השלום"
+    ],
+    "type_en": [
+      "Scenic Road",
+      "Agricultural",
+      "Stroller Path"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "בוץ בחורף"
+    ],
+    "description": "דרך נוף כפרית יפהפייה ורחבה בין מטעי שקדים, גבעות ירוקות ונחלים זורמים ברמות מנשה. מיושרת ומושלמת לעגלות ולכל גיל."
+  },
+  {
+    "id": 602,
+    "name": "דרך היין והכרמים בעמק האלה",
+    "name_en": "Emek HaElah Vineyards & Wine Route",
+    "authority_id": "AGRI-TRAIL-602",
+    "org": "משרד החקלאות ומטה יהודה",
+    "region": "עמק האלה ושפלת יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.684,
+    "lng": 34.986,
+    "category": "nature",
+    "type": [
+      "דרך נוף",
+      "כרמים",
+      "חקלאות מסורתית",
+      "גתות עתיקות"
+    ],
+    "type_en": [
+      "Vineyard Trail",
+      "Traditional Agriculture",
+      "Scenic Road"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "עומס חום בקיץ"
+    ],
+    "description": "שביל חקלאי מסודר החוצה כרמי גפנים עתיקים, גתות קדומות ונופי עמק תנכיים. מתאים מאוד למשפחות עם ילדים בני 4 ומעלה."
+  },
+  {
+    "id": 603,
+    "name": "טיילת שדות בית לחם הגלילית ואלוני אבא",
+    "name_en": "Beit Lechem HaGlilit & Alonei Abba Country Promenade",
+    "authority_id": "AGRI-TRAIL-603",
+    "org": "משרד החקלאות ועמק יזרעאל",
+    "region": "עמק יזרעאל",
+    "region_group": "north",
+    "lat": 32.7335,
+    "lng": 35.1912,
+    "category": "nature",
+    "type": [
+      "שביל חקלאי",
+      "אלונים עתיקים",
+      "שביל עגלות",
+      "מושבה כפרית"
+    ],
+    "type_en": [
+      "Promenade",
+      "Oak Woodland",
+      "Stroller Accessible"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום קל"
+    ],
+    "description": "טיילת שדות סלולה ונגישה לצד חוות תבלינים, מטעי זיתים ושמורת אלוני תבור. חוויה שלווה ונגישה לעגלות, פעוטות וילדים."
+  },
+  {
+    "id": 604,
+    "name": "שביל דרך המטעים - בקעת הנדיב ואלונה",
+    "name_en": "Bik'at HaNadiv & Alona Orchard Trail",
+    "authority_id": "AGRI-TRAIL-604",
+    "org": "משרד החקלאות ומועצה אזורית אלונה",
+    "region": "חוף הכרמל ובקעת הנדיב",
+    "region_group": "haifa_carmel",
+    "lat": 32.518,
+    "lng": 35.025,
+    "category": "nature",
+    "type": [
+      "מטעי זיתים",
+      "כרמי יין",
+      "דרך נוף",
+      "שביל מישורי"
+    ],
+    "type_en": [
+      "Orchard Trail",
+      "Vineyards",
+      "Flat Walk"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "בוץ חורפי"
+    ],
+    "description": "שביל נוף מישורי בין כרמי אלונה, מעיינות אפרים ומטעי נשירים. מסלול קסום המותאם למשפחות וילדים."
+  },
+  {
+    "id": 611,
+    "name": "שביל הר כרמילה ונחל שורק (סימון ירוק)",
+    "name_en": "Mount Carmila & Sorek Ridge Trail",
+    "authority_id": "ITC-TRAIL-611",
+    "org": "הוועדה לשבילי ישראל (החברה להגנת הטבע)",
+    "region": "הרי ירושלים",
+    "region_group": "jerusalem",
+    "lat": 31.782,
+    "lng": 35.035,
+    "category": "nature",
+    "type": [
+      "שביל מסומן ירוק",
+      "חורש ים תיכוני",
+      "תצפית הרים",
+      "מסלול מעגלי"
+    ],
+    "type_en": [
+      "Marked Trail",
+      "Mediterranean Forest",
+      "Circular Hike"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "החלקה בסלעים רטובים"
+    ],
+    "description": "שביל מעגלי מוצל ואיכותי העובר בין עצי קטלב ואורן עם תצפית מרשימה על פיתולי נחל שורק. מתאים מאוד לילדים מגיל 4 ומעלה."
+  },
+  {
+    "id": 612,
+    "name": "שביל נחל אלכסנדר וגשר הצבים (שביל ישראל)",
+    "name_en": "Nahal Alexander Turtle Bridge (Israel National Trail)",
+    "authority_id": "ITC-TRAIL-612",
+    "org": "הוועדה לשבילי ישראל ורשות ניקוז שרון",
+    "region": "עמק חפר ומישור החוף",
+    "region_group": "center",
+    "lat": 32.395,
+    "lng": 34.908,
+    "category": "water",
+    "type": [
+      "שביל ישראל",
+      "נחל",
+      "צבים רכים",
+      "שביל מונגש",
+      "עגלות"
+    ],
+    "type_en": [
+      "Israel National Trail",
+      "River Walk",
+      "Softshell Turtles",
+      "Stroller Accessible"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס מבקרים בשבתות"
+    ],
+    "description": "מקטע קסום וסלול של שביל ישראל לצד נחל אלכסנדר, מרפסת תצפית על צבי הענק הרכים ומרחבי דשא. מונגש לחלוטין לעגלות ולכל גיל."
+  },
+  {
+    "id": 613,
+    "name": "שביל הר תבור המעגלי סביב הפסגה (סימון שחור)",
+    "name_en": "Mount Tabor Summit Circular Trail",
+    "authority_id": "ITC-TRAIL-613",
+    "org": "הוועדה לשבילי ישראל ורט״ג",
+    "region": "הגליל התחתון",
+    "region_group": "north",
+    "lat": 32.6865,
+    "lng": 35.3905,
+    "category": "nature",
+    "type": [
+      "שביל מסומן",
+      "שביל מעגלי",
+      "תצפית פנורמית",
+      "עצי אלון"
+    ],
+    "type_en": [
+      "Summit Circular Trail",
+      "Panoramic View",
+      "Oak Forest"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "רוחות בפסגה"
+    ],
+    "description": "שביל הליכה מעגלי יפהפה המקיף את פסגת הר תבור עם תצפית של 360 מעלות על עמק יזרעאל והגליל. כולל קטעי סלע ומתאים לגילאי 7+."
+  },
+  {
+    "id": 614,
+    "name": "שביל שוויצריה הקטנה ונחל כלח (סימון כחול)",
+    "name_en": "Little Switzerland & Kelach Creek Trail",
+    "authority_id": "ITC-TRAIL-614",
+    "org": "הוועדה לשבילי ישראל",
+    "region": "פארק הכרמל",
+    "region_group": "haifa_carmel",
+    "lat": 32.7485,
+    "lng": 35.021,
+    "category": "nature",
+    "type": [
+      "שביל מסומן כחול",
+      "יער אלונים",
+      "שווייצריה הקטנה",
+      "צל רציף"
+    ],
+    "type_en": [
+      "Marked Blue Trail",
+      "Oak Forest",
+      "Little Switzerland"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "החלקה בחורף"
+    ],
+    "description": "מסלול מוצל וקלאסי בלב פארק הכרמל, בין עצי אלון, מורד נחל כלח וגשרי עץ טבעיים. מתאים למשפחות עם ילדים מגיל 4 ומעלה."
+  },
+  {
+    "id": 621,
+    "name": "מבצר יחיעם (קלעת ג'דין)",
+    "name_en": "Yehiam Fortress National Antiquity Site",
+    "authority_id": "IAA-SITE-621",
+    "org": "רשות העתיקות ורט״ג",
+    "region": "הגליל המערבי",
+    "region_group": "north",
+    "lat": 32.994,
+    "lng": 35.2215,
+    "category": "nature",
+    "type": [
+      "מבצר צלבני",
+      "אתר עתיקות",
+      "תצפית לים",
+      "חומות ומגדלים"
+    ],
+    "type_en": [
+      "Crusader Fortress",
+      "Archaeological Site",
+      "Sea View"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "רוחות חזקות על החומות"
+    ],
+    "description": "מבצר צלבני-עות'מאני מרהיב בלב יער יחיעם, עם אולמות מקושתים, מגדלי תצפית אל מפרץ חיפה ושבילי סיור היסטוריים לילדים 4+."
+  },
+  {
+    "id": 622,
+    "name": "גן לאומי אפולוניה (תל ארשף)",
+    "name_en": "Apollonia Fortress National Park",
+    "authority_id": "IAA-SITE-622",
+    "org": "רשות העתיקות ורט״ג",
+    "region": "מישור החוף והשרון",
+    "region_group": "center",
+    "lat": 32.195,
+    "lng": 34.808,
+    "category": "nature",
+    "type": [
+      "גן לאומי",
+      "מבצר חופי",
+      "שביל עגלות נגיש",
+      "תל עתיקות"
+    ],
+    "type_en": [
+      "National Park",
+      "Coastal Fortress",
+      "Accessible Stroller Trail"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בצהריים"
+    ],
+    "description": "שביל מונגש ומסודר לעגלות על מצוק הכורכר של הרצליה, המוביל למבצר צלבני שמור מעל הים הפתוח. מושלם לפעוטות ועגלות (0+)."
+  },
+  {
+    "id": 623,
+    "name": "חורבת מדרס ומערות המסתור - פארק בריטניה",
+    "name_en": "Midras Ruins & Hiding Caves",
+    "authority_id": "IAA-SITE-623",
+    "org": "רשות העתיקות וקק״ל",
+    "region": "שפלת יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.658,
+    "lng": 34.965,
+    "category": "nature",
+    "type": [
+      "אתר עתיקות",
+      "מערות קולומבריום",
+      "מחילות מסתור",
+      "פירמידה יהודית"
+    ],
+    "type_en": [
+      "Antiquity Site",
+      "Columbarium Caves",
+      "Underground Tunnels"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "זחילה במחילות - נדרש פנס"
+    ],
+    "description": "אתר היסטורי מרתק בשפלת יהודה עם מערת קולומבריום ענקית, שרידי יישוב יהודי ומחילת זחילה קצרה שילדים בני 4 ומעלה מעריצים."
+  },
+  {
+    "id": 624,
+    "name": "תל לכיש המקראית ושער העיר הקדום",
+    "name_en": "Tel Lachish Biblical Mound",
+    "authority_id": "IAA-SITE-624",
+    "org": "רשות העתיקות ורט״ג",
+    "region": "שפלת יהודה ולכיש",
+    "region_group": "south",
+    "lat": 31.5655,
+    "lng": 34.8485,
+    "category": "nature",
+    "type": [
+      "תל מקראי",
+      "שער עיר קדום",
+      "שביל מונגש",
+      "עתיקות",
+      "כרמים"
+    ],
+    "type_en": [
+      "Biblical Mound",
+      "Ancient City Gate",
+      "Accessible Path"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בקיץ"
+    ],
+    "description": "עיר הממלכה השנייה בחשיבותה ביהודה המקראית. שביל הליכה נוח, מונגש ורחב אל שער העיר המרשים וארמון המושל, מוקף בכרמי לכיש."
+  },
+  {
+    "id": 631,
+    "name": "פארק עמק הצבאים (ירושלים)",
+    "name_en": "Gazelle Valley Urban Wildlife Park",
+    "authority_id": "MUNI-PARK-631",
+    "org": "עיריית ירושלים והחברה להגנת הטבע",
+    "region": "ירושלים",
+    "region_group": "jerusalem",
+    "lat": 31.758,
+    "lng": 35.1985,
+    "category": "nature",
+    "type": [
+      "טבע עירוני",
+      "עדר צבאים",
+      "אגמים",
+      "עופות מים",
+      "שביל עגלות"
+    ],
+    "type_en": [
+      "Urban Nature",
+      "Gazelles",
+      "Lakes",
+      "Stroller Accessible"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס מבקרים בשבתות"
+    ],
+    "description": "אתר הטבע העירוני הגדול בארץ. עדר של עשרות צבאי ארץ-ישראל חופשיים, אגמים מלאכותיים, מסתורי צפרות ושבילים סלולים ומונגשים לחלוטין (0+)."
+  },
+  {
+    "id": 632,
+    "name": "פארק אריאל שרון וההר המשוקם",
+    "name_en": "Ariel Sharon Metropolitan Park",
+    "authority_id": "MUNI-PARK-632",
+    "org": "חברת פארק אריאל שרון",
+    "region": "גוש דן",
+    "region_group": "center",
+    "lat": 32.0295,
+    "lng": 34.821,
+    "category": "nature",
+    "type": [
+      "פארק מטרופוליני",
+      "טיילת הרכס",
+      "אגמים",
+      "תצפית גוש דן",
+      "שביל עגלות"
+    ],
+    "type_en": [
+      "Metropolitan Park",
+      "Ridge Promenade",
+      "Lake",
+      "Stroller Accessible"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בצהריים"
+    ],
+    "description": "פארק טבע ענק בלב גוש דן עם טיילת רכס מרהיבה המשקיפה לקו הרקיע של תל אביב, אגמים אקולוגיים ומרחבי דשא מונגשים לעגלות."
+  },
+  {
+    "id": 633,
+    "name": "פארק ראש ציפור ויער הירקון",
+    "name_en": "Rosh Tzipor & Yarkon Forest Park",
+    "authority_id": "MUNI-PARK-633",
+    "org": "עיריית תל אביב-יפו וגני יהושע",
+    "region": "תל אביב וגוש דן",
+    "region_group": "center",
+    "lat": 32.102,
+    "lng": 34.8095,
+    "category": "nature",
+    "type": [
+      "טבע עירוני",
+      "חורשת אלונים",
+      "שבילי נחל",
+      "עגלות וילדים",
+      "צפרות"
+    ],
+    "type_en": [
+      "Urban Nature",
+      "Oak Woodland",
+      "Stream Trails",
+      "Stroller Friendly"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "יתושים בעונת מעבר"
+    ],
+    "description": "חורשת טבע שקטה ומבודדת במפגש הנחלים ירקון ואיילון. שבילי הליכה נעימים, מרכז צפרות, חורשת אלונים סלולה ונוחה לעגלות."
+  },
+  {
+    "id": 634,
+    "name": "פארק אגם החורף ושלולית החורף - נתניה",
+    "name_en": "Netanya Winter Lake & Pond Park",
+    "authority_id": "MUNI-PARK-634",
+    "org": "עיריית נתניה",
+    "region": "השרון - נתניה",
+    "region_group": "center",
+    "lat": 32.2985,
+    "lng": 34.8515,
+    "category": "water",
+    "type": [
+      "בריכת חורף",
+      "טבע עירוני",
+      "עופות מים",
+      "גשרי עץ",
+      "שביל עגלות"
+    ],
+    "type_en": [
+      "Winter Pond",
+      "Urban Wetland",
+      "Water Birds",
+      "Stroller Trail"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "רוחות ימיות בחורף"
+    ],
+    "description": "בריכת חורף טבעית ומרשימה המושכת עופות מים נדירים, מוקפת דקלי וושינגטוניה, גשרי עץ מעל המים ושבילים מונגשים לפעוטות ועגלות."
+  },
+  {
+    "id": 701,
+    "name": "שמורת טבע שער פולג ואגם יקום",
+    "name_en": "Poleg Gate & Yakum Lake Nature Reserve",
+    "authority_id": "INPA-108",
+    "org": "רשות הטבע והגנים (רט״ג)",
+    "region": "השרון הדרומי - יקום",
+    "region_group": "center",
+    "lat": 32.253,
+    "lng": 34.848,
+    "category": "water",
+    "type": [
+      "שמורת טבע",
+      "מים",
+      "רכס כורכר",
+      "אגם",
+      "פריחה עונתית",
+      "שביל עגלות"
+    ],
+    "type_en": [
+      "Nature Reserve",
+      "Lake",
+      "Coastal Ridge",
+      "Stroller Trail"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום קל בקיץ"
+    ],
+    "description": "שמורת טבע פורחת ברכס הכורכר של השרון. אגם יקום הקסום, צבי מים, פריחת אירוס הארגמן בחורף ושבילים מונגשים לעגלות ופעוטות."
+  },
+  {
+    "id": 702,
+    "name": "פארק השרון ובריכת סמר - יער חדרה",
+    "name_en": "Sharon Park & Hadera Forest",
+    "authority_id": "KKL-508",
+    "org": "קרן קימת לישראל (קק״ל)",
+    "region": "השרון הצפוני - חדרה",
+    "region_group": "center",
+    "lat": 32.427,
+    "lng": 34.898,
+    "category": "nature",
+    "type": [
+      "פארק טבע",
+      "יער אקליפטוסים",
+      "בריכת חורף",
+      "צל רציף",
+      "עגלות"
+    ],
+    "type_en": [
+      "Nature Park",
+      "Eucalyptus Forest",
+      "Winter Pond",
+      "Shaded Walk"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "יתושים בעונת האביב"
+    ],
+    "description": "יער האקליפטוסים הנטוע הגדול בישראל עם בריכת החורף 'סמר', חורשות צל ענקיות ושבילי הליכה מישוריים מושלמים לכל המשפחה."
+  },
+  {
+    "id": 703,
+    "name": "שמורת טבע חרוצים ובני ציון",
+    "name_en": "Harutzim & Bnei Zion Nature Reserve",
+    "authority_id": "INPA-109",
+    "org": "רשות הטבע והגנים (רט״ג)",
+    "region": "לב השרון",
+    "region_group": "center",
+    "lat": 32.228,
+    "lng": 34.868,
+    "category": "nature",
+    "type": [
+      "שמורת טבע",
+      "אחו לח",
+      "בריכת חורף",
+      "פרחי בר",
+      "חמרה"
+    ],
+    "type_en": [
+      "Nature Reserve",
+      "Wet Meadow",
+      "Wildflowers",
+      "Winter Pond"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "בוץ חורפי"
+    ],
+    "description": "שריד נדיר של נוף צמחי החמרה והביצות של השרון. שבילי הליכה נוחים בין פריחת צבעונים, סחלבים ובריכת חורף טבעית."
+  },
+  {
+    "id": 705,
+    "name": "שמורת בורות לוץ - הר הנגב המערבי",
+    "name_en": "Borot Lotz Ancient Cisterns Nature Reserve",
+    "authority_id": "INPA-111",
+    "org": "רשות הטבע והגנים (רט״ג)",
+    "region": "הר הנגב הגבוה (מערב מצפה רמון)",
+    "region_group": "south",
+    "lat": 30.547,
+    "lng": 34.592,
+    "category": "nature",
+    "type": [
+      "בורות מים קדומים",
+      "פריחה מדברית",
+      "חקלאות עתיקה",
+      "תצפית הרים"
+    ],
+    "type_en": [
+      "Ancient Cisterns",
+      "Desert Wildflowers",
+      "High Altitude Walk"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "עומס חום בקיץ",
+      "רוחות קרות בחורף"
+    ],
+    "description": "אתר הדגל של הר הנגב המערבי (30 ק\"מ מערבית לרמון). 17 בורות מים מימי שלמה המלך, שביל פריחת צבעונים וריבס, ואוויר פסגות צלול בגובה 950 מ'."
+  },
+  {
+    "id": 706,
+    "name": "הר רמון ומצפור קרני רמון",
+    "name_en": "Mount Ramon Summit & Karnei Ramon Overlook",
+    "authority_id": "INPA-112",
+    "org": "רשות הטבע והגנים (רט״ג)",
+    "region": "מצוק מכתש רמון המערבי",
+    "region_group": "south",
+    "lat": 30.505,
+    "lng": 34.638,
+    "category": "nature",
+    "type": [
+      "פסגת הר רמון",
+      "מצפור נוף",
+      "מכתש רמון",
+      "רוח הרים"
+    ],
+    "type_en": [
+      "Mount Ramon Summit",
+      "Crater Rim",
+      "Panoramic Vista"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "רוחות עזות בפסגה"
+    ],
+    "description": "הפסגה הגבוהה ביותר בנגב (1,037 מ') על שפת המצוק המערבי של מכתש רמון. תצפית פנורמית עוצרת נשימה עד סיני עם שביל מוסדר ונוח."
+  },
+  {
+    "id": 707,
+    "name": "קניון ומפלי נחל ערוד",
+    "name_en": "Nahal Arod Canyon & Falls",
+    "authority_id": "INPA-113",
+    "org": "רשות הטבע והגנים (רט״ג)",
+    "region": "דרום-מערב מכתש רמון",
+    "region_group": "south",
+    "lat": 30.518,
+    "lng": 34.685,
+    "category": "nature",
+    "type": [
+      "קניון מדברי",
+      "אבני חול",
+      "גבי מים",
+      "מיטיבי לכת"
+    ],
+    "type_en": [
+      "Desert Canyon",
+      "Sandstone Cliffs",
+      "Rock Pools"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום קיצוני"
+    ],
+    "description": "קניון מבודד ופראי החורץ את דרום-מערב הרמון, עם מצוקי אבן חול אדומה, מפל ערוד וגבי מים חורפיים. מיועד לגילאי 7+."
+  },
+  {
+    "id": 708,
+    "name": "גן לאומי שבטה העתיקה - דרך הבשמים",
+    "name_en": "Shivta National Park (Ancient Incense Route)",
+    "authority_id": "IAA-SITE-625",
+    "org": "רשות העתיקות ורט״ג",
+    "region": "מערב הנגב - שבטה",
+    "region_group": "south",
+    "lat": 30.881,
+    "lng": 34.631,
+    "category": "nature",
+    "type": [
+      "אתר מורשת עולמית",
+      "עיר נבטית",
+      "כנסיות עתיקות",
+      "שביל מונגש",
+      "עגלות"
+    ],
+    "type_en": [
+      "UNESCO World Heritage",
+      "Nabataean City",
+      "Accessible Ruins"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בצהריים"
+    ],
+    "description": "עיר ביזנטית-נבטית שמורה להפליא בלב המדבר, אתר מורשת עולמי של אונסק\"ו. רחובות קדומים מרוצפים ומונגשים לעגלות ולמשפחות."
+  },
+  {
+    "id": 709,
+    "name": "חולות עזוז ונווה מדבר בארותיים",
+    "name_en": "Ezuz Sands & Be'erotayim Oasis",
+    "authority_id": "INPA-114",
+    "org": "רשות הטבע והגנים והמועצה האזורית רמת הנגב",
+    "region": "מערב הנגב - עזוז",
+    "region_group": "south",
+    "lat": 30.875,
+    "lng": 34.425,
+    "category": "nature",
+    "type": [
+      "נווה מדבר",
+      "חולות דיונה",
+      "עצי אשל",
+      "שקט מדברי"
+    ],
+    "type_en": [
+      "Desert Oasis",
+      "Sand Dunes",
+      "Tranquil Walks"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בקיץ"
+    ],
+    "description": "נווה מדבר קסום ומבודד בגבול המערבי עם עצי אשל עתיקים, בארות מים מימי המנדט ודיונות חול נעימות למשחקי ילדים."
+  },
+  {
+    "id": 704,
+    "name": "אגמון עמק חפר ונחל אלכסנדר",
+    "name_en": "Emek Hefer Bird Sanctuary & Agamon",
+    "authority_id": "INPA-110",
+    "org": "רשות ניקוז ונחלים שרון ורט״ג",
+    "region": "עמק חפר והשרון",
+    "region_group": "center",
+    "lat": 32.392,
+    "lng": 34.921,
+    "category": "water",
+    "type": [
+      "אגמון מלאכותי",
+      "צפרות",
+      "נחל",
+      "גשרי עץ",
+      "שביל מונגש",
+      "עגלות"
+    ],
+    "type_en": [
+      "Wetland Sanctuary",
+      "Birding",
+      "Wooden Boardwalk",
+      "Stroller Trail"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס מבקרים בשבתות"
+    ],
+    "description": "פנינת טבע משוקמת עם אגמון ענק, מסתורי צפרות מעוצבים, גשרי עץ צפים ושבילים רחבים מונגשים לעגלות ופעוטות."
+  }
+]

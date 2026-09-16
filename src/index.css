@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #121215;
+    color: #f4f4f5;
+    font-family: 'Heebo', 'Inter', sans-serif;
+  }
+}
+
+/* Leaflet Container standard setup */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background-color: #121215 !important;
+}
+
+/* Dark mode tile styling with Hebrew text clarity */
+.dark-map-tiles {
+  filter: brightness(0.68) invert(1) contrast(1.7) hue-rotate(200deg) saturate(0.15) !important;
+}
+
+/* Custom scrollbar for dark slate/zinc mode */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #121215;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Floating Card Animation */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-floating-card {
+  animation: slideUpFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
