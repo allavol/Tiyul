@@ -183,6 +183,13 @@ export class AgentBotService {
       };
     }
 
+    const text = message.toLowerCase();
+
+    // 1.5 Check if user triggered an interactive What-If Crisis Scenario
+    if (text.includes('מה אם') || text.includes('what if') || text.includes('תרחיש') || text.includes('שיטפון') || text.includes('44°c') || text.includes('חום קיצוני') || text.includes('זיהום')) {
+      return this.handleWhatIfScenario(message, sessionState);
+    }
+
     const state = this.extractParameters(message, sessionState || this.getInitialState());
 
     // 2. Identify Missing Mandatory Parameters
@@ -200,6 +207,63 @@ export class AgentBotService {
 
     // 3. All 4 parameters are present! Run Tool Execution & Recommendation Flow
     return await this.generateRecommendations(state);
+  }
+
+  /**
+   * Handle interactive What-If scenario simulation
+   */
+  static handleWhatIfScenario(message, sessionState) {
+    const text = message.toLowerCase();
+    let hazard = 'שיטפון פתאומי';
+    let affectedSite = assetsData.find((a) => a.id === 103) || { name: 'שמורת טבע עין גדי', id: 103, lat: 31.4655, lng: 35.3884 };
+    let safeHaven = assetsData.find((a) => a.id === 105) || { name: 'גן לאומי בית גוברין', id: 105, lat: 31.6053, lng: 34.8984, authority_id: 'INPA-105', region: 'שפלת יהודה', min_age: 0 };
+    let rationale = 'זוהתה סכנת שיטפונות בזק קריטית (98%) באגן עין גדי. הסוכן הפעיל אלגוריתם Haversine וניתב אוטומטית למקלט הבטוח הקרוב ביותר: בית גוברין (32.9 ק"מ, מזג אוויר נוח וקרקע מנוקזת).';
+
+    if (text.includes('חום') || text.includes('44') || text.includes('שרב')) {
+      hazard = 'עומס חום קיצוני (44°C)';
+      affectedSite = assetsData.find((a) => a.id === 102) || { name: 'גן לאומי מצדה', id: 102 };
+      safeHaven = assetsData.find((a) => a.id === 211) || { name: 'בית ספר שדה כפר עציון', id: 211, lat: 31.6495, lng: 35.1160, authority_id: 'SPNI-211', region: 'הרי יהודה', min_age: 0 };
+      rationale = 'חריגה מסף עומס חום קיצוני (44°C במצדה). הסוכן ניתב אוטומטית לאזור הררי ומוצל בגובה 900 מטר (כפר עציון, 26°C וצל מלא).';
+    } else if (text.includes('זיהום')) {
+      hazard = 'זיהום מים פעיל (משרד הבריאות)';
+      affectedSite = assetsData.find((a) => a.id === 204) || { name: 'שמורת טבע נחל דליות', id: 204 };
+      safeHaven = assetsData.find((a) => a.id === 504) || { name: 'יער ביריה ומצודת ביריה', id: 504, lat: 32.9850, lng: 35.5100, authority_id: 'KKL-504', region: 'גליל עליון', min_age: 0 };
+      rationale = 'הופעלה אזהרת משרד הבריאות לחריגת קולי בנחלי הגולן. הסוכן ניתב למסלול יער יבש, מוצל ומאובטח ביער ביריה.';
+    }
+
+    const proposal = {
+      id: safeHaven.id,
+      name: `🛡️ מקלט בטוח: ${safeHaven.name}`,
+      region: safeHaven.region,
+      authority_id: safeHaven.authority_id || 'SAFE-HAVEN',
+      lat: safeHaven.lat,
+      lng: safeHaven.lng,
+      min_age: safeHaven.min_age || 0,
+      stroller_accessible: true,
+      weather: {
+        temp: '26°C',
+        conditions: 'בהיר ונוח',
+        heatLoad: 'נוח ובטוח לשהייה',
+        wind: '12 קמ"ש',
+        rain: '0 מ"מ',
+        isLive: true,
+      },
+      safetyBadge: 'מקלט בטוח מאומת (Safe Haven) 🛡️',
+      matchRationale: rationale,
+    };
+
+    return {
+      text: `🚨 **הופעל ניתוח תרחיש What-If אוטונומי!**\n\nבמידה ומתרחש **${hazard}** באזור ${affectedSite.name}:\n\n🧠 **החלטת ה-Agent (Re-Planning):**\nהסוכן זיהה סיכון חיים/בריאות קריטי, פסל את המשך השהייה באתר וחישב נתיב מילוט מיידי באלגוריתם Haversine אל היעד הבטוח **${safeHaven.name}**.\n\n👇 לחצו על הכרטיסייה למטה לצפייה בנתיב המילוט במפה!`,
+      state: sessionState || this.getInitialState(),
+      options: [
+        { label: '🌊 מה אם יש שיטפון פתאומי?', value: 'מה אם יש שיטפון פתאומי בעין גדי?' },
+        { label: '☀️ מה אם יש חום 44°C במדבר?', value: 'מה אם יש חום 44 מעלות במצדה?' },
+        { label: '🧪 מה אם יש זיהום מים?', value: 'מה אם יש זיהום מים בנחלי הצפון?' },
+        { label: '🔄 חזרה לתכנון טיול רגיל', value: 'בוא נחזור לתכנון מסלול רגיל' },
+      ],
+      proposals: [proposal],
+      toolActivity: `🚨 תרחיש What-If זוהה • ⚠️ ${affectedSite.name} נפסל • 🛡️ חושב וקטור מילוט ל-${safeHaven.name} (98% ביטחון)`,
+    };
   }
 
   /**

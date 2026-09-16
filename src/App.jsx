@@ -132,26 +132,43 @@ export default function App() {
     setActiveScenario('HEATWAVE');
 
     try {
-      const evaluation = await AgentService.evaluateThreat(
-        'SIMULATE_HEATWAVE',
-        initialAssetsData
-      );
-
-      if (evaluation.error) {
-        const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_HEATWAVE', initialAssetsData);
-        applyEvaluation(fallbackEval);
-        setAgentLastDecision(fallbackEval.reasoning_log);
-        setAgentStatus('ALERT_REROUTED');
-        return;
-      }
-
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_HEATWAVE', initialAssetsData);
       applyEvaluation(evaluation);
       setAgentLastDecision(evaluation.reasoning_log);
       setAgentStatus('ALERT_REROUTED');
-    } catch (err) {
-      const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_HEATWAVE', initialAssetsData);
-      applyEvaluation(fallbackEval);
-      setAgentLastDecision(fallbackEval.reasoning_log);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 3. Simulate Water Pollution Trigger
+  const handleSimulatePollution = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    setAgentStatus('PROCESSING');
+    setActiveScenario('POLLUTION');
+
+    try {
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_POLLUTION', initialAssetsData);
+      applyEvaluation(evaluation);
+      setAgentLastDecision(evaluation.reasoning_log);
+      setAgentStatus('ALERT_REROUTED');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 4. Simulate Stroller Emergency Trigger
+  const handleSimulateStroller = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    setAgentStatus('PROCESSING');
+    setActiveScenario('STROLLER');
+
+    try {
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_STROLLER', initialAssetsData);
+      applyEvaluation(evaluation);
+      setAgentLastDecision(evaluation.reasoning_log);
       setAgentStatus('ALERT_REROUTED');
     } finally {
       setIsProcessing(false);
@@ -290,6 +307,8 @@ export default function App() {
         agentLastDecision={agentLastDecision}
         onSimulateFlood={handleSimulateFlood}
         onSimulateHeatwave={handleSimulateHeatwave}
+        onSimulatePollution={handleSimulatePollution}
+        onSimulateStroller={handleSimulateStroller}
         onClear={handleClear}
         isProcessing={isProcessing}
       />

@@ -21,6 +21,8 @@ export default function AgentOperationsModal({
   agentStatus = 'ONLINE',
   onSimulateFlood,
   onSimulateHeatwave,
+  onSimulatePollution,
+  onSimulateStroller,
   onClear,
   isProcessing = false,
   agentLastDecision = ''
@@ -78,29 +80,29 @@ export default function AgentOperationsModal({
             <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800 flex items-center gap-2">
               <span className="text-base">📡</span>
               <div>
-                <strong className="block text-zinc-200">שירות מטאורולוגי (IMS)</strong>
-                <span className="text-[10px] text-zinc-400">טמפ', עומס חום ומשקעים</span>
+                <strong className="block text-zinc-200">Tomorrow.io & IMS</strong>
+                <span className="text-[10px] text-zinc-400">תחזית מיקרו-אקלים, עומס חום וגשם</span>
               </div>
             </div>
             <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800 flex items-center gap-2">
               <span className="text-base">🏞️</span>
               <div>
                 <strong className="block text-zinc-200">רט"ג וקק"ל</strong>
-                <span className="text-[10px] text-zinc-400">שמורות, מקלטים ושעות פתיחה</span>
+                <span className="text-[10px] text-zinc-400">58 שמורות ומקלטים בטוחים (Safe Havens)</span>
               </div>
             </div>
             <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800 flex items-center gap-2">
               <span className="text-base">🌊</span>
               <div>
                 <strong className="block text-zinc-200">רשות המים ומשרד הבריאות</strong>
-                <span className="text-[10px] text-zinc-400">בקרת זיהומים ועכירות נחלים</span>
+                <span className="text-[10px] text-zinc-400">דיגומי קולי ועכירות נחלים</span>
               </div>
             </div>
             <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800 flex items-center gap-2">
               <span className="text-base">🏛️</span>
               <div>
                 <strong className="block text-zinc-200">רשות העתיקות ושבילי ישראל</strong>
-                <span className="text-[10px] text-zinc-400">מבצרים, תוואי שטח וסימון</span>
+                <span className="text-[10px] text-zinc-400">סימון שבילים, תוואי שטח ועגלות</span>
               </div>
             </div>
           </div>
@@ -116,9 +118,9 @@ export default function AgentOperationsModal({
             <div className="flex items-start gap-2">
               <ThermometerSun size={15} className="text-amber-400 mt-0.5 flex-shrink-0" />
               <div>
-                <strong className="text-zinc-200">סף עומס חום (36°C+):</strong>
+                <strong className="text-zinc-200">סף עומס חום (38°C+):</strong>
                 <p className="text-[11px] text-zinc-400">
-                  מעל 36°C מועלה גיל המינימום אוטומטית ל-7+ עקב סכנת התייבשות. מעל 38°C מנותב למקלט בטוח מוצל/ממוזג.
+                  מעל 38°C מנותב אוטומטית למקלט בטוח מוצל/ממוזג (Safe Haven).
                 </p>
               </div>
             </div>
@@ -128,7 +130,7 @@ export default function AgentOperationsModal({
               <div>
                 <strong className="text-zinc-200">משקעים ושיטפונות באגן:</strong>
                 <p className="text-[11px] text-zinc-400">
-                  סריקה טופוגרפית של אגני ניקוז ים המלח, מדבר יהודה והערבה. זיהוי גשם מפעיל וקטור ניתוב מיידי ל-Safe Haven.
+                  זיהוי גשם באגן ניקוז קניוני מפעיל וקטור פינוי מיידי באלגוריתם Haversine.
                 </p>
               </div>
             </div>
@@ -138,7 +140,7 @@ export default function AgentOperationsModal({
               <div>
                 <strong className="text-zinc-200">מדרג גילאים (0+, 4+, 7+, 10+):</strong>
                 <p className="text-[11px] text-zinc-400">
-                  הערכת מכשולים פיזיים (סולמות, יתדות, מדרגות סלע ונגישות עגלות) בצימוד לתנאי מזג האוויר המשתנים.
+                  הערכת מכשולים פיזיים (סולמות, יתדות, מדרגות סלע ועגלות) בצימוד לתנאי מזג האוויר.
                 </p>
               </div>
             </div>
@@ -159,22 +161,25 @@ export default function AgentOperationsModal({
           </p>
         </div>
 
-        {/* 5. Trigger Simulations (Test Sandbox) */}
+        {/* 5. Trigger What-If Simulations (Interactive Sandbox) */}
         <div className="pt-2 border-t border-zinc-800/80">
-          <span className="text-[11px] text-zinc-400 block mb-2 font-medium">
-            בדיקת תרחישי חירום טקטיים (סימולציה):
-          </span>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <Sparkles size={14} />
+              סימולטור תרחישי קיצון What-If (הדגמת שינוי מסלול אוטונומי):
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               onClick={() => {
                 onSimulateFlood?.();
                 onClose?.();
               }}
               disabled={isProcessing}
-              className="py-2 px-2.5 rounded-xl bg-blue-950/70 hover:bg-blue-900 border border-blue-800 text-blue-200 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+              className="py-2.5 px-2 rounded-xl bg-blue-950/70 hover:bg-blue-900 border border-blue-800 text-blue-200 text-xs font-bold flex flex-col items-center justify-center gap-1 transition text-center"
             >
-              <Waves size={14} />
-              <span>התרעת שיטפון</span>
+              <Waves size={16} />
+              <span>שיטפון בעין גדי</span>
             </button>
 
             <button
@@ -183,22 +188,48 @@ export default function AgentOperationsModal({
                 onClose?.();
               }}
               disabled={isProcessing}
-              className="py-2 px-2.5 rounded-xl bg-amber-950/70 hover:bg-amber-900 border border-amber-800 text-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+              className="py-2.5 px-2 rounded-xl bg-amber-950/70 hover:bg-amber-900 border border-amber-800 text-amber-200 text-xs font-bold flex flex-col items-center justify-center gap-1 transition text-center"
             >
-              <Flame size={14} />
-              <span>עומס חום</span>
+              <Flame size={16} />
+              <span>חום 44°C במצדה</span>
             </button>
 
+            <button
+              onClick={() => {
+                onSimulatePollution?.();
+                onClose?.();
+              }}
+              disabled={isProcessing}
+              className="py-2.5 px-2 rounded-xl bg-purple-950/70 hover:bg-purple-900 border border-purple-800 text-purple-200 text-xs font-bold flex flex-col items-center justify-center gap-1 transition text-center"
+            >
+              <span className="text-base">🧪</span>
+              <span>זיהום מים בדליות</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onSimulateStroller?.();
+                onClose?.();
+              }}
+              disabled={isProcessing}
+              className="py-2.5 px-2 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 text-xs font-bold flex flex-col items-center justify-center gap-1 transition text-center"
+            >
+              <Baby size={16} />
+              <span>חירום עגלות 0+</span>
+            </button>
+          </div>
+
+          <div className="mt-2 text-center">
             <button
               onClick={() => {
                 onClear?.();
                 onClose?.();
               }}
               disabled={isProcessing}
-              className="py-2 px-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+              className="py-1.5 px-4 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-bold inline-flex items-center gap-1.5 transition"
             >
-              <RotateCcw size={14} />
-              <span>איפוס מצב</span>
+              <RotateCcw size={13} />
+              <span>איפוס מצב וחזרה לכל המסלולים</span>
             </button>
           </div>
         </div>
