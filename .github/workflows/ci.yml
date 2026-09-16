@@ -1,0 +1,41 @@
+name: CI Quality Gate (Test & Build)
+
+on:
+  push:
+    branches: [ main, 'feature/**', 'fix/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    name: Verify Python Skills & Frontend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      # 1. Setup & Test Python Skills
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🧪 Run Automated Python Unit Tests
+        run: |
+          python -m unittest discover -s tests -p "test_*.py"
+
+      # 2. Setup & Build Frontend
+      - name: ⬢ Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🏗️ Verify Frontend Build (Vite)
+        env:
+          VITE_TOMORROW_IO_API_KEY: ${{ secrets.VITE_TOMORROW_IO_API_KEY || '2HESE6nVPsY0maF3uYCOwT0B3OcAx6lu' }}
+        run: npm run build
