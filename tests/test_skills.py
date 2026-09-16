@@ -216,6 +216,21 @@ class TestBaalSkills(unittest.TestCase):
             self.assertTrue(29.4 <= p["lat"] <= 33.4)
             self.assertTrue(34.2 <= p["lng"] <= 35.9)
 
+    def test_database_completeness_for_conversational_bot(self):
+        with open(self.db_path, "r", encoding="utf-8") as f:
+            assets = json.load(f)
+        self.assertGreaterEqual(len(assets), 50)
+        for a in assets:
+            self.assertIn("id", a)
+            self.assertIn("name", a)
+            self.assertIn("region", a)
+            self.assertIn("min_age", a)
+            self.assertIn("lat", a)
+            self.assertIn("lng", a)
+            self.assertTrue(isinstance(a["min_age"], (int, float)))
+            self.assertTrue(isinstance(a["lat"], (int, float)))
+            self.assertTrue(isinstance(a["lng"], (int, float)))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -42,6 +42,7 @@ export default function TacticalSidebar({
   selectedDayIndex = 0,
   onSelectDayIndex,
   onOpenAgentModal,
+  onOpenChatBot,
 }) {
   const isAlertState = agentStatus === 'ALERT_REROUTED';
   const fiveDays = getFiveDaysList();
@@ -85,6 +86,32 @@ export default function TacticalSidebar({
             {isProcessing ? 'סורק...' : isAlertState ? 'שינוי מסלול' : 'מוח הסוכן'}
           </span>
           <Info size={13} className="opacity-80" />
+        </button>
+      </div>
+
+      {/* 1.5 Interactive AI Conversational Bot Launcher Banner */}
+      <div className="px-4 pt-2.5 pb-1">
+        <button
+          onClick={onOpenChatBot}
+          className="w-full bg-gradient-to-r from-emerald-950/90 via-teal-950/70 to-zinc-900/90 hover:from-emerald-900 hover:to-zinc-800 border border-emerald-500/40 hover:border-emerald-400/80 p-2.5 rounded-2xl flex items-center justify-between shadow-lg shadow-emerald-950/30 transition-all group active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+            </div>
+            <div className="text-right min-w-0">
+              <div className="text-xs font-black text-white flex items-center gap-1.5">
+                <span>סוכן הטיולים האישי (AI)</span>
+                <span className="text-[9px] bg-emerald-500 text-black px-1.5 py-0.2 rounded-full font-mono font-bold">חדש</span>
+              </div>
+              <p className="text-[10px] text-zinc-300 truncate">
+                תכנון מסלול לפי גיל, מים ומזג אוויר חי ב-Tomorrow.io
+              </p>
+            </div>
+          </div>
+          <span className="text-emerald-400 text-xs font-bold bg-emerald-950/60 px-2 py-1 rounded-lg border border-emerald-800/60 flex-shrink-0">
+            דבר איתי 💬
+          </span>
         </button>
       </div>
 

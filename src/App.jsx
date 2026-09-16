@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
+import { Compass, Sparkles } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
 import TacticalSidebar from './components/TacticalSidebar';
 import TacticalMap from './components/TacticalMap';
 import AgentOperationsModal from './components/AgentOperationsModal';
+import AgentChatBot from './components/AgentChatBot';
 import { AgentService } from './services/AgentService';
 import { getDefaultDayIndex } from './utils/weatherUtils';
 
@@ -29,6 +31,7 @@ export default function App() {
   const [selectedDayIndex, setSelectedDayIndex] = useState(getDefaultDayIndex); // 0 (today) or 1 (tomorrow if >= 16:00)
   const [showNationalRadar, setShowNationalRadar] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
+  const [isChatBotOpen, setIsChatBotOpen] = useState(false);
 
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
@@ -199,7 +202,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-screen h-screen flex flex-row bg-[#0c0d12] text-zinc-100 overflow-hidden font-sans select-none">
+    <div className="w-screen h-screen flex flex-row bg-[#0c0d12] text-zinc-100 overflow-hidden font-sans select-none relative">
       {/* Right Sidebar (approx 30% width, min 340px, max 420px) */}
       <div className="w-[30%] min-w-[340px] max-w-[420px] h-full relative z-20 flex-shrink-0">
         <TacticalSidebar
@@ -220,6 +223,7 @@ export default function App() {
           selectedDayIndex={selectedDayIndex}
           onSelectDayIndex={setSelectedDayIndex}
           onOpenAgentModal={() => setIsAgentModalOpen(true)}
+          onOpenChatBot={() => setIsChatBotOpen(true)}
         />
       </div>
 
@@ -239,6 +243,20 @@ export default function App() {
           showNationalRadar={showNationalRadar}
           onCloseNationalRadar={() => setShowNationalRadar(false)}
         />
+
+        {/* Floating AI Agent Trigger Button (Bottom-Left on Map) */}
+        <button
+          onClick={() => setIsChatBotOpen(true)}
+          title="פתח את סוכן הטיולים החכם"
+          className="absolute bottom-6 left-6 z-[1000] bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-xs sm:text-sm border border-emerald-400/50 backdrop-blur-2xl transition-all group pointer-events-auto"
+        >
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping"></span>
+          <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+          <div className="text-right leading-tight">
+            <div>שאל את סוכן הטיולים 🧭</div>
+            <div className="text-[10px] text-emerald-200 font-normal">תכנון מסלולים מותאם אישית</div>
+          </div>
+        </button>
       </div>
 
       {/* Popup 1: Agent Intelligence & Operations Modal */}
@@ -251,6 +269,17 @@ export default function App() {
         onSimulateHeatwave={handleSimulateHeatwave}
         onClear={handleClear}
         isProcessing={isProcessing}
+      />
+
+      {/* Popup 2: Conversational AI Hiking Bot Drawer */}
+      <AgentChatBot
+        isOpen={isChatBotOpen}
+        onClose={() => setIsChatBotOpen(false)}
+        onSelectSite={(site) => {
+          setSelectedAssetId(site.id);
+          setIsChatBotOpen(false);
+        }}
+        assets={assets}
       />
     </div>
   );
