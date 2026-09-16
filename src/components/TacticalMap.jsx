@@ -50,7 +50,7 @@ export default function TacticalMap({
     };
   }, []);
 
-  // Update Badge Pins Matching Reference Design
+  // Update Badge Pins — Surfline Teal Circular Data Points
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -64,57 +64,60 @@ export default function TacticalMap({
       const isAlert = asset.status === 'CRITICAL' || asset.status === 'REROUTED';
       const isSelected = selectedAssetId === asset.id;
 
-      // Category Icon inside white circle
-      let iconSvg = '🌲'; // Nature
+      // Category Icon
+      let iconChar = '🌲';
       const types = (asset.type || []).join(' ');
-      if (isSafeHaven) iconSvg = '🛡️';
-      else if (types.includes('מים') || types.includes('חוף')) iconSvg = '💧';
-      else if (types.includes('הרים') || types.includes('שלג')) iconSvg = '⛰️';
-      else if (types.includes('מדבר')) iconSvg = '☀️';
-      else if (asset.category === 'spni') iconSvg = '🦅';
+      if (isSafeHaven) iconChar = '🛡️';
+      else if (types.includes('מים') || types.includes('חוף')) iconChar = '💧';
+      else if (types.includes('הרים') || types.includes('שלג')) iconChar = '⛰️';
+      else if (types.includes('מדבר')) iconChar = '☀️';
+      else if (asset.category === 'spni') iconChar = '🦅';
 
-      const score = isAlert ? 'ALERT' : isSafeHaven ? '100' : '98';
-      const scoreBg = isAlert ? '#ef4444' : '#18181b';
-      const scoreColor = isAlert ? '#ffffff' : '#f4f4f5';
-      const borderGlow = isSelected ? 'border: 2px solid #34d399; box-shadow: 0 0 14px rgba(52, 211, 153, 0.6);' : 'border: 2px solid #27272a; box-shadow: 0 4px 10px rgba(0,0,0,0.5);';
+      // Colors — Surfline teal circular badges
+      const bgColor = isAlert ? '#dc2626' : isSelected ? '#2DD4BF' : '#14B8A6';
+      const borderStyle = isSelected
+        ? 'border: 2.5px solid #2DD4BF; box-shadow: 0 0 18px rgba(45, 212, 191, 0.5);'
+        : isAlert
+        ? 'border: 2.5px solid #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);'
+        : 'border: 2px solid rgba(45, 212, 191, 0.4); box-shadow: 0 4px 12px rgba(0,0,0,0.5);';
 
       const iconHtml = `
-        <div style="width: 40px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; pointer-events: auto;">
-          <!-- White Circular Badge (32x32) -->
+        <div style="width: 42px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; pointer-events: auto;">
+          <!-- Teal Circular Badge -->
           <div style="
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background-color: #ffffff;
+            background-color: ${isSelected ? bgColor : '#222228'};
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            ${borderGlow}
+            font-size: 14px;
+            ${borderStyle}
             transition: all 0.2s ease;
           ">
-            ${iconSvg}
+            ${iconChar}
           </div>
 
-          <!-- Score Pill Attached Below -->
+          <!-- Label Pill Below -->
           <div style="
             margin-top: 2px;
-            background-color: ${scoreBg};
-            color: ${scoreColor};
-            border: 1px solid #3f3f46;
+            background-color: #1c1c21;
+            color: ${isAlert ? '#fca5a5' : '#2DD4BF'};
+            border: 1px solid ${isAlert ? 'rgba(239,68,68,0.3)' : 'rgba(45,212,191,0.2)'};
             padding: 1px 6px;
             border-radius: 9999px;
-            font-size: 10px;
-            font-weight: 700;
-            font-family: 'Heebo', sans-serif;
+            font-size: 9px;
+            font-weight: 800;
+            font-family: 'Outfit', 'Heebo', sans-serif;
             display: flex;
             align-items: center;
             gap: 2px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
             white-space: nowrap;
           ">
-            <span>${isAlert ? '⚠️' : '😊'}</span>
-            <span>${score}</span>
+            <span>${isAlert ? '⚠️' : '✓'}</span>
+            <span>${isAlert ? 'ALERT' : '100'}</span>
           </div>
         </div>
       `;
@@ -122,8 +125,8 @@ export default function TacticalMap({
       const customIcon = L.divIcon({
         className: 'reference-badge-pin',
         html: iconHtml,
-        iconSize: [40, 50],
-        iconAnchor: [20, 16], // Anchored with sub-pixel precision to center of the 32px circle
+        iconSize: [42, 52],
+        iconAnchor: [21, 17], // Anchored to center of the 34px circle
       });
 
       const marker = L.marker([asset.lat, asset.lng], { icon: customIcon }).addTo(map);
@@ -159,7 +162,7 @@ export default function TacticalMap({
     }
   }, [selectedAssetId, assets]);
 
-  // Mint-Green Routing Line (#34d399) matching the reference design
+  // Teal Routing Line matching Surfline accent
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -180,7 +183,7 @@ export default function TacticalMap({
         ];
 
         const polyline = L.polyline(latlngs, {
-          color: '#34d399', // Mint green glowing line
+          color: '#2DD4BF', // Teal accent routing line
           weight: 4,
           opacity: 0.95,
           lineCap: 'round',
@@ -225,7 +228,7 @@ export default function TacticalMap({
       {!selectedAsset && showNationalRadar && (
         <NationalRadarCard
           activeScenario={activeScenario}
-          selectedDay={selectedDay}
+          selectedDay={selectedDayIndex}
           totalAssetsCount={assets.length}
           onClose={onCloseNationalRadar || onCloseCard}
         />

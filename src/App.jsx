@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Compass, Sparkles } from 'lucide-react';
+import { Compass, Sparkles, Map, Mountain, Settings, Search } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
 import TacticalSidebar from './components/TacticalSidebar';
 import TacticalMap from './components/TacticalMap';
@@ -33,6 +33,8 @@ export default function App() {
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const [isChatBotOpen, setIsChatBotOpen] = useState(false);
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
+  const [activeRailTab, setActiveRailTab] = useState('trails'); // 'trails' | 'map' | 'settings'
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
@@ -67,16 +69,12 @@ export default function App() {
       if (selectedAgeFilter !== 'all') {
         const reqAge = Number(selectedAgeFilter);
         if (reqAge === 0) {
-          // Stroller-accessible & toddler routes only
           if (asset.min_age !== 0) return false;
         } else if (reqAge === 4) {
-          // Suitable for 4-year-olds (includes 0+ stroller routes & 4+ family trails)
           if (asset.min_age > 4) return false;
         } else if (reqAge === 7) {
-          // Suitable for 7-year-olds (includes 0+, 4+, and 7+)
           if (asset.min_age > 7) return false;
         } else if (reqAge === 10) {
-          // Challenging routes requiring 10+
           if (asset.min_age < 10) return false;
         }
       }
@@ -224,34 +222,16 @@ export default function App() {
     setAgentLastDecision(`כל ${initialAssetsData.length} השמורות והמסלולים נסרקו ונמצאו בטוחים לפעילות ללא סיכוני מזג אוויר.`);
   };
 
-  return (
-    <div className="w-screen h-screen flex flex-row bg-[#0c0d12] text-zinc-100 overflow-hidden font-sans select-none relative">
-      {/* Right Sidebar (approx 30% width, min 340px, max 420px) */}
-      <div className="w-[30%] min-w-[340px] max-w-[420px] h-full relative z-20 flex-shrink-0">
-        <TacticalSidebar
-          assets={filteredAssets}
-          selectedAssetId={selectedAssetId}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedAgeFilter={selectedAgeFilter}
-          onAgeFilterChange={setSelectedAgeFilter}
-          onSelectAsset={(id) => {
-            setSelectedAssetId(id);
-            setShowNationalRadar(false);
-          }}
-          isProcessing={isProcessing}
-          agentStatus={agentStatus}
-          selectedDayIndex={selectedDayIndex}
-          onSelectDayIndex={setSelectedDayIndex}
-          onOpenAgentModal={() => setIsAgentModalOpen(true)}
-          onOpenChatBot={() => setIsChatBotOpen(true)}
-        />
-      </div>
+  const RAIL_TABS = [
+    { id: 'trails', icon: Mountain, label: 'מסלולים' },
+    { id: 'map', icon: Map, label: 'מפה' },
+    { id: 'settings', icon: Settings, label: 'הגדרות' },
+  ];
 
-      {/* Main Map Area (approx 70% width) */}
-      <div className="flex-1 h-full relative z-10">
+  return (
+    <div className="w-screen h-screen flex flex-col bg-brand-deep text-zinc-100 overflow-hidden font-body select-none relative">
+      {/* ── Full-Width Map (100% Screen) ─────────────────── */}
+      <div className="w-full h-full relative z-10">
         <TacticalMap
           assets={filteredAssets}
           activeRoute={activeRoute}
@@ -269,14 +249,14 @@ export default function App() {
 
         {/* Active AI Recommendation Filter Banner (Top Center on Map) */}
         {recommendedAssetIds && recommendedAssetIds.length > 0 && (
-          <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[1000] bg-[#0c0e14]/96 border border-emerald-500/60 py-2 px-4 rounded-full shadow-2xl backdrop-blur-2xl flex items-center gap-3 text-xs font-bold text-white animate-fade-in pointer-events-auto">
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <Sparkles className="w-4 h-4 animate-spin-slow text-emerald-400" />
+          <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[1000] glass-panel py-2.5 px-5 rounded-full shadow-2xl flex items-center gap-3 text-xs font-bold text-white pointer-events-auto" style={{ borderColor: 'var(--border-accent)' }}>
+            <span className="flex items-center gap-1.5 text-accent">
+              <Sparkles className="w-4 h-4 animate-spin-slow" />
               <span>מציג {filteredAssets.length} מסלולים מומלצים ע״י סוכן הטיולים</span>
             </span>
             <button
               onClick={() => setRecommendedAssetIds(null)}
-              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white px-2.5 py-1 rounded-full text-[11px] transition flex items-center gap-1 border border-zinc-700 shadow"
+              className="bg-brand-surface hover:bg-brand-card text-zinc-300 hover:text-white px-3 py-1 rounded-full text-[11px] transition flex items-center gap-1 border border-white/10 shadow"
             >
               <span>הצג את כל האתרים</span>
               <span>↺</span>
@@ -284,19 +264,35 @@ export default function App() {
           </div>
         )}
 
-        {/* Floating AI Agent Trigger Button (Bottom-Left on Map) */}
-        <button
-          onClick={() => setIsChatBotOpen(true)}
-          title="פתח את סוכן הטיולים החכם"
-          className="absolute bottom-6 left-6 z-[1000] bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-xs sm:text-sm border border-emerald-400/50 backdrop-blur-2xl transition-all group pointer-events-auto"
-        >
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping"></span>
-          <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform" />
-          <div className="text-right leading-tight">
-            <div>שאל את סוכן הטיולים 🧭</div>
-            <div className="text-[10px] text-emerald-200 font-normal">תכנון מסלולים מותאם אישית</div>
-          </div>
-        </button>
+        {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
+        <div className="absolute bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
+          {/* Main Chatbot Trigger */}
+          <button
+            onClick={() => setIsChatBotOpen(true)}
+            title="פתח את סוכן הטיולים החכם"
+            className="bg-gradient-to-r from-teal-600 via-accent-dim to-teal-700 hover:from-teal-500 hover:to-accent active:scale-95 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-xs sm:text-sm border border-accent/50 backdrop-blur-2xl transition-all group"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-accent-light animate-ping" />
+            <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+            <div className="text-right leading-tight">
+              <div>שאל את סוכן הטיולים 🧭</div>
+              <div className="text-[10px] text-teal-200 font-normal">תכנון מסלולים מותאם אישית</div>
+            </div>
+          </button>
+
+          {/* Agent Brain & Crisis Simulations Modal Trigger */}
+          <button
+            onClick={() => setIsAgentModalOpen(true)}
+            title="מוח הסוכן ותרחישי חירום"
+            className="h-[52px] px-3.5 rounded-2xl glass-panel hover:bg-white/10 text-accent flex items-center gap-2 border border-accent/30 shadow-2xl transition active:scale-95 text-xs font-bold"
+          >
+            <div className="relative">
+              <Sparkles className="w-5 h-5" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
+            </div>
+            <span className="hidden sm:inline">מוח הסוכן</span>
+          </button>
+        </div>
       </div>
 
       {/* Popup 1: Agent Intelligence & Operations Modal */}

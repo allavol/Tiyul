@@ -2,49 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════
+   Surfline-Style Dark Editorial Design System
+   Palette: Deep Charcoal + Teal/Cyan Accent
+   ═══════════════════════════════════════════════════════════════ */
+
 @layer base {
+  :root {
+    --bg-deep: #1c1c21;
+    --bg-card: #222228;
+    --bg-surface: #2a2a31;
+    --bg-rail: #18181c;
+    --accent: #2DD4BF;
+    --accent-dim: #14B8A6;
+    --accent-glow: rgba(45, 212, 191, 0.15);
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-accent: rgba(45, 212, 191, 0.3);
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+  }
+
   body {
-    background-color: #121215;
-    color: #f4f4f5;
-    font-family: 'Heebo', 'Inter', sans-serif;
+    background-color: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Heebo', sans-serif;
   }
 }
 
-/* Leaflet Container standard setup */
+/* ─── Leaflet Container ────────────────────────────────────── */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background-color: #121215 !important;
+  background-color: var(--bg-deep) !important;
 }
 
-/* Ensure Leaflet divIcon containers have clean transparent backgrounds and no stray margins */
+/* Ensure Leaflet divIcon containers have clean transparent backgrounds */
 .leaflet-div-icon.reference-badge-pin {
   background: transparent !important;
   border: none !important;
 }
 
-/* Dark mode tile styling with Hebrew text clarity */
+/* ─── Dark Map Tiles (warmer charcoal, less blue) ──────────── */
 .dark-map-tiles {
-  filter: brightness(0.68) invert(1) contrast(1.7) hue-rotate(200deg) saturate(0.15) !important;
+  filter: brightness(0.62) invert(1) contrast(1.8) hue-rotate(190deg) saturate(0.12) !important;
 }
 
-/* Custom scrollbar for dark slate/zinc mode */
+/* ─── Custom Scrollbar (Teal Accent on Dark Track) ─────────── */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #121215;
+  background: var(--bg-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #33333a;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: var(--accent-dim);
 }
 
-/* Floating Card Animation */
+/* ─── No-Scrollbar Utility ─────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─── Animations ───────────────────────────────────────────── */
 @keyframes slideUpFade {
   from {
     opacity: 0;
@@ -58,4 +87,148 @@
 
 .animate-floating-card {
   animation: slideUpFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* ─── Icon Rail ────────────────────────────────────────────── */
+.icon-rail {
+  background: var(--bg-rail);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.icon-rail-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  color: #71717a;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+}
+
+.icon-rail-btn:hover {
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.icon-rail-btn.active {
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+
+/* ─── Editorial Card Hover ─────────────────────────────────── */
+.editorial-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.editorial-card:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-surface);
+}
+
+.editorial-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(45, 212, 191, 0.12);
+}
+
+/* ─── Circular Data Badge (like Surfline "18", "12", "23") ── */
+.data-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.data-badge.teal {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.data-badge.dark {
+  background: #33333a;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary);
+}
+
+.data-badge.alert {
+  background: #dc2626;
+  border-color: #ef4444;
+}
+
+/* ─── Teal Pill / Chip ─────────────────────────────────────── */
+.teal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border-accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.teal-chip:hover {
+  background: rgba(45, 212, 191, 0.2);
+  border-color: var(--accent);
+}
+
+.teal-chip.active {
+  background: var(--accent);
+  color: #0f0f12;
+  border-color: var(--accent);
+  font-weight: 800;
+}
+
+/* ─── Glass Panel ──────────────────────────────────────────── */
+.glass-panel {
+  background: rgba(28, 28, 33, 0.92);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ─── Leaflet Zoom Control Override ────────────────────────── */
+.leaflet-control-zoom a {
+  background: var(--bg-card) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-subtle) !important;
+  border-radius: 8px !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--bg-surface) !important;
+  color: var(--accent) !important;
 }

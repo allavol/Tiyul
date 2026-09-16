@@ -144,26 +144,26 @@ export default function AgentChatBot({
   if (!isOpen) return null;
 
   return (
-    /* Non-blocking Floating Widget docked on the map (leaves the entire map visible and interactive) */
-    <div className="fixed bottom-5 left-5 z-[1200] w-[420px] max-w-[calc(100vw-30px)] h-[580px] max-h-[calc(100vh-80px)] bg-[#0c0e14]/96 border border-white/15 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 backdrop-blur-2xl animate-floating-card font-sans select-none pointer-events-auto">
+    /* Mobile & Desktop Responsive Floating Chatbot Widget */
+    <div className="fixed bottom-2 left-2 right-2 sm:bottom-5 sm:right-5 sm:left-auto sm:w-[420px] h-[520px] sm:h-[580px] max-h-[85vh] z-[1200] glass-panel rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 animate-floating-card font-body select-none pointer-events-auto" style={{ borderColor: 'var(--border-accent)' }}>
       {/* Top Header */}
-      <div className="p-4 border-b border-zinc-800/80 bg-zinc-900/60 flex items-center justify-between gap-3">
+      <div className="p-4 border-b border-white/[0.06] bg-brand-card/60 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-950/50">
+            <div className="w-9 h-9 rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent shadow-lg">
               <Compass className="w-5 h-5 animate-spin-slow" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-sm text-white tracking-wide">
-                  סוכן הטיולים החכם
+                <h3 className="font-black text-sm text-white tracking-tight font-display">
+                  סוכן הטיולים
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[9.5px] font-mono font-bold text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded-full border border-emerald-800/60">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                  AI Guide
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-accent bg-accent/[0.08] px-1.5 py-0.5 rounded-full border border-accent/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
+                  AI GUIDE
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400 font-light">
-                תכנון מסלולים מונחה בטיחות ונתוני Tomorrow.io
+              <p className="text-[10px] text-zinc-500 font-light">
+                תכנון מסלולים מונחה בטיחות ונתוני שטח
               </p>
             </div>
           </div>
@@ -172,14 +172,14 @@ export default function AgentChatBot({
             <button
               onClick={handleReset}
               title="איפוס שיחה"
-              className="w-8 h-8 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 flex items-center justify-center transition"
+              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-accent flex items-center justify-center transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onClose}
               title="סגור"
-              className="w-8 h-8 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 flex items-center justify-center transition"
+              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200 flex items-center justify-center transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -187,7 +187,7 @@ export default function AgentChatBot({
         </div>
 
         {/* Chat Stream */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs no-scrollbar">
           {messages.map((msg) => {
             const isBot = msg.sender === 'bot';
 
@@ -200,8 +200,8 @@ export default function AgentChatBot({
                 <div
                   className={`max-w-[88%] rounded-2xl p-3.5 leading-relaxed ${
                     isBot
-                      ? 'bg-zinc-900/90 text-zinc-200 border border-zinc-800/90 shadow-md'
-                      : 'bg-emerald-600 text-white font-medium shadow-md'
+                      ? 'bg-brand-card text-zinc-200 border border-white/[0.06] shadow-md'
+                      : 'bg-accent text-brand-deep font-semibold shadow-md'
                   }`}
                 >
                   <div className="whitespace-pre-line text-[12.5px]">
@@ -210,14 +210,14 @@ export default function AgentChatBot({
 
                   {/* Tool Execution Badge */}
                   {msg.toolActivity && (
-                    <div className="mt-2.5 pt-2 border-t border-zinc-800 text-[10px] text-emerald-400 font-mono flex items-center gap-1.5">
+                    <div className="mt-2.5 pt-2 border-t border-white/[0.06] text-[10px] text-accent font-mono flex items-center gap-1.5">
                       <Radio className="w-3 h-3 animate-pulse" />
                       <span>{msg.toolActivity}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Rich Graphical Proposals (הצעות גרפיות על המסך) */}
+                {/* Rich Graphical Proposals */}
                 {msg.proposals && msg.proposals.length > 0 && (
                   <div className="w-full space-y-2.5 my-1">
                     {msg.proposals.map((prop) => {
@@ -227,56 +227,57 @@ export default function AgentChatBot({
                       return (
                         <div
                           key={prop.id}
-                          className="w-full bg-[#141722]/90 border border-emerald-500/30 hover:border-emerald-400/70 p-3.5 rounded-2xl shadow-xl transition-all duration-200 space-y-2.5 group"
+                          className="w-full editorial-card p-3.5 space-y-2.5 group"
+                          style={{ borderColor: 'var(--border-accent)' }}
                         >
                           {/* Card Header */}
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-base">{getCategoryIconChar(prop)}</span>
-                                <h4 className="text-sm font-black text-white group-hover:text-emerald-300 transition-colors">
+                                <h4 className="text-sm font-black text-white group-hover:text-accent transition-colors font-display">
                                   {prop.name}
                                 </h4>
                               </div>
-                              <div className="flex items-center gap-1.5 text-[10.5px] text-zinc-400 mt-0.5">
-                                <span>{prop.region}</span>
-                                <span>•</span>
-                                <span className="font-mono text-emerald-400 font-bold">
+                              <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
+                                <span className="text-accent/70 font-semibold uppercase tracking-wider">{prop.region}</span>
+                                <span className="text-zinc-600">•</span>
+                                <span className="font-mono text-accent/60 font-bold">
                                   {prop.authority_id}
                                 </span>
                               </div>
                             </div>
 
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${ageBadge.color}`}>
+                            <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold ${ageBadge.color}`}>
                               {ageBadge.icon} {ageBadge.label}
                             </span>
                           </div>
 
-                          {/* Weather & Climate Pill from Tomorrow.io */}
-                          <div className="grid grid-cols-2 gap-1.5 text-[11px] bg-black/40 p-2 rounded-xl border border-white/5">
+                          {/* Weather & Climate Pill */}
+                          <div className="grid grid-cols-2 gap-1.5 text-[11px] bg-brand-deep/60 p-2 rounded-xl border border-white/[0.04]">
                             <div className="flex items-center gap-1.5 text-amber-300">
                               <Sun className="w-3.5 h-3.5 flex-shrink-0" />
                               <span className="font-bold">{prop.weather.temp}</span>
-                              <span className="text-[9.5px] text-zinc-400 truncate">
+                              <span className="text-[9px] text-zinc-500 truncate">
                                 ({prop.weather.conditions})
                               </span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-cyan-300">
+                            <div className="flex items-center gap-1.5 text-accent">
                               <Droplets className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-300 truncate">
+                              <span className="text-[10px] text-zinc-400 truncate">
                                 {prop.weather.heatLoad}
                               </span>
                             </div>
                           </div>
 
                           {/* XAI Explainability Rationale */}
-                          <p className="text-[11px] text-zinc-300 bg-emerald-950/30 border border-emerald-900/40 p-2 rounded-xl leading-snug">
+                          <p className="text-[11px] text-zinc-300 bg-accent/[0.05] border border-accent/10 p-2 rounded-xl leading-snug">
                             💡 {prop.matchRationale}
                           </p>
 
                           {/* Water Advisory if any */}
                           {prop.waterAdvisory && (
-                            <div className="flex items-center gap-1.5 text-[10.5px] text-amber-300 bg-amber-950/40 border border-amber-800/50 p-2 rounded-xl">
+                            <div className="flex items-center gap-1.5 text-[10px] text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
                               <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                               <span>{prop.waterAdvisory.title}</span>
                             </div>
@@ -289,7 +290,7 @@ export default function AgentChatBot({
                                 onSelectSite(fullAsset);
                               }
                             }}
-                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-emerald-950/60 transition"
+                            className="w-full py-2 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition"
                           >
                             <MapPin className="w-3.5 h-3.5" />
                             <span>הצג מסלול ונתונים במפה 🗺️</span>
@@ -308,7 +309,8 @@ export default function AgentChatBot({
                         key={idx}
                         onClick={() => handleSendMessage(opt.value)}
                         disabled={isProcessing}
-                        className="text-[11px] bg-zinc-800/80 hover:bg-emerald-950/80 hover:text-emerald-300 hover:border-emerald-700/80 border border-zinc-700/70 text-zinc-300 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm text-right"
+                        className="teal-chip text-right"
+                        style={{ fontSize: '11px' }}
                       >
                         {opt.label}
                       </button>
@@ -321,9 +323,9 @@ export default function AgentChatBot({
 
           {/* Thinking Indicator */}
           {isProcessing && (
-            <div className="flex items-center gap-2 text-zinc-400 text-xs bg-zinc-900/80 p-3 rounded-2xl w-fit border border-zinc-800 animate-pulse">
-              <Sparkles className="w-4 h-4 text-emerald-400 animate-spin" />
-              <span>הסוכן מעבד את הבקשה ומתשאל את Tomorrow.io...</span>
+            <div className="flex items-center gap-2 text-zinc-400 text-xs bg-brand-card p-3 rounded-2xl w-fit border border-white/[0.06] animate-pulse">
+              <Sparkles className="w-4 h-4 text-accent animate-spin" />
+              <span>הסוכן מעבד את הבקשה...</span>
             </div>
           )}
 
@@ -331,13 +333,13 @@ export default function AgentChatBot({
         </div>
 
         {/* Input Bar */}
-        <div className="p-3 border-t border-zinc-800/80 bg-zinc-900/80">
+        <div className="p-3 border-t border-white/[0.06] bg-brand-card/60">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="flex items-center gap-2 bg-zinc-950 border border-zinc-700/80 rounded-2xl px-3 py-1.5 focus-within:border-emerald-500 transition-colors shadow-inner"
+            className="flex items-center gap-2 bg-brand-deep border border-white/[0.08] rounded-2xl px-3 py-1.5 focus-within:border-accent/40 transition-colors shadow-inner"
           >
             <input
               type="text"
@@ -345,19 +347,19 @@ export default function AgentChatBot({
               onChange={(e) => setInputVal(e.target.value)}
               placeholder="כתבו בקשה חופשית... (למשל: טיול מים מחר בצפון לגיל 4)"
               disabled={isProcessing}
-              className="flex-1 bg-transparent text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none py-1.5 text-right font-sans"
+              className="flex-1 bg-transparent text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none py-1.5 text-right font-body"
             />
             <button
               type="submit"
               disabled={!inputVal.trim() || isProcessing}
-              className="w-8 h-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 text-white flex items-center justify-center transition flex-shrink-0 shadow"
+              className="w-8 h-8 rounded-xl bg-accent hover:bg-accent-light disabled:opacity-30 text-brand-deep flex items-center justify-center transition flex-shrink-0 shadow font-bold"
             >
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
-          <div className="flex items-center justify-between text-[10px] text-zinc-500 mt-2 px-1">
-            <span>🛡️ שיחה מאובטחת • נתונים מאומתים מ-INPA ו-Tomorrow.io</span>
-            <span>$0 Total Cost</span>
+          <div className="flex items-center justify-between text-[9px] text-zinc-600 mt-2 px-1">
+            <span>🛡️ שיחה מאובטחת • נתונים מאומתים מ-INPA</span>
+            <span className="text-accent/50 font-mono">$0 Total Cost</span>
           </div>
         </div>
 

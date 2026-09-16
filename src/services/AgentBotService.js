@@ -103,14 +103,14 @@ export class AgentBotService {
       updated.timing = 'today';
       updated.timingLabel = 'היום';
       updated.dayIndex = 0;
-    } else if (text.includes('שבת') || text.includes('סופ"ש') || text.includes('סוף שבוע') || text.includes('שישי')) {
+    } else if (text.includes('שישי') || text.includes('שבת') || text.includes('סופ"ש') || text.includes('סוף שבוע')) {
       updated.timing = 'weekend';
-      updated.timingLabel = 'סוף השבוע';
+      updated.timingLabel = 'שישי / סוף השבוע';
       updated.dayIndex = 3;
     }
 
     // 2. Region extraction
-    if (text.includes('צפון') || text.includes('גליל') || text.includes('גולן') || text.includes('כרמל') || text.includes('עמקים') || text.includes('חרמון') || text.includes('חיפה')) {
+    if (text.includes('צפון') || text.includes('גליל') || text.includes('גולן') || text.includes('כנרת') || text.includes('כרמל') || text.includes('עמקים') || text.includes('חרמון') || text.includes('חיפה')) {
       updated.region = 'north';
       updated.regionLabel = 'צפון (גליל וגולן)';
     } else if (text.includes('מרכז') || text.includes('שרון') || text.includes('תל אביב') || text.includes('חוף') || text.includes('ירקון') || text.includes('פולג') || text.includes('חדרה')) {
@@ -124,8 +124,13 @@ export class AgentBotService {
       updated.regionLabel = 'דרום, נגב וים המלח';
     }
 
-    // 3. Feature extraction
-    if (text.includes('הליכה במים') || text.includes('בתוך המים') || text.includes('רטוב') || text.includes('נחל זורם') || text.includes('מג\'רסה') || text.includes('זאכי') || text.includes('שניר')) {
+    // 3. Feature extraction (with typo resilience e.g. הלחכה -> הליכה, במים -> water)
+    if (
+      text.includes('הליכה במים') || text.includes('הלחכה במים') || text.includes('בתוך המים') ||
+      text.includes('מסלול מים') || text.includes('מים') || text.includes('רטוב') || text.includes('נחל זורם') ||
+      text.includes('מג\'רסה') || text.includes('מג׳רסה') || text.includes('מגרסה') ||
+      text.includes('דליות') || text.includes('זאכי') || text.includes('שניר') || text.includes('תל דן')
+    ) {
       updated.feature = 'water';
       updated.featureLabel = 'הליכה בתוך המים';
     } else if (text.includes('מעיין') || text.includes('בריכה') || text.includes('שכשוך') || text.includes('טבילה')) {
@@ -145,19 +150,41 @@ export class AgentBotService {
       updated.featureLabel = 'תצפיות ונוף';
     }
 
-    // 4. Youngest age extraction
-    if (text.includes('תינוק') || text.includes('עגלה') || text.includes('שנה') || text.includes('שנתיים') || text.includes('0+') || text.includes('חודשים') || text.includes('פעוט')) {
+    // 4. Youngest age extraction (with typo resilience: כיל/יד -> גיל, matches '4', '7', '10', '0')
+    const ageMatch = text.match(/(?:גיל|כיל|יד|גילאי|בן|בת|ילדים|ילד)?\s*(?:מינימלי|של)?\s*(?:גיל|כיל|יד)?\s*(\d+)/);
+    if (ageMatch && ageMatch[1]) {
+      const extractedAge = parseInt(ageMatch[1], 10);
+      if (extractedAge === 0 || text.includes('עגלה') || text.includes('תינוק')) {
+        updated.minAge = 0;
+        updated.minAgeLabel = '0+ (תינוקות ועגלות)';
+      } else if (extractedAge <= 6) {
+        updated.minAge = 4;
+        updated.minAgeLabel = '4+ (ילדים קטנים)';
+      } else if (extractedAge <= 9) {
+        updated.minAge = 7;
+        updated.minAgeLabel = '7+ (ילדים בוגרים)';
+      } else {
+        updated.minAge = 10;
+        updated.minAgeLabel = '10+ (נוער ומבוגרים)';
+      }
+    } else if (text.includes('תינוק') || text.includes('עגלה') || text.includes('0+')) {
       updated.minAge = 0;
       updated.minAgeLabel = '0+ (תינוקות ועגלות)';
-    } else if (text.includes('קטנים') || text.includes('3') || text.includes('4') || text.includes('5') || text.includes('6') || text.includes('גן')) {
+    } else if (text.includes('קטנים') || text.includes('גן')) {
       updated.minAge = 4;
       updated.minAgeLabel = '4+ (ילדים קטנים)';
-    } else if (text.includes('7') || text.includes('8') || text.includes('9') || text.includes('יסודי')) {
+    } else if (text.includes('יסודי') || text.includes('בוגרים')) {
       updated.minAge = 7;
       updated.minAgeLabel = '7+ (ילדים בוגרים)';
-    } else if (text.includes('10') || text.includes('12') || text.includes('נוער') || text.includes('מבוגרים') || text.includes('גדולים') || text.includes('ללא ילדים')) {
+    } else if (text.includes('נוער') || text.includes('מבוגרים')) {
       updated.minAge = 10;
       updated.minAgeLabel = '10+ (נוער ומבוגרים)';
+    }
+
+    // If timing, feature and minAge are supplied but region was omitted in query, search nationwide
+    if (updated.timing && updated.feature && (updated.minAge !== null && updated.minAge !== undefined) && !updated.region) {
+      updated.region = 'all';
+      updated.regionLabel = 'כל הארץ';
     }
 
     return updated;
@@ -184,13 +211,32 @@ export class AgentBotService {
     }
 
     const text = message.toLowerCase();
+    const currentState = sessionState || this.getInitialState();
+
+    // 1.2 Handle Explicit Parameter Reset Buttons ("שנה אזור", "בדוק תאריך אחר", "שנה גיל מטייל")
+    if (text.includes('שנה אזור') || text.includes('אזור אחר') || text.includes('איזור אחר')) {
+      const resetState = { ...currentState, region: null, regionLabel: null };
+      return this.generateClarificationResponse('region', resetState, ['region']);
+    }
+    if (text.includes('תאריך אחר') || text.includes('שנה תאריך') || text.includes('יום אחר') || text.includes('שנה מועד') || text.includes('בדוק תאריך')) {
+      const resetState = { ...currentState, timing: null, timingLabel: null, dayIndex: 0 };
+      return this.generateClarificationResponse('timing', resetState, ['timing']);
+    }
+    if (text.includes('שנה גיל') || text.includes('גיל אחר') || text.includes('גילאי הילדים') || text.includes('שנה גילאי')) {
+      const resetState = { ...currentState, minAge: null, minAgeLabel: null };
+      return this.generateClarificationResponse('minAge', resetState, ['minAge']);
+    }
+    if (text.includes('שנה סגנון') || text.includes('מסלול אחר') || text.includes('סגנון אחר')) {
+      const resetState = { ...currentState, feature: null, featureLabel: null };
+      return this.generateClarificationResponse('feature', resetState, ['feature']);
+    }
 
     // 1.5 Check if user triggered an interactive What-If Crisis Scenario
     if (text.includes('מה אם') || text.includes('what if') || text.includes('תרחיש') || text.includes('שיטפון') || text.includes('44°c') || text.includes('חום קיצוני') || text.includes('זיהום')) {
       return this.handleWhatIfScenario(message, sessionState);
     }
 
-    const state = this.extractParameters(message, sessionState || this.getInitialState());
+    const state = this.extractParameters(message, currentState);
 
     // 2. Identify Missing Mandatory Parameters
     const missing = [];
@@ -205,8 +251,8 @@ export class AgentBotService {
       return this.generateClarificationResponse(nextMissing, state, missing);
     }
 
-    // 3. All 4 parameters are present! Run Tool Execution & Recommendation Flow
-    return await this.generateRecommendations(state);
+    // 3. All parameters present (or nationwide)! Run Tool Execution & Recommendation Flow
+    return await this.generateRecommendations(state, message);
   }
 
   /**
@@ -339,14 +385,15 @@ export class AgentBotService {
   /**
    * Search, filter, query Tomorrow.io and build rich recommendations
    */
-  static async generateRecommendations(state) {
+  static async generateRecommendations(state, rawMessage = '') {
     const dayIndex = state.dayIndex || 0;
     const targetAge = Number(state.minAge) || 4;
+    const rawText = (rawMessage || '').toLowerCase();
 
     // 1. Filter database by region and age
     let candidates = assetsData.filter((site) => {
-      // Region match
-      if (state.region) {
+      // Region match (supports 'all' for nationwide search when region was unstated)
+      if (state.region && state.region !== 'all') {
         if (state.region === 'north' && site.region_group !== 'north') return false;
         if (state.region === 'center' && site.region_group !== 'center') return false;
         if (state.region === 'jerusalem' && site.region_group !== 'jerusalem') return false;
@@ -362,7 +409,7 @@ export class AgentBotService {
       return true;
     });
 
-    // 2. Rank candidates by feature preference
+    // 2. Rank candidates by feature preference and explicit query keyword match (e.g. דליות, מג'רסה)
     candidates.sort((a, b) => {
       const aTypes = (a.type || []).join(' ') + ' ' + (a.name || '');
       const bTypes = (b.type || []).join(' ') + ' ' + (b.name || '');
@@ -370,9 +417,15 @@ export class AgentBotService {
       let scoreA = 0;
       let scoreB = 0;
 
+      // Explicit keyword boost if user mentioned site/stream name (e.g. דליות / מג'רסה)
+      if (rawText.includes('דליות') || rawText.includes('מג\'רסה') || rawText.includes('מג׳רסה') || rawText.includes('מגרסה')) {
+        if (a.name.includes('דליות') || a.name.includes('מג׳רסה') || a.name.includes('מג\'רסה')) scoreA += 25;
+        if (b.name.includes('דליות') || b.name.includes('מג׳רסה') || b.name.includes('מג\'רסה')) scoreB += 25;
+      }
+
       if (state.feature === 'water' || state.feature === 'spring') {
-        if (aTypes.includes('מים') || aTypes.includes('בריכות') || aTypes.includes('מעיין') || aTypes.includes('שניר') || aTypes.includes('דן')) scoreA += 5;
-        if (bTypes.includes('מים') || bTypes.includes('בריכות') || bTypes.includes('מעיין') || bTypes.includes('שניר') || bTypes.includes('דן')) scoreB += 5;
+        if (aTypes.includes('מים') || aTypes.includes('בריכות') || aTypes.includes('מעיין') || aTypes.includes('שניר') || aTypes.includes('דן') || aTypes.includes('דליות') || aTypes.includes('מג׳רסה')) scoreA += 5;
+        if (bTypes.includes('מים') || bTypes.includes('בריכות') || bTypes.includes('מעיין') || bTypes.includes('שניר') || bTypes.includes('דן') || bTypes.includes('דליות') || bTypes.includes('מג׳רסה')) scoreB += 5;
       }
       if (state.feature === 'shade') {
         if (aTypes.includes('חורש') || aTypes.includes('יער') || aTypes.includes('טבע') || aTypes.includes('כרמל') || aTypes.includes('מירון')) scoreA += 5;
