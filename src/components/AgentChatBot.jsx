@@ -135,12 +135,10 @@ export default function AgentChatBot({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-end sm:p-5 bg-black/60 backdrop-blur-sm animate-fade-in font-sans select-none pointer-events-auto">
-      {/* Main Drawer Container */}
-      <div className="w-full sm:w-[480px] h-full sm:h-[92vh] bg-[#0c0e14]/98 border-y sm:border sm:border-white/15 sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 backdrop-blur-2xl relative">
-        
-        {/* Top Header */}
-        <div className="p-4 border-b border-zinc-800/80 bg-zinc-900/60 flex items-center justify-between gap-3">
+    /* Non-blocking Floating Widget docked on the map (leaves the entire map visible and interactive) */
+    <div className="fixed bottom-5 left-5 z-[1200] w-[420px] max-w-[calc(100vw-30px)] h-[580px] max-h-[calc(100vh-80px)] bg-[#0c0e14]/96 border border-white/15 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 backdrop-blur-2xl animate-floating-card font-sans select-none pointer-events-auto">
+      {/* Top Header */}
+      <div className="p-4 border-b border-zinc-800/80 bg-zinc-900/60 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-950/50">
               <Compass className="w-5 h-5 animate-spin-slow" />
@@ -355,6 +353,5 @@ export default function AgentChatBot({
         </div>
 
       </div>
-    </div>
   );
 }
