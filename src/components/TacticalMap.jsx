@@ -79,8 +79,8 @@ export default function TacticalMap({
       const borderGlow = isSelected ? 'border: 2px solid #34d399; box-shadow: 0 0 14px rgba(52, 211, 153, 0.6);' : 'border: 2px solid #27272a; box-shadow: 0 4px 10px rgba(0,0,0,0.5);';
 
       const iconHtml = `
-        <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%);">
-          <!-- White Circular Badge -->
+        <div style="width: 40px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; pointer-events: auto;">
+          <!-- White Circular Badge (32x32) -->
           <div style="
             width: 32px;
             height: 32px;
@@ -98,7 +98,7 @@ export default function TacticalMap({
 
           <!-- Score Pill Attached Below -->
           <div style="
-            margin-top: 3px;
+            margin-top: 2px;
             background-color: ${scoreBg};
             color: ${scoreColor};
             border: 1px solid #3f3f46;
@@ -122,8 +122,8 @@ export default function TacticalMap({
       const customIcon = L.divIcon({
         className: 'reference-badge-pin',
         html: iconHtml,
-        iconSize: [40, 52],
-        iconAnchor: [20, 26],
+        iconSize: [40, 50],
+        iconAnchor: [20, 16], // Anchored with sub-pixel precision to center of the 32px circle
       });
 
       const marker = L.marker([asset.lat, asset.lng], { icon: customIcon }).addTo(map);

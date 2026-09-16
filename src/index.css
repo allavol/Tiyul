@@ -17,6 +17,12 @@
   background-color: #121215 !important;
 }
 
+/* Ensure Leaflet divIcon containers have clean transparent backgrounds and no stray margins */
+.leaflet-div-icon.reference-badge-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
 /* Dark mode tile styling with Hebrew text clarity */
 .dark-map-tiles {
   filter: brightness(0.68) invert(1) contrast(1.7) hue-rotate(200deg) saturate(0.15) !important;
