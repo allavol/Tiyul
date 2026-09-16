@@ -32,9 +32,15 @@ export default function App() {
   const [showNationalRadar, setShowNationalRadar] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const [isChatBotOpen, setIsChatBotOpen] = useState(false);
+  const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
 
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
+    // 0. If AI Bot recommendations are active, display ONLY them!
+    if (recommendedAssetIds && recommendedAssetIds.length > 0) {
+      return assets.filter((asset) => recommendedAssetIds.includes(asset.id));
+    }
+
     let list = assets.filter((asset) => {
       // 1. Search query filter
       if (searchQuery.trim()) {
@@ -82,7 +88,7 @@ export default function App() {
     list.sort((a, b) => (a.status === 'CRITICAL' || a.status === 'REROUTED' ? -1 : 1));
 
     return list;
-  }, [assets, searchQuery, selectedCategory, selectedAgeFilter]);
+  }, [assets, searchQuery, selectedCategory, selectedAgeFilter, recommendedAssetIds]);
 
   // 1. Simulate Flood Trigger
   const handleSimulateFlood = async () => {
@@ -244,6 +250,23 @@ export default function App() {
           onCloseNationalRadar={() => setShowNationalRadar(false)}
         />
 
+        {/* Active AI Recommendation Filter Banner (Top Center on Map) */}
+        {recommendedAssetIds && recommendedAssetIds.length > 0 && (
+          <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[1000] bg-[#0c0e14]/96 border border-emerald-500/60 py-2 px-4 rounded-full shadow-2xl backdrop-blur-2xl flex items-center gap-3 text-xs font-bold text-white animate-fade-in pointer-events-auto">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <Sparkles className="w-4 h-4 animate-spin-slow text-emerald-400" />
+              <span>מציג {filteredAssets.length} מסלולים מומלצים ע״י סוכן הטיולים</span>
+            </span>
+            <button
+              onClick={() => setRecommendedAssetIds(null)}
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white px-2.5 py-1 rounded-full text-[11px] transition flex items-center gap-1 border border-zinc-700 shadow"
+            >
+              <span>הצג את כל האתרים</span>
+              <span>↺</span>
+            </button>
+          </div>
+        )}
+
         {/* Floating AI Agent Trigger Button (Bottom-Left on Map) */}
         <button
           onClick={() => setIsChatBotOpen(true)}
@@ -275,9 +298,15 @@ export default function App() {
       <AgentChatBot
         isOpen={isChatBotOpen}
         onClose={() => setIsChatBotOpen(false)}
+        onProposalsUpdate={(proposals) => {
+          if (proposals && proposals.length > 0) {
+            setRecommendedAssetIds(proposals.map((p) => p.id));
+          } else {
+            setRecommendedAssetIds(null);
+          }
+        }}
         onSelectSite={(site) => {
           setSelectedAssetId(site.id);
-          setIsChatBotOpen(false);
         }}
         assets={assets}
       />

@@ -134,7 +134,30 @@ export default function TacticalMap({
 
       markersRef.current[asset.id] = marker;
     });
+
+    // If filtered to a small subset (e.g. AI Recommendations 1-5 sites), smoothly focus map on them!
+    if (assets.length > 0 && assets.length <= 6 && !selectedAssetId) {
+      const bounds = L.latLngBounds(assets.map((a) => [a.lat, a.lng]));
+      map.flyToBounds(bounds, {
+        padding: [80, 80],
+        maxZoom: 12,
+        duration: 1.2,
+      });
+    }
   }, [assets, selectedAssetId, onSelectAsset]);
+
+  // Handle flyTo when a single asset is selected
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !selectedAssetId) return;
+
+    const targetAsset = assets.find((a) => a.id === selectedAssetId);
+    if (targetAsset && typeof targetAsset.lat === 'number' && typeof targetAsset.lng === 'number') {
+      map.flyTo([targetAsset.lat, targetAsset.lng], 13, {
+        duration: 1.2,
+      });
+    }
+  }, [selectedAssetId, assets]);
 
   // Mint-Green Routing Line (#34d399) matching the reference design
   useEffect(() => {

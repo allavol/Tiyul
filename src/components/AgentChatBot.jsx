@@ -25,6 +25,7 @@ export default function AgentChatBot({
   isOpen,
   onClose,
   onSelectSite,
+  onProposalsUpdate,
   assets = [],
 }) {
   const [messages, setMessages] = useState([
@@ -93,6 +94,11 @@ export default function AgentChatBot({
       };
 
       setMessages((prev) => [...prev, botMsg]);
+
+      // If recommendations were generated, notify parent map to show ONLY them!
+      if (response.proposals && response.proposals.length > 0 && onProposalsUpdate) {
+        onProposalsUpdate(response.proposals);
+      }
     } catch (err) {
       console.error('Agent bot processing error:', err);
       setMessages((prev) => [
@@ -115,6 +121,9 @@ export default function AgentChatBot({
   // Reset conversation
   const handleReset = () => {
     setSessionState(AgentBotService.getInitialState());
+    if (onProposalsUpdate) {
+      onProposalsUpdate([]);
+    }
     setMessages([
       {
         id: `welcome-${Date.now()}`,
