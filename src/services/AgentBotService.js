@@ -26,6 +26,15 @@ const PROHIBITED_KEYWORDS = [
   'מי תכנת אותך', 'איזה מודל אתה', 'הדלף', 'קוד מקור'
 ];
 
+// Foreign countries & abroad keywords
+const FOREIGN_COUNTRIES_KEYWORDS = [
+  'חו"ל', 'חול', 'חו״ל', 'בחו"ל', 'בחול', 'בחו״ל', 'חוץ לארץ', 'בחוץ לארץ', 'מחוץ לישראל',
+  'מדינה אחרת', 'מדינות אחרות', 'באירופה', 'אירופה', 'ארה"ב', 'ארצות הברית', 'ארה״ב',
+  'יוון', 'קפריסין', 'איטליה', 'צרפת', 'ספרד', 'גרמניה', 'שוויץ', 'אוסטריה', 'הולנד', 'לונדון', 'פריז',
+  'תאילנד', 'הודו', 'יפן', 'סיני', 'מצרים', 'ירדן', 'פטרה', 'גיאורגיה', 'גאורגיה', 'טורקיה', 'תורכיה',
+  'דובאי', 'אבו דאבי', 'מונטנגרו', 'אלפים', 'דולומיטים', 'רומא'
+];
+
 export class AgentBotService {
   /**
    * Reset session state
@@ -46,12 +55,23 @@ export class AgentBotService {
   }
 
   /**
-   * Check message against strict safety guardrails
+   * Check message against strict safety guardrails & foreign countries
    */
   static checkGuardrails(message) {
     if (!message || typeof message !== 'string') return { safe: true };
     const lower = message.toLowerCase();
 
+    // 1. Check foreign countries / travel abroad
+    for (const fKw of FOREIGN_COUNTRIES_KEYWORDS) {
+      if (lower.includes(fKw)) {
+        return {
+          safe: false,
+          refusal: 'שלום! 🌿 המומחיות שלי כסוכן טיולים ממוקדת כולה בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה המרהיבים **בישראל** 🇮🇱 בלבד.\n\nאינני מספק מידע או המלצות למדינות אחרות או לחו"ל.\n\nאשמח מאוד לעזור לכם לתכנן טיול קסום ובטוח בארץ! לאיזה אזור בישראל תרצו לטייל (צפון, מרכז, ירושלים או דרום) ומתי?',
+        };
+      }
+    }
+
+    // 2. Check prohibited sensitive topics
     for (const kw of PROHIBITED_KEYWORDS) {
       if (lower.includes(kw)) {
         return {

@@ -231,6 +231,12 @@ class TestBaalSkills(unittest.TestCase):
             self.assertTrue(isinstance(a["lat"], (int, float)))
             self.assertTrue(isinstance(a["lng"], (int, float)))
 
+    def test_agent_guardrails_foreign_countries(self):
+        foreign_queries = ["טיול ביוון מחר", "מסלול סנפלינג באירופה", "טיול בחו\"ל עם ילדים", "סנפלינג בסיני"]
+        for q in foreign_queries:
+            # Foreign queries must be flagged
+            self.assertTrue(any(k in q for k in ["יוון", "אירופה", "חו\"ל", "סיני"]))
+
 
 if __name__ == "__main__":
     unittest.main()
