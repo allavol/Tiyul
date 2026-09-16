@@ -256,9 +256,55 @@ export class AgentBotService {
   }
 
   /**
-   * Attempt LLM Inference via Ollama / Llama 3 (http://127.0.0.1:11434) or Local LLM Runtime
+   * Attempt LLM Inference via Groq Cloud API (Llama 3.3 70B) or Local Ollama
    */
-  static async callOllamaLLM(prompt, currentState) {
+  static async callOllamaOrGroqLLM(prompt, currentState) {
+    const groqKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) 
+      || (typeof process !== 'undefined' ? process.env?.VITE_GROQ_API_KEY : '');
+
+    // 1. Try Groq Llama 3.3 70B Cloud API if key is available
+    if (groqKey && groqKey !== 'your_groq_api_key_here') {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              {
+                role: 'system',
+                content: `You are Ariel, Principal Spatial AI Hiking Agent for Israel. Analyze user query: "${prompt}". Respond with structured JSON parameters and brief rationale in Hebrew.`
+              },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.2,
+            max_tokens: 300,
+          }),
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const replyText = data.choices?.[0]?.message?.content;
+          return {
+            success: true,
+            response: replyText,
+            model: 'Groq Llama 3.3 70B (Ultra-Fast LLM)',
+          };
+        }
+      } catch (e) {
+        // Fallback gracefully
+      }
+    }
+
+    // 2. Try Local Ollama (127.0.0.1:11434)
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000);
@@ -283,7 +329,7 @@ export class AgentBotService {
       // Offline fallback
     }
 
-    return { success: false, model: 'Ollama / Llama 3 Spatial Agent' };
+    return { success: false, model: 'Groq Llama 3.3 / Ollama Spatial Agent' };
   }
 
   /**
@@ -522,7 +568,7 @@ export class AgentBotService {
 
     const introText = `מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **Tomorrow.io** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️`;
 
-    const llmStatus = await this.callOllamaLLM(rawMessage, state);
+    const llmStatus = await this.callOllamaOrGroqLLM(rawMessage, state);
 
     return {
       text: introText,
