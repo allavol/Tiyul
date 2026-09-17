@@ -145,7 +145,7 @@ export default function AgentChatBot({
 
   return (
     /* Mobile & Desktop Responsive Floating Chatbot Widget */
-    <div className="fixed bottom-2 left-2 right-2 sm:bottom-5 sm:right-5 sm:left-auto sm:w-[420px] h-[520px] sm:h-[580px] max-h-[85vh] z-[1200] glass-panel rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 animate-floating-card font-body select-none pointer-events-auto" style={{ borderColor: 'var(--border-accent)' }}>
+    <div className="fixed inset-3 bottom-16 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[420px] sm:h-[580px] sm:max-h-[85vh] z-[1200] glass-panel rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 animate-floating-card font-body select-none pointer-events-auto" style={{ borderColor: 'var(--border-accent)' }}>
       {/* Top Header */}
       <div className="p-4 border-b border-white/[0.06] bg-brand-card/60 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">

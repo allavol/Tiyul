@@ -5,13 +5,86 @@ import {
   AlertTriangle, 
   Droplets, 
   Sun, 
-  Trees, 
-  Baby, 
-  Wind,
-  Radio
+  ShieldCheck,
+  ShieldAlert,
+  Radio,
+  Baby,
+  Users,
+  Thermometer,
+  CloudRain
 } from 'lucide-react';
 import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar } from '../utils/weatherUtils';
 import { WeatherService } from '../services/WeatherService';
+
+/**
+ * Maps Hebrew type keywords to emoji icons for the "מה יש באתר?" section.
+ */
+const TYPE_ICON_MAP = [
+  { keywords: ['מים', 'מעיין', 'נחל', 'בריכ', 'מפל', 'אגם'], icon: '💧', label: 'מים' },
+  { keywords: ['חוף ים', 'ימי', 'שמורה ימית'], icon: '🏖️', label: 'ים' },
+  { keywords: ['חורש', 'יער', 'אלונים'], icon: '🌲', label: 'חורש/יער' },
+  { keywords: ['מדבר', 'דיונ', 'חולות', 'נווה מדבר'], icon: '🏜️', label: 'מדבר' },
+  { keywords: ['הרים', 'רכס', 'מכתש', 'פסגת', 'מצוק'], icon: '⛰️', label: 'הרים' },
+  { keywords: ['מצפור', 'תצפית', 'נוף', 'דרך נוף'], icon: '👁️', label: 'נוף/תצפית' },
+  { keywords: ['צפרות', 'עופות', 'אגמון'], icon: '🦅', label: 'צפרות' },
+  { keywords: ['ארכיאולוגיה', 'עתיקות', 'מורשת', 'מבצר', 'נבטית', 'כנסיות', 'תל'], icon: '🏛️', label: 'מורשת' },
+  { keywords: ['מערה', 'מערות', 'מחילות'], icon: '🕳️', label: 'מערות' },
+  { keywords: ['פריחה', 'פרחי בר'], icon: '🌸', label: 'פריחה' },
+  { keywords: ['כרמי', 'כרמים', 'חקלאות', 'מטע', 'זיתים'], icon: '🍇', label: 'חקלאות' },
+  { keywords: ['שביל ישראל'], icon: '🥾', label: 'שביל ישראל' },
+  { keywords: ['עגלות', 'מונגש', 'נגיש'], icon: '♿', label: 'נגישות' },
+  { keywords: ['חניון לילה'], icon: '⛺', label: 'לינת שטח' },
+  { keywords: ['קניון'], icon: '🪨', label: 'קניון' },
+  { keywords: ['שלג'], icon: '❄️', label: 'שלג' },
+];
+
+/**
+ * Extracts the unique feature pills from asset.type array.
+ * Returns up to 5 most relevant features with icons.
+ */
+function getFeaturePills(types) {
+  if (!types || types.length === 0) return [];
+
+  const matched = new Set();
+  const pills = [];
+
+  for (const typeStr of types) {
+    const lower = typeStr.toLowerCase();
+    for (const mapping of TYPE_ICON_MAP) {
+      if (matched.has(mapping.label)) continue;
+      if (mapping.keywords.some(kw => lower.includes(kw))) {
+        matched.add(mapping.label);
+        pills.push({ icon: mapping.icon, label: mapping.label });
+        break;
+      }
+    }
+  }
+
+  return pills.slice(0, 5);
+}
+
+/**
+ * Generates the "who is it for" summary line.
+ */
+function getSuitabilitySummary(asset) {
+  const parts = [];
+  
+  if (asset.stroller_accessible) {
+    parts.push('נגיש לעגלות ✓');
+  }
+  
+  if (asset.min_age === 0) {
+    parts.push('מתאים לכל המשפחה');
+  } else if (asset.min_age <= 4) {
+    parts.push('מתאים למשפחות עם ילדים');
+  } else if (asset.min_age <= 7) {
+    parts.push('מתאים לילדים מנוסים');
+  } else {
+    parts.push('למטיילים מנוסים');
+  }
+
+  return { parts };
+}
 
 export default function FloatingMapCard({
   asset,
@@ -28,6 +101,8 @@ export default function FloatingMapCard({
   const waterAdvisory = getWaterAdvisory(asset);
   const ageBadge = getAgeBadge(asset.min_age);
   const categoryIcon = getCategoryIconChar(asset);
+  const featurePills = getFeaturePills(asset.type);
+  const suitability = getSuitabilitySummary(asset);
 
   // Fetch live Tomorrow.io weather when viewing "today" (index 0)
   useEffect(() => {
@@ -74,16 +149,20 @@ export default function FloatingMapCard({
         sourceLabel: selectedDayIndex === 0 ? 'תחזית IMS' : `תחזית ליום ${selectedDayIndex + 1}`,
       };
 
+  const isSafe = effectiveWeather.isTempSafe && effectiveWeather.isRainSafe && (!waterAdvisory || waterAdvisory.level !== 'danger');
+  const isWarning = waterAdvisory && waterAdvisory.level === 'warning';
+
   return (
-    <div className="fixed top-3 left-3 right-3 sm:absolute sm:top-5 sm:left-5 sm:right-auto sm:w-[370px] z-[1300] glass-panel p-4 sm:p-5 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none space-y-3.5 sm:space-y-4 pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
-      {/* ── 1. Editorial Header ─────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-2 border-b border-white/[0.06] pb-3">
+    <div className="fixed top-3 left-3 right-3 sm:absolute sm:top-5 sm:left-5 sm:right-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
+
+      {/* ── Header: Name + Region + Close ────────────────────── */}
+      <div className="p-4 pb-3 flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
           <div className="data-badge teal flex-shrink-0">
             <span className="text-lg">{categoryIcon}</span>
           </div>
           <div className="min-w-0">
-            <h3 className="text-lg font-black text-white truncate leading-tight tracking-tight font-display">
+            <h3 className="text-base font-black text-white truncate leading-tight tracking-tight font-display">
               {asset.name}
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
@@ -104,91 +183,153 @@ export default function FloatingMapCard({
         </button>
       </div>
 
-      {/* ── 2. Water Advisory Banner ────────────────────────────── */}
+      {/* ── Water Advisory Banner (if exists) ─────────────────── */}
       {waterAdvisory && (
-        <div className={`p-2.5 rounded-2xl text-xs flex items-center gap-2 border ${
-          waterAdvisory.level === 'danger'
-            ? 'bg-red-500/10 text-red-200 border-red-500/30'
-            : 'bg-amber-500/10 text-amber-200 border-amber-500/30'
-        }`}>
-          <AlertTriangle size={16} className="flex-shrink-0" />
-          <div className="min-w-0">
-            <strong className="block text-[11px] font-bold">{waterAdvisory.title}</strong>
-            <span className="text-[10px] opacity-90">{waterAdvisory.desc}</span>
+        <div className="mx-4 mb-3">
+          <div className={`p-2.5 rounded-2xl text-xs flex items-center gap-2 border ${
+            waterAdvisory.level === 'danger'
+              ? 'bg-red-500/10 text-red-200 border-red-500/30'
+              : 'bg-amber-500/10 text-amber-200 border-amber-500/30'
+          }`}>
+            <AlertTriangle size={16} className="flex-shrink-0" />
+            <div className="min-w-0">
+              <strong className="block text-[11px] font-bold">{waterAdvisory.title}</strong>
+              <span className="text-[10px] opacity-90">{waterAdvisory.desc}</span>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── 3. Circular Data Badges (Surfline Style) ────────────── */}
-      <div className="flex items-center justify-between px-2">
-        {/* Temp Badge */}
-        <div className="flex flex-col items-center gap-1.5">
-          <div className={`data-badge ${effectiveWeather.isTempSafe ? 'teal' : 'alert'}`}>
-            <span className="text-[12px]">{effectiveWeather.temp.replace('°C', '°')}</span>
-          </div>
-          <span className="text-[9px] text-zinc-500 font-semibold uppercase">חום</span>
+      {/* ═══════════════════════════════════════════════════════ */}
+      {/* SECTION 1: האם בטוח?                                   */}
+      {/* ═══════════════════════════════════════════════════════ */}
+      <div className="mx-4 mb-3 bg-brand-card rounded-2xl border border-white/[0.06] p-3.5 space-y-3">
+        <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">האם בטוח?</h4>
+        
+        {/* Big Status Badge */}
+        <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2.5 text-sm font-black border ${
+          isSafe && !isWarning
+            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+            : isWarning
+              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+              : 'bg-red-500/15 text-red-300 border-red-500/30'
+        }`}>
+          {isSafe && !isWarning ? (
+            <><ShieldCheck size={20} /><span>בטוח לטיול ✓</span></>
+          ) : isWarning ? (
+            <><AlertTriangle size={20} /><span>זהירות — בדקו אזהרות</span></>
+          ) : (
+            <><ShieldAlert size={20} /><span>לא מומלץ כעת ✗</span></>
+          )}
         </div>
 
-        {/* Rain Badge */}
-        <div className="flex flex-col items-center gap-1.5">
-          <div className={`data-badge ${effectiveWeather.isRainSafe ? 'teal' : 'alert'}`}>
-            <Droplets size={14} />
+        {/* Mini Metrics Row */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-2 bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.04]">
+            <Thermometer size={14} className="text-amber-400 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-[10px] text-zinc-500 font-medium">חום</div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.temp}</span>
+                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                  effectiveWeather.isTempSafe 
+                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' 
+                    : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                }`}>
+                  {effectiveWeather.isTempSafe ? '✓ תקין' : '✗ שרב'}
+                </span>
+              </div>
+            </div>
           </div>
-          <span className="text-[9px] text-zinc-500 font-semibold uppercase">גשם</span>
-        </div>
 
-        {/* Shade Badge */}
-        <div className="flex flex-col items-center gap-1.5">
-          <div className="data-badge teal">
-            <Trees size={14} />
-          </div>
-          <span className="text-[9px] text-zinc-500 font-semibold uppercase">צל</span>
-        </div>
-
-        {/* Age Badge */}
-        <div className="flex flex-col items-center gap-1.5">
-          <div className="data-badge dark">
-            <span className="text-[12px]">{ageBadge.icon}</span>
-          </div>
-          <span className="text-[9px] text-zinc-500 font-semibold uppercase">{ageBadge.label}</span>
-        </div>
-      </div>
-
-      {/* ── 4. Detail Grid ──────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-brand-card p-2.5 rounded-xl border border-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">עומס חום</span>
-            <Sun size={14} className="text-amber-400" />
-          </div>
-          <div className="mt-1 flex items-baseline justify-between">
-            <span className="text-base font-black font-mono text-zinc-100">{effectiveWeather.temp}</span>
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
-              effectiveWeather.isTempSafe ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'
-            }`}>
-              {effectiveWeather.isTempSafe ? '✓ תקין' : '✗ שרב'}
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-brand-card p-2.5 rounded-xl border border-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">שיטפון</span>
-            <Droplets size={14} className="text-blue-400" />
-          </div>
-          <div className="mt-1 flex items-baseline justify-between">
-            <span className="text-base font-black font-mono text-zinc-100">{effectiveWeather.rain.split('•')[0].trim()}</span>
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
-              effectiveWeather.isRainSafe ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'
-            }`}>
-              {effectiveWeather.isRainSafe ? '✓ בטוח' : '✗ סכנה'}
-            </span>
+          <div className="flex items-center gap-2 bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.04]">
+            <CloudRain size={14} className="text-blue-400 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-[10px] text-zinc-500 font-medium">שיטפון</div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.rain.split('•')[0].trim()}</span>
+                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                  effectiveWeather.isRainSafe 
+                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' 
+                    : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                }`}>
+                  {effectiveWeather.isRainSafe ? '✓ בטוח' : '✗ סכנה'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── 5. Agent Verdict ─────────────────────────────────────── */}
-      <div className="bg-brand-card p-3 rounded-xl border border-white/[0.06] flex items-start gap-2 text-xs">
+      {/* ═══════════════════════════════════════════════════════ */}
+      {/* SECTION 2: מה יש באתר?                                 */}
+      {/* ═══════════════════════════════════════════════════════ */}
+      <div className="mx-4 mb-3 bg-brand-card rounded-2xl border border-white/[0.06] p-3.5 space-y-2.5">
+        <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">מה יש באתר?</h4>
+        
+        <div className="flex flex-wrap gap-2">
+          {featurePills.length > 0 ? (
+            featurePills.map((pill, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1.5 bg-brand-deep/80 text-zinc-200 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-white/[0.08] hover:border-accent/30 transition"
+              >
+                <span className="text-sm">{pill.icon}</span>
+                <span>{pill.label}</span>
+              </span>
+            ))
+          ) : (
+            /* Fallback: show raw type tags */
+            (asset.type || []).slice(0, 4).map((t, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 bg-brand-deep/80 text-zinc-300 text-[11px] font-medium px-2.5 py-1.5 rounded-full border border-white/[0.06]"
+              >
+                {t}
+              </span>
+            ))
+          )}
+        </div>
+
+        {/* Description snippet if available */}
+        {asset.description && (
+          <p className="text-[10px] text-zinc-500 leading-snug mt-1 line-clamp-2">
+            {asset.description}
+          </p>
+        )}
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════ */}
+      {/* SECTION 3: למי מתאים?                                  */}
+      {/* ═══════════════════════════════════════════════════════ */}
+      <div className="mx-4 mb-3 bg-brand-card rounded-2xl border border-white/[0.06] p-3.5 space-y-2.5">
+        <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">למי מתאים?</h4>
+
+        {/* Age Badge — Large */}
+        <div className="flex items-center gap-3">
+          <span className={`inline-flex items-center gap-1.5 text-sm font-black px-4 py-2 rounded-xl border ${ageBadge.color}`}>
+            <span className="text-lg">{ageBadge.icon}</span>
+            <span>מגיל {ageBadge.label}</span>
+          </span>
+        </div>
+
+        {/* Suitability Pills */}
+        <div className="flex flex-wrap gap-2 text-[11px]">
+          {asset.stroller_accessible && (
+            <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-300 px-3 py-1.5 rounded-full border border-emerald-500/20 font-semibold">
+              <Baby size={13} />
+              <span>נגיש לעגלות ✓</span>
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1.5 bg-accent/[0.08] text-accent px-3 py-1.5 rounded-full border border-accent/20 font-semibold">
+            <Users size={13} />
+            <span>{suitability.parts[suitability.parts.length - 1]}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* ── Agent Verdict ─────────────────────────────────────── */}
+      <div className="mx-4 mb-3 bg-brand-card p-3 rounded-xl border border-white/[0.06] flex items-start gap-2 text-xs">
         <Sparkles size={14} className="text-accent mt-0.5 flex-shrink-0" />
         <p className="text-zinc-300 text-[11px] leading-snug">
           {asset.agentSummary || (
@@ -199,8 +340,8 @@ export default function FloatingMapCard({
         </p>
       </div>
 
-      {/* ── 6. Live Source Footer ────────────────────────────────── */}
-      <div className="pt-1 border-t border-white/[0.04] text-[9px] text-zinc-500 text-center flex items-center justify-between px-1">
+      {/* ── Live Source Footer ────────────────────────────────── */}
+      <div className="px-4 pb-3 pt-1 border-t border-white/[0.04] text-[9px] text-zinc-500 text-center flex items-center justify-between">
         <span className="flex items-center gap-1 text-accent/80 font-medium">
           <Radio size={10} className={effectiveWeather.isLive ? 'animate-pulse' : ''} />
           <span>{effectiveWeather.sourceLabel}</span>

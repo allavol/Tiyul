@@ -265,7 +265,7 @@ export default function App() {
         )}
 
         {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
-        <div className="absolute bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
+        <div className="absolute bottom-16 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
           {/* Main Chatbot Trigger */}
           <button
             onClick={() => setIsChatBotOpen(true)}
