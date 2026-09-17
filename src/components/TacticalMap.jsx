@@ -13,9 +13,11 @@ export default function TacticalMap({
   selectedDayIndex = 0,
   showNationalRadar = false,
   onCloseNationalRadar,
+  isLightMode = false,
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const markersRef = useRef({});
   const polylineRef = useRef(null);
 
@@ -31,12 +33,12 @@ export default function TacticalMap({
       zoomControl: false,
     });
 
-    // Dark Map Basemap with Hebrew labels and zero watermarks
-    L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=he', {
+    // Map Basemap with Hebrew labels and zero watermarks
+    tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=he', {
       attribution: '&copy; Google Maps',
       subdomains: ['0', '1', '2', '3'],
       maxZoom: 20,
-      className: 'dark-map-tiles',
+      className: isLightMode ? '' : 'dark-map-tiles',
     }).addTo(map);
 
     // Zoom control at bottom-left

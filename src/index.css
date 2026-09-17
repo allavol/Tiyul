@@ -23,6 +23,35 @@
     --text-muted: #71717a;
   }
 
+  .light {
+    --bg-deep: #F5F5F5;
+    --bg-card: #FFFFFF;
+    --bg-surface: #F0F0F2;
+    --bg-rail: #FFFFFF;
+    --accent: #0D9488;
+    --accent-dim: #0F766E;
+    --accent-glow: rgba(13, 148, 136, 0.15);
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --border-accent: rgba(13, 148, 136, 0.3);
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+  }
+
+  /* Utility overrides for light mode to avoid hardcoded JSX changes */
+  .light .text-white, .light .text-zinc-100, .light .text-zinc-200, .light .text-zinc-300 {
+    color: var(--text-primary) !important;
+  }
+  .light .text-zinc-400, .light .text-zinc-500, .light .text-zinc-600 {
+    color: var(--text-secondary) !important;
+  }
+  .light .bg-brand-deep\/60, .light .bg-brand-deep\/80 {
+    background-color: var(--bg-surface) !important;
+  }
+  .light .border-white\/\[0\.04\], .light .border-white\/\[0\.06\], .light .border-white\/\[0\.08\] {
+    border-color: var(--border-subtle) !important;
+  }
+
   body {
     background-color: var(--bg-deep);
     color: var(--text-primary);
@@ -46,6 +75,10 @@
 /* ─── Dark Map Tiles (warmer charcoal, less blue) ──────────── */
 .dark-map-tiles {
   filter: brightness(0.62) invert(1) contrast(1.8) hue-rotate(190deg) saturate(0.12) !important;
+}
+
+.light .dark-map-tiles {
+  filter: none !important;
 }
 
 /* ─── Custom Scrollbar (Teal Accent on Dark Track) ─────────── */
@@ -152,6 +185,14 @@
   box-shadow: 0 0 20px rgba(45, 212, 191, 0.12);
 }
 
+.light .editorial-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.light .editorial-card.selected {
+  box-shadow: 0 0 15px rgba(13, 148, 136, 0.2);
+}
+
 /* ─── Circular Data Badge (like Surfline "18", "12", "23") ── */
 .data-badge {
   width: 38px;
@@ -176,6 +217,12 @@
 .data-badge.dark {
   background: #33333a;
   border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary);
+}
+
+.light .data-badge.dark {
+  background: #E5E7EB;
+  border-color: rgba(0, 0, 0, 0.1);
   color: var(--text-secondary);
 }
 
@@ -220,6 +267,12 @@
   border: 1px solid var(--border-subtle);
 }
 
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
 /* ─── Leaflet Zoom Control Override ────────────────────────── */
 .leaflet-control-zoom a {
   background: var(--bg-card) !important;
@@ -231,4 +284,14 @@
 .leaflet-control-zoom a:hover {
   background: var(--bg-surface) !important;
   color: var(--accent) !important;
+}
+
+.light .leaflet-control-zoom a {
+  background: #FFFFFF !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
+
+.light .leaflet-control-zoom a:hover {
+  background: #F3F4F6 !important;
 }

@@ -7,21 +7,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Surfline-style deep charcoal palette
+        // Surfline-style deep charcoal palette linked to CSS variables
         brand: {
-          deep: '#1c1c21',
-          card: '#222228',
-          surface: '#2a2a31',
-          rail: '#18181c',
-          border: 'rgba(255,255,255,0.06)',
+          deep: 'var(--bg-deep)',
+          card: 'var(--bg-card)',
+          surface: 'var(--bg-surface)',
+          rail: 'var(--bg-rail)',
+          border: 'var(--border-subtle)',
         },
         // Teal/cyan accent system
         accent: {
-          DEFAULT: '#2DD4BF',
+          DEFAULT: 'var(--accent)',
           light: '#5EEAD4',
-          dim: '#14B8A6',
-          glow: 'rgba(45, 212, 191, 0.15)',
-          muted: 'rgba(45, 212, 191, 0.08)',
+          dim: 'var(--accent-dim)',
+          glow: 'var(--accent-glow)',
+          muted: 'var(--border-accent)',
         },
       },
       fontFamily: {

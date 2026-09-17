@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Compass, Sparkles, Map, Mountain, Settings, Search } from 'lucide-react';
+import { Compass, Sparkles, Map, Mountain, Settings, Search, Sun, Moon } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
 import TacticalSidebar from './components/TacticalSidebar';
 import TacticalMap from './components/TacticalMap';
@@ -35,6 +35,7 @@ export default function App() {
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
   const [activeRailTab, setActiveRailTab] = useState('trails'); // 'trails' | 'map' | 'settings'
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLightMode, setIsLightMode] = useState(false);
 
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
@@ -229,7 +230,7 @@ export default function App() {
   ];
 
   return (
-    <div className="w-screen h-screen flex flex-col bg-brand-deep text-zinc-100 overflow-hidden font-body select-none relative">
+    <div className={`w-screen h-screen flex flex-col bg-brand-deep text-[var(--text-primary)] overflow-hidden font-body select-none relative ${isLightMode ? 'light' : ''}`}>
       {/* ── Full-Width Map (100% Screen) ─────────────────── */}
       <div className="w-full h-full relative z-10">
         <TacticalMap
@@ -245,6 +246,7 @@ export default function App() {
           selectedDayIndex={selectedDayIndex}
           showNationalRadar={showNationalRadar}
           onCloseNationalRadar={() => setShowNationalRadar(false)}
+          isLightMode={isLightMode}
         />
 
         {/* Active AI Recommendation Filter Banner (Top Center on Map) */}
@@ -291,6 +293,15 @@ export default function App() {
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
             </div>
             <span className="hidden sm:inline">מוח הסוכן</span>
+          </button>
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => setIsLightMode(!isLightMode)}
+            title="החלף מצב תצוגה"
+            className="h-[52px] w-[52px] rounded-2xl glass-panel hover:bg-white/10 text-[var(--text-primary)] flex items-center justify-center border border-accent/30 shadow-2xl transition active:scale-95"
+          >
+            {isLightMode ? <Moon className="w-5 h-5 text-indigo-500" /> : <Sun className="w-5 h-5 text-amber-400" />}
           </button>
         </div>
       </div>
