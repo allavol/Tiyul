@@ -209,10 +209,10 @@ export default function FloatingMapCard({
         {/* Big Status Badge */}
         <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2.5 text-sm font-black border ${
           isSafe && !isWarning
-            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+            ? 'status-safe'
             : isWarning
-              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-              : 'bg-red-500/15 text-red-300 border-red-500/30'
+              ? 'status-warning'
+              : 'status-danger'
         }`}>
           {isSafe && !isWarning ? (
             <><ShieldCheck size={20} /><span>בטוח לטיול ✓</span></>
@@ -231,10 +231,10 @@ export default function FloatingMapCard({
               <div className="text-[10px] text-zinc-500 font-medium">חום</div>
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.temp}</span>
-                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${
                   effectiveWeather.isTempSafe 
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' 
-                    : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                    ? 'status-safe' 
+                    : 'status-danger'
                 }`}>
                   {effectiveWeather.isTempSafe ? '✓ תקין' : '✗ שרב'}
                 </span>
@@ -248,12 +248,12 @@ export default function FloatingMapCard({
               <div className="text-[10px] text-zinc-500 font-medium">שיטפון</div>
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.rain.split('•')[0].trim()}</span>
-                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${
                   effectiveWeather.isRainSafe 
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' 
-                    : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                    ? 'status-safe' 
+                    : 'status-danger'
                 }`}>
-                  {effectiveWeather.isRainSafe ? '✓ בטוח' : '✗ סכנה'}
+                  {effectiveWeather.isRainSafe ? '✓ בטוח' : '✗ שיטפון'}
                 </span>
               </div>
             </div>
@@ -307,18 +307,18 @@ export default function FloatingMapCard({
 
         {/* Age Badge — Large */}
         <div className="flex items-center gap-3">
-          <span className={`inline-flex items-center gap-1.5 text-sm font-black px-4 py-2 rounded-xl border ${ageBadge.color}`}>
-            <span className="text-lg">{ageBadge.icon}</span>
-            <span>מגיל {ageBadge.label}</span>
-          </span>
+          <div className={`px-4 py-3 rounded-xl border flex items-center justify-center gap-2 font-black badge-age-${Number(asset.min_age) || 0}`}>
+            <span className="text-xl">{ageBadge.icon}</span>
+            <span className="text-sm">מגיל {ageBadge.label}</span>
+          </div>
         </div>
 
         {/* Suitability Pills */}
         <div className="flex flex-wrap gap-2 text-[11px]">
           {asset.stroller_accessible && (
-            <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-300 px-3 py-1.5 rounded-full border border-emerald-500/20 font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-semibold status-safe">
               <Baby size={13} />
-              <span>נגיש לעגלות ✓</span>
+              נגיש לעגלות ✓
             </span>
           )}
           <span className="inline-flex items-center gap-1.5 bg-accent/[0.08] text-accent px-3 py-1.5 rounded-full border border-accent/20 font-semibold">
