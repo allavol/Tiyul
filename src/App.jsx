@@ -272,13 +272,17 @@ export default function App() {
           <button
             onClick={() => setIsChatBotOpen(true)}
             title="פתח את סוכן הטיולים החכם"
-            className="bg-gradient-to-r from-teal-600 via-accent-dim to-teal-700 hover:from-teal-500 hover:to-accent active:scale-95 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-xs sm:text-sm border border-accent/50 backdrop-blur-2xl transition-all group"
+            className={`px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-xs sm:text-sm border backdrop-blur-2xl transition-all group active:scale-95 ${
+              isLightMode
+                ? 'bg-white text-teal-900 border-teal-200/60 shadow-teal-900/5 hover:bg-teal-50/50'
+                : 'bg-gradient-to-r from-teal-600 via-accent-dim to-teal-700 text-white border-accent/50 hover:from-teal-500 hover:to-accent'
+            }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-accent-light animate-ping" />
-            <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+            <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isLightMode ? 'bg-teal-500' : 'bg-accent-light'}`} />
+            <Compass className={`w-5 h-5 group-hover:rotate-45 transition-transform ${isLightMode ? 'text-teal-600' : ''}`} />
             <div className="text-right leading-tight">
               <div>שאל את סוכן הטיולים 🧭</div>
-              <div className="text-[10px] text-teal-200 font-normal">תכנון מסלולים מותאם אישית</div>
+              <div className={`text-[10px] font-normal ${isLightMode ? 'text-teal-600' : 'text-teal-200'}`}>תכנון מסלולים מותאם אישית</div>
             </div>
           </button>
 
@@ -286,11 +290,15 @@ export default function App() {
           <button
             onClick={() => setIsAgentModalOpen(true)}
             title="מוח הסוכן ותרחישי חירום"
-            className="h-[52px] px-3.5 rounded-2xl glass-panel hover:bg-white/10 text-accent flex items-center gap-2 border border-accent/30 shadow-2xl transition active:scale-95 text-xs font-bold"
+            className={`h-[52px] px-3.5 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
+              isLightMode
+                ? 'text-teal-700 border-teal-200/60 hover:bg-teal-50/50 shadow-teal-900/5'
+                : 'text-accent border-accent/30 hover:bg-white/10'
+            }`}
           >
             <div className="relative">
               <Sparkles className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse ${isLightMode ? 'bg-teal-500' : 'bg-accent'}`} />
             </div>
             <span className="hidden sm:inline">מוח הסוכן</span>
           </button>
@@ -299,7 +307,11 @@ export default function App() {
           <button
             onClick={() => setIsLightMode(!isLightMode)}
             title="החלף מצב תצוגה"
-            className="h-[52px] w-[52px] rounded-2xl glass-panel hover:bg-white/10 text-[var(--text-primary)] flex items-center justify-center border border-accent/30 shadow-2xl transition active:scale-95"
+            className={`h-[52px] w-[52px] rounded-2xl glass-panel flex items-center justify-center border shadow-2xl transition active:scale-95 ${
+              isLightMode
+                ? 'border-teal-200/60 hover:bg-teal-50/50 shadow-teal-900/5'
+                : 'border-accent/30 hover:bg-white/10'
+            }`}
           >
             {isLightMode ? <Moon className="w-5 h-5 text-indigo-500" /> : <Sun className="w-5 h-5 text-amber-400" />}
           </button>
