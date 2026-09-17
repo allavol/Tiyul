@@ -35,7 +35,7 @@ export default function App() {
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
   const [activeRailTab, setActiveRailTab] = useState('trails'); // 'trails' | 'map' | 'settings'
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isLightMode, setIsLightMode] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(true);
 
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
