@@ -154,15 +154,15 @@ export default function AgentChatBot({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-sm text-white tracking-tight font-display">
+                <h3 className="font-black text-base text-white tracking-tight font-display">
                   סוכן הטיולים
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-accent bg-accent/[0.08] px-1.5 py-0.5 rounded-full border border-accent/20">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-accent bg-accent/[0.08] px-1.5 py-0.5 rounded-full border border-accent/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
                   AI GUIDE
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-500 font-light">
+              <p className="text-xs text-zinc-500 font-light">
                 תכנון מסלולים מונחה בטיחות ונתוני שטח
               </p>
             </div>
@@ -187,7 +187,7 @@ export default function AgentChatBot({
         </div>
 
         {/* Chat Stream */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs no-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm no-scrollbar">
           {messages.map((msg) => {
             const isBot = msg.sender === 'bot';
 
@@ -204,13 +204,13 @@ export default function AgentChatBot({
                       : 'bg-accent text-brand-deep font-semibold shadow-md'
                   }`}
                 >
-                  <div className="whitespace-pre-line text-[12.5px]">
+                  <div className="whitespace-pre-line text-sm">
                     {msg.text}
                   </div>
 
                   {/* Tool Execution Badge */}
                   {msg.toolActivity && (
-                    <div className="mt-2.5 pt-2 border-t border-white/[0.06] text-[10px] text-accent font-mono flex items-center gap-1.5">
+                    <div className="mt-2.5 pt-2 border-t border-white/[0.06] text-xs text-accent font-mono flex items-center gap-1.5">
                       <Radio className="w-3 h-3 animate-pulse" />
                       <span>{msg.toolActivity}</span>
                     </div>
@@ -235,11 +235,11 @@ export default function AgentChatBot({
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-base">{getCategoryIconChar(prop)}</span>
-                                <h4 className="text-sm font-black text-white group-hover:text-accent transition-colors font-display">
+                                <h4 className="text-base font-black text-white group-hover:text-accent transition-colors font-display">
                                   {prop.name}
                                 </h4>
                               </div>
-                              <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
+                              <div className="flex items-center gap-1.5 text-xs mt-0.5">
                                 <span className="text-accent/70 font-semibold uppercase tracking-wider">{prop.region}</span>
                                 <span className="text-zinc-600">•</span>
                                 <span className="font-mono text-accent/60 font-bold">
@@ -248,36 +248,36 @@ export default function AgentChatBot({
                               </div>
                             </div>
 
-                            <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold ${ageBadge.color}`}>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${ageBadge.color}`}>
                               {ageBadge.icon} {ageBadge.label}
                             </span>
                           </div>
 
                           {/* Weather & Climate Pill */}
-                          <div className="grid grid-cols-2 gap-1.5 text-[11px] bg-brand-deep/60 p-2 rounded-xl border border-white/[0.04]">
+                          <div className="grid grid-cols-2 gap-1.5 text-xs bg-brand-deep/60 p-2 rounded-xl border border-white/[0.04]">
                             <div className="flex items-center gap-1.5 text-amber-300">
                               <Sun className="w-3.5 h-3.5 flex-shrink-0" />
                               <span className="font-bold">{prop.weather.temp}</span>
-                              <span className="text-[9px] text-zinc-500 truncate">
+                              <span className="text-[10px] text-zinc-500 truncate">
                                 ({prop.weather.conditions})
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5 text-accent">
                               <Droplets className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-400 truncate">
+                              <span className="text-xs text-zinc-400 truncate">
                                 {prop.weather.heatLoad}
                               </span>
                             </div>
                           </div>
 
                           {/* XAI Explainability Rationale */}
-                          <p className="text-[11px] text-zinc-300 bg-accent/[0.05] border border-accent/10 p-2 rounded-xl leading-snug">
+                          <p className="text-xs text-zinc-300 bg-accent/[0.05] border border-accent/10 p-2 rounded-xl leading-snug">
                             💡 {prop.matchRationale}
                           </p>
 
                           {/* Water Advisory if any */}
                           {prop.waterAdvisory && (
-                            <div className="flex items-center gap-1.5 text-[10px] text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
+                            <div className="flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
                               <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                               <span>{prop.waterAdvisory.title}</span>
                             </div>
@@ -290,7 +290,7 @@ export default function AgentChatBot({
                                 onSelectSite(fullAsset);
                               }
                             }}
-                            className="w-full py-2 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition"
+                            className="w-full py-2 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 shadow-md transition"
                           >
                             <MapPin className="w-3.5 h-3.5" />
                             <span>הצג מסלול ונתונים במפה 🗺️</span>
@@ -357,7 +357,7 @@ export default function AgentChatBot({
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
-          <div className="flex items-center justify-between text-[9px] text-zinc-600 mt-2 px-1">
+          <div className="flex items-center justify-between text-[10px] text-zinc-600 mt-2 px-1">
             <span>🛡️ שיחה מאובטחת • נתונים מאומתים מ-INPA</span>
             <span className="text-accent/50 font-mono">$0 Total Cost</span>
           </div>

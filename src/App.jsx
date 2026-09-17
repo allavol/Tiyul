@@ -272,7 +272,7 @@ export default function App() {
           <button
             onClick={() => setIsChatBotOpen(true)}
             title="פתח את סוכן הטיולים החכם"
-            className={`px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-xs sm:text-sm border backdrop-blur-2xl transition-all group active:scale-95 ${
+            className={`px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-sm sm:text-base border backdrop-blur-2xl transition-all group active:scale-95 ${
               isLightMode
                 ? 'bg-white text-teal-900 border-teal-200/60 shadow-teal-900/5 hover:bg-teal-50/50'
                 : 'bg-gradient-to-r from-teal-600 via-accent-dim to-teal-700 text-white border-accent/50 hover:from-teal-500 hover:to-accent'
@@ -282,7 +282,7 @@ export default function App() {
             <Compass className={`w-5 h-5 group-hover:rotate-45 transition-transform ${isLightMode ? 'text-teal-600' : ''}`} />
             <div className="text-right leading-tight">
               <div>שאל את סוכן הטיולים 🧭</div>
-              <div className={`text-[10px] font-normal ${isLightMode ? 'text-teal-600' : 'text-teal-200'}`}>תכנון מסלולים מותאם אישית</div>
+              <div className={`text-xs font-normal ${isLightMode ? 'text-teal-600' : 'text-teal-200'}`}>תכנון מסלולים מותאם אישית</div>
             </div>
           </button>
 

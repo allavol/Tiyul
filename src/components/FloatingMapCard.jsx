@@ -159,16 +159,16 @@ export default function FloatingMapCard({
       <div className="p-4 pb-3 flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
           <div className="data-badge teal flex-shrink-0">
-            <span className="text-lg md:text-xl md:text-2xl">{categoryIcon}</span>
+            <span className="text-lg">{categoryIcon}</span>
           </div>
           <div className="min-w-0">
-            <h3 className="text-base md:text-lg md:text-xl md:text-2xl font-black text-white truncate leading-tight tracking-tight font-display">
+            <h3 className="text-base font-black text-white truncate leading-tight tracking-tight font-display">
               {asset.name}
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl text-accent font-bold uppercase tracking-wider">{asset.region}</span>
+              <span className="text-[10px] text-accent font-bold uppercase tracking-wider">{asset.region}</span>
               <span className="text-zinc-600">•</span>
-              <span className="text-[10px] md:text-xs font-mono font-bold text-accent/70 bg-accent/[0.08] px-1.5 py-0.5 rounded border border-accent/20">
+              <span className="text-[9px] font-mono font-bold text-accent/70 bg-accent/[0.08] px-1.5 py-0.5 rounded border border-accent/20">
                 {asset.authority_id || 'VERIFIED'}
               </span>
             </div>
@@ -186,15 +186,15 @@ export default function FloatingMapCard({
       {/* ── Water Advisory Banner (if exists) ─────────────────── */}
       {waterAdvisory && (
         <div className="mx-4 mb-3">
-          <div className={`p-2.5 rounded-2xl text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl flex items-center gap-2 border ${
+          <div className={`p-2.5 rounded-2xl text-xs flex items-center gap-2 border ${
             waterAdvisory.level === 'danger'
               ? 'bg-red-500/10 text-red-200 border-red-500/30'
               : 'bg-amber-500/10 text-amber-200 border-amber-500/30'
           }`}>
             <AlertTriangle size={16} className="flex-shrink-0" />
             <div className="min-w-0">
-              <strong className="block text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-bold">{waterAdvisory.title}</strong>
-              <span className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl opacity-90">{waterAdvisory.desc}</span>
+              <strong className="block text-[11px] font-bold">{waterAdvisory.title}</strong>
+              <span className="text-[10px] opacity-90">{waterAdvisory.desc}</span>
             </div>
           </div>
         </div>
@@ -204,10 +204,10 @@ export default function FloatingMapCard({
       {/* SECTION 1: האם בטוח?                                   */}
       {/* ═══════════════════════════════════════════════════════ */}
       <div className="mx-4 mb-3 bg-brand-card rounded-2xl border border-white/[0.06] p-3.5 space-y-3">
-        <h4 className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-bold text-zinc-400 uppercase tracking-wider">האם בטוח?</h4>
+        <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">האם בטוח?</h4>
         
         {/* Big Status Badge */}
-        <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2.5 text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-black border ${
+        <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2.5 text-sm font-black border ${
           isSafe && !isWarning
             ? 'status-safe'
             : isWarning
@@ -228,10 +228,10 @@ export default function FloatingMapCard({
           <div className="flex items-center gap-2 bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.04]">
             <Thermometer size={14} className="text-amber-400 flex-shrink-0" />
             <div className="min-w-0">
-              <div className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl text-zinc-500 font-medium">חום</div>
+              <div className="text-[10px] text-zinc-500 font-medium">חום</div>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-black font-mono text-zinc-100">{effectiveWeather.temp}</span>
-                <span className={`text-[10px] md:text-[11px] font-bold px-1.5 py-0.5 rounded border ${
+                <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.temp}</span>
+                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${
                   effectiveWeather.isTempSafe 
                     ? 'status-safe' 
                     : 'status-danger'
@@ -245,10 +245,10 @@ export default function FloatingMapCard({
           <div className="flex items-center gap-2 bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.04]">
             <CloudRain size={14} className="text-blue-400 flex-shrink-0" />
             <div className="min-w-0">
-              <div className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl text-zinc-500 font-medium">שיטפון</div>
+              <div className="text-[10px] text-zinc-500 font-medium">שיטפון</div>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-black font-mono text-zinc-100">{effectiveWeather.rain.split('•')[0].trim()}</span>
-                <span className={`text-[10px] md:text-[11px] font-bold px-1.5 py-0.5 rounded border ${
+                <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.rain.split('•')[0].trim()}</span>
+                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${
                   effectiveWeather.isRainSafe 
                     ? 'status-safe' 
                     : 'status-danger'
@@ -265,16 +265,16 @@ export default function FloatingMapCard({
       {/* SECTION 2: מה יש באתר?                                 */}
       {/* ═══════════════════════════════════════════════════════ */}
       <div className="mx-4 mb-3 bg-brand-card rounded-2xl border border-white/[0.06] p-3.5 space-y-2.5">
-        <h4 className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-bold text-zinc-400 uppercase tracking-wider">מה יש באתר?</h4>
+        <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">מה יש באתר?</h4>
         
         <div className="flex flex-wrap gap-2">
           {featurePills.length > 0 ? (
             featurePills.map((pill, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1.5 bg-brand-deep/80 text-zinc-200 text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-semibold px-3 py-1.5 rounded-full border border-white/[0.08] hover:border-accent/30 transition"
+                className="inline-flex items-center gap-1.5 bg-brand-deep/80 text-zinc-200 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-white/[0.08] hover:border-accent/30 transition"
               >
-                <span className="text-sm md:text-base md:text-lg md:text-xl md:text-2xl">{pill.icon}</span>
+                <span className="text-sm">{pill.icon}</span>
                 <span>{pill.label}</span>
               </span>
             ))
@@ -283,7 +283,7 @@ export default function FloatingMapCard({
             (asset.type || []).slice(0, 4).map((t, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 bg-brand-deep/80 text-zinc-300 text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-medium px-2.5 py-1.5 rounded-full border border-white/[0.06]"
+                className="inline-flex items-center gap-1 bg-brand-deep/80 text-zinc-300 text-[11px] font-medium px-2.5 py-1.5 rounded-full border border-white/[0.06]"
               >
                 {t}
               </span>
@@ -293,7 +293,7 @@ export default function FloatingMapCard({
 
         {/* Description snippet if available */}
         {asset.description && (
-          <p className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl text-zinc-500 leading-snug mt-1 line-clamp-2">
+          <p className="text-[10px] text-zinc-500 leading-snug mt-1 line-clamp-2">
             {asset.description}
           </p>
         )}
@@ -303,18 +303,18 @@ export default function FloatingMapCard({
       {/* SECTION 3: למי מתאים?                                  */}
       {/* ═══════════════════════════════════════════════════════ */}
       <div className="mx-4 mb-3 bg-brand-card rounded-2xl border border-white/[0.06] p-3.5 space-y-2.5">
-        <h4 className="text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl font-bold text-zinc-400 uppercase tracking-wider">למי מתאים?</h4>
+        <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">למי מתאים?</h4>
 
         {/* Age Badge — Large */}
         <div className="flex items-center gap-3">
           <div className={`px-4 py-3 rounded-xl border flex items-center justify-center gap-2 font-black badge-age-${Number(asset.min_age) || 0}`}>
-            <span className="text-xl md:text-2xl">{ageBadge.icon}</span>
-            <span className="text-sm md:text-base md:text-lg md:text-xl md:text-2xl">מגיל {ageBadge.label}</span>
+            <span className="text-xl">{ageBadge.icon}</span>
+            <span className="text-sm">מגיל {ageBadge.label}</span>
           </div>
         </div>
 
         {/* Suitability Pills */}
-        <div className="flex flex-wrap gap-2 text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl">
+        <div className="flex flex-wrap gap-2 text-[11px]">
           {asset.stroller_accessible && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-semibold status-safe">
               <Baby size={13} />
@@ -329,9 +329,9 @@ export default function FloatingMapCard({
       </div>
 
       {/* ── Agent Verdict ─────────────────────────────────────── */}
-      <div className="mx-4 mb-3 bg-brand-card p-3 rounded-xl border border-white/[0.06] flex items-start gap-2 text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl">
+      <div className="mx-4 mb-3 bg-brand-card p-3 rounded-xl border border-white/[0.06] flex items-start gap-2 text-xs">
         <Sparkles size={14} className="text-accent mt-0.5 flex-shrink-0" />
-        <p className="text-zinc-300 text-xs md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl md:text-sm md:text-base md:text-lg md:text-xl md:text-2xl leading-snug">
+        <p className="text-zinc-300 text-[11px] leading-snug">
           {asset.agentSummary || (
             effectiveWeather.alertLevel === 'danger'
               ? `[הסוכן המטייל] אתר ${asset.name} אינו מומלץ כעת. רמת סיכון חריגה.`
@@ -341,7 +341,7 @@ export default function FloatingMapCard({
       </div>
 
       {/* ── Live Source Footer ────────────────────────────────── */}
-      <div className="px-4 pb-3 pt-1 border-t border-white/[0.04] text-[10px] md:text-xs text-zinc-500 text-center flex items-center justify-between">
+      <div className="px-4 pb-3 pt-1 border-t border-white/[0.04] text-[9px] text-zinc-500 text-center flex items-center justify-between">
         <span className="flex items-center gap-1 text-accent/80 font-medium">
           <Radio size={10} className={effectiveWeather.isLive ? 'animate-pulse' : ''} />
           <span>{effectiveWeather.sourceLabel}</span>
