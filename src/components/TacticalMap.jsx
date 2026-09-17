@@ -44,6 +44,7 @@ export default function TacticalMap({
     // Zoom control at bottom-left
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
+    // Store map instance
     mapInstanceRef.current = map;
 
     return () => {
@@ -51,6 +52,20 @@ export default function TacticalMap({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Update map theme dynamically when isLightMode changes
+  useEffect(() => {
+    if (tileLayerRef.current) {
+      const container = tileLayerRef.current.getContainer();
+      if (container) {
+        if (isLightMode) {
+          container.classList.remove('dark-map-tiles');
+        } else {
+          container.classList.add('dark-map-tiles');
+        }
+      }
+    }
+  }, [isLightMode]);
 
   // Update Badge Pins — Surfline Teal Circular Data Points
   useEffect(() => {
