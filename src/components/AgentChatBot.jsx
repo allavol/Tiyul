@@ -21,6 +21,37 @@ import {
 import { AgentBotService } from '../services/AgentBotService';
 import { getCategoryIconChar, getAgeBadge } from '../utils/weatherUtils';
 
+const ThinkingIndicator = () => {
+  const [phaseIndex, setPhaseIndex] = useState(0);
+  const phases = [
+    '📡 שואב נתוני מזג אוויר וחירום מקומיים...',
+    '🗺️ מצליב נתוני שטח למסלולים מותאמים...',
+    '🧠 מגבש המלצות בטיחות מותאמות אישית...'
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhaseIndex((prev) => (prev + 1) % phases.length);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-2 items-start mt-2">
+      <div className="bg-brand-card text-zinc-300 border border-white/[0.06] shadow-md max-w-[88%] rounded-2xl p-3.5 leading-relaxed text-sm flex flex-col gap-2">
+        <div className="flex items-center gap-1.5 text-accent">
+          <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+          <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+          <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+        </div>
+        <div className="text-xs text-zinc-400 animate-pulse transition-all duration-300">
+          {phases[phaseIndex]}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function AgentChatBot({
   isOpen,
   onClose,
@@ -77,8 +108,8 @@ export default function AgentChatBot({
 
     // 2. Process with AgentBotService
     try {
-      // Simulate sub-second tactical thinking delay
-      await new Promise((r) => setTimeout(r, 450));
+      // Simulate multi-step tactical thinking delay
+      await new Promise((r) => setTimeout(r, 3500));
 
       const response = await AgentBotService.processUserMessage(text, sessionState);
 
@@ -322,17 +353,12 @@ export default function AgentChatBot({
           })}
 
           {/* Thinking Indicator */}
-          {isProcessing && (
-            <div className="flex items-center gap-2 text-zinc-400 text-xs bg-brand-card p-3 rounded-2xl w-fit border border-white/[0.06] animate-pulse">
-              <Sparkles className="w-4 h-4 text-accent animate-spin" />
-              <span>הסוכן מעבד את הבקשה...</span>
-            </div>
-          )}
+          {isProcessing && <ThinkingIndicator />}
 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Bar */}
+        {/* Chat Input Bar */}
         <div className="p-3 border-t border-white/[0.06] bg-brand-card/60">
           <form
             onSubmit={(e) => {
