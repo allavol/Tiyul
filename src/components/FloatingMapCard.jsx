@@ -13,9 +13,10 @@ import {
   Thermometer,
   CloudRain
 } from 'lucide-react';
-import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar } from '../utils/weatherUtils';
+import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar, getSafeAlternatives } from '../utils/weatherUtils';
 import { WeatherService } from '../services/WeatherService';
 import { getDriveTimeFromTelAviv } from '../services/osrmService';
+import assetsData from '../../assets_db.json';
 
 /**
  * Maps Hebrew type keywords to emoji icons for the "מה יש באתר?" section.
@@ -89,15 +90,18 @@ function getSuitabilitySummary(asset) {
 
 export default function FloatingMapCard({
   asset,
+  onClose,
   activeScenario = 'NORMAL',
   selectedDayIndex = 0,
-  onClose,
+  onSelectAlternative,
 }) {
   if (!asset) return null;
 
   const [liveWeather, setLiveWeather] = useState(null);
   const [isLoadingLive, setIsLoadingLive] = useState(false);
   const [driveTime, setDriveTime] = useState(null);
+  const [showAlternatives, setShowAlternatives] = useState(false);
+  const [alternatives, setAlternatives] = useState([]);
 
   const fallbackWeather = getSiteWeather(asset, activeScenario, selectedDayIndex);
   const waterAdvisory = getWaterAdvisory(asset);
@@ -167,6 +171,15 @@ export default function FloatingMapCard({
 
   const isSafe = effectiveWeather.isTempSafe && effectiveWeather.isRainSafe && (!waterAdvisory || waterAdvisory.level !== 'danger');
   const isWarning = waterAdvisory && waterAdvisory.level === 'warning';
+
+  useEffect(() => {
+    if (!isSafe && asset) {
+      setAlternatives(getSafeAlternatives(asset, assetsData, activeScenario, selectedDayIndex, 3));
+    } else {
+      setAlternatives([]);
+      setShowAlternatives(false);
+    }
+  }, [isSafe, asset, activeScenario, selectedDayIndex]);
 
   return (
     <div className="fixed top-3 left-3 right-3 sm:absolute sm:top-5 sm:left-5 sm:right-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
@@ -292,6 +305,44 @@ export default function FloatingMapCard({
             </div>
           </div>
         </div>
+
+        {/* ── Alternatives Button & List (if unsafe) ── */}
+        {!isSafe && alternatives.length > 0 && (
+          <div className="mt-4 border-t border-white/[0.06] pt-3">
+            {!showAlternatives ? (
+              <button 
+                onClick={() => setShowAlternatives(true)}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold py-2.5 rounded-xl border border-emerald-500/30 transition text-xs"
+              >
+                <Sparkles size={16} />
+                <span>הצג {alternatives.length} חלופות בטוחות באזור</span>
+              </button>
+            ) : (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <h5 className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2">חלופות מאובטחות (מרחק אווירי)</h5>
+                {alternatives.map((alt) => (
+                  <div 
+                    key={alt.id}
+                    onClick={() => onSelectAlternative && onSelectAlternative(alt)}
+                    className="flex items-center justify-between bg-black/40 hover:bg-white/5 p-2 rounded-lg border border-white/[0.04] cursor-pointer transition group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">{getCategoryIconChar(alt)}</span>
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-bold text-zinc-200 group-hover:text-emerald-300 transition">{alt.name}</span>
+                        <span className="text-[9px] text-zinc-500">{alt.region}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] font-mono text-zinc-400">{alt.distanceKm.toFixed(1)} ק"מ</span>
+                      <span className="text-[8px] text-emerald-400/80 bg-emerald-400/10 px-1.5 py-0.5 rounded">בטוח ✓</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ═══════════════════════════════════════════════════════ */}

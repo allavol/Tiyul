@@ -238,6 +238,7 @@ export default function TacticalMap({
           activeScenario={activeScenario}
           selectedDayIndex={selectedDayIndex}
           onClose={onCloseCard}
+          onSelectAlternative={(alt) => onSelectAsset(alt.id)}
         />
       )}
 
