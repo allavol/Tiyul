@@ -383,9 +383,8 @@ export default function AgentChatBot({
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
-          <div className="flex items-center justify-between text-[10px] text-zinc-600 mt-2 px-1">
+          <div className="flex items-center justify-center text-[10px] text-zinc-500 mt-2 px-1">
             <span>🛡️ שיחה מאובטחת • נתונים מאומתים מ-INPA</span>
-            <span className="text-accent/50 font-mono">$0 Total Cost</span>
           </div>
         </div>
 

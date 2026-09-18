@@ -676,7 +676,7 @@ export class AgentBotService {
         { label: '👶 שנה גיל מטיילים', value: 'רוצה לשנות את גילאי הילדים' },
       ],
       proposals,
-      toolActivity: `🤖 ${llmStatus.model} • 📡 נשלפה תחזית Tomorrow.io • 🛡️ Guardrails Passed ($0 Cost)`,
+      toolActivity: `🤖 ${llmStatus.model} • 📡 נשלפה תחזית Tomorrow.io • 🛡️ Guardrails Passed`,
     };
   }
 
