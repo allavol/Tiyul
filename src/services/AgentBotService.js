@@ -61,6 +61,17 @@ const KNOWN_ORIGIN_CITIES = [
   { names: ['מצפה רמון', 'רמון'], lat: 30.6100, lng: 34.8015, label: 'מצפה רמון' },
 ];
 
+// Israeli Days of the Week mapping for dynamic date & forecast indexing
+const HEBREW_DAYS = [
+  { dayNum: 0, names: ['יום ראשון', 'ראשון הקרוב', 'בראשון', 'יום א\'', 'יום א׳', 'יום א', 'ראשון'], label: 'יום ראשון' },
+  { dayNum: 1, names: ['יום שני', 'שני הקרוב', 'בשני', 'יום ב\'', 'יום ב׳', 'יום ב', 'שני'], label: 'יום שני' },
+  { dayNum: 2, names: ['יום שלישי', 'שלישי הקרוב', 'בשלישי', 'יום ג\'', 'יום ג׳', 'יום ג', 'שלישי'], label: 'יום שלישי' },
+  { dayNum: 3, names: ['יום רביעי', 'רביעי הקרוב', 'ברביעי', 'יום ד\'', 'יום ד׳', 'יום ד', 'רביעי'], label: 'יום רביעי' },
+  { dayNum: 4, names: ['יום חמישי', 'חמישי הקרוב', 'בחמישי', 'יום ה\'', 'יום ה׳', 'יום ה', 'חמישי'], label: 'יום חמישי' },
+  { dayNum: 5, names: ['יום שישי', 'שישי הקרוב', 'בשישי', 'יום ו\'', 'יום ו׳', 'יום ו', 'שישי', 'סופ"ש', 'סופש', 'סוף השבוע', 'סוף שבוע'], label: 'יום שישי (סופ"ש)' },
+  { dayNum: 6, names: ['יום שבת', 'שבת הקרובה', 'שבת הקרוב', 'בשבת', 'שבת'], label: 'יום שבת' },
+];
+
 /**
  * Calculate high-precision Haversine great-circle distance in kilometers
  */
@@ -226,7 +237,9 @@ export class AgentBotService {
       }
     }
 
-    // 1. Timing extraction
+    // 1. Timing extraction (Relative terms, named weekdays, and specific day-of-week)
+    const currentDayNum = new Date().getDay(); // 0 = Sunday ... 6 = Saturday
+
     if (text.includes('מחרתיים') || text.includes('בעוד יומיים')) {
       updated.timing = 'day_after';
       updated.timingLabel = 'מחרתיים';
@@ -239,10 +252,40 @@ export class AgentBotService {
       updated.timing = 'today';
       updated.timingLabel = 'היום';
       updated.dayIndex = 0;
-    } else if (text.includes('שישי') || text.includes('שבת') || text.includes('סופ"ש') || text.includes('סוף שבוע')) {
-      updated.timing = 'weekend';
-      updated.timingLabel = 'שישי / סוף השבוע';
-      updated.dayIndex = 3;
+    } else if (text.includes('תחילת השבוע') || text.includes('בתחילת שבוע')) {
+      const diff = (0 - currentDayNum + 7) % 7;
+      updated.dayIndex = Math.min(diff === 0 ? 0 : diff, 4);
+      updated.timing = 'day_0';
+      updated.timingLabel = 'תחילת השבוע (יום ראשון)';
+    } else if (text.includes('אמצע השבוע') || text.includes('באמצע שבוע')) {
+      const diff = (2 - currentDayNum + 7) % 7;
+      updated.dayIndex = Math.min(diff === 0 ? 0 : diff, 4);
+      updated.timing = 'day_2';
+      updated.timingLabel = 'אמצע השבוע (שלישי/רביעי)';
+    } else {
+      // Check specific named days of the week (Sunday through Saturday)
+      let foundDay = null;
+      for (const day of HEBREW_DAYS) {
+        if (day.names.some((name) => text.includes(name))) {
+          foundDay = day;
+          break;
+        }
+      }
+      if (foundDay) {
+        const diff = (foundDay.dayNum - currentDayNum + 7) % 7;
+        const clampedDayIndex = Math.min(diff, 4);
+        updated.dayIndex = clampedDayIndex;
+        updated.timing = `day_${foundDay.dayNum}`;
+        if (diff === 0) {
+          updated.timingLabel = `${foundDay.label} (היום)`;
+        } else if (diff === 1) {
+          updated.timingLabel = `${foundDay.label} (מחר)`;
+        } else if (diff === 2) {
+          updated.timingLabel = `${foundDay.label} (מחרתיים)`;
+        } else {
+          updated.timingLabel = `${foundDay.label} הקרוב`;
+        }
+      }
     }
 
     // 2. Region / Distance extraction

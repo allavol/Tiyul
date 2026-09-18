@@ -227,6 +227,25 @@ await runTest('Loop Test 10: Zero-Results Polite Rejection & Alternatives', asyn
   assert.ok(res.options && res.options.length > 0, 'Must provide retry/expansion options');
 });
 
+// ── Test 11: Specific Day of Week Queries ("יום ראשון הקרוב", "שלישי", "חמישי") ──
+await runTest('Loop Test 11: Specific Day of Week ("יום ראשון הקרוב", "יום שלישי")', async () => {
+  // Query 1: יום ראשון הקרוב
+  const res1 = await AgentBotService.processUserMessage('רוצים לטייל ביום ראשון הקרוב בצפון במסלול מים לגיל 4');
+  assert.ok(res1.state.timingLabel && res1.state.timingLabel.includes('ראשון'), 'Must recognize יום ראשון הקרוב');
+  assert.strictEqual(res1.state.region, 'north');
+  assert.strictEqual(res1.state.feature, 'water');
+  assert.strictEqual(res1.state.minAge, 4);
+  assert.ok(res1.proposals && res1.proposals.length > 0, 'Must generate proposals for Sunday');
+
+  // Query 2: יום שלישי
+  const res2 = await AgentBotService.processUserMessage('רוצים טיול מוצל בשלישי הקרוב במרכז לכל הגילאים');
+  assert.ok(res2.state.timingLabel && res2.state.timingLabel.includes('שלישי'), 'Must recognize שלישי הקרוב');
+  assert.strictEqual(res2.state.region, 'center');
+  assert.strictEqual(res2.state.feature, 'shade');
+  assert.strictEqual(res2.state.minAge, 0);
+  assert.ok(res2.proposals && res2.proposals.length > 0, 'Must generate proposals for Tuesday');
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);
