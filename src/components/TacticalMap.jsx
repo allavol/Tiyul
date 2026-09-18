@@ -30,7 +30,11 @@ export default function TacticalMap({
       if (activeFilter === 'all') return true;
       if (activeFilter === 'water') return (asset.type || []).some(t => t.includes('מים') || t.includes('מעיין') || t.includes('נחל'));
       if (activeFilter === 'stroller') return asset.stroller_accessible || asset.min_age === 0;
-      if (activeFilter === 'safe') return !asset.vulnerabilities?.includes('Extreme Heat') && !asset.status;
+      if (activeFilter === 'safe') {
+        const isAlert = asset.status === 'CRITICAL' || asset.status === 'REROUTED';
+        const isPolluted = (asset.name || '').includes('צלמון');
+        return !isAlert && !isPolluted;
+      }
       return true;
     });
   }, [assets, activeFilter]);
