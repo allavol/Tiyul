@@ -13,9 +13,9 @@
  * 4. Youngest Age (0+ עגלות, 2-3, 4+, 7+, 10+)
  */
 
-import assetsData from '../../assets_db.json';
-import { WeatherService } from './WeatherService';
-import { getWaterAdvisory } from '../utils/weatherUtils';
+import assetsData from '../../assets_db.json' with { type: 'json' };
+import { WeatherService } from './WeatherService.js';
+import { getWaterAdvisory } from '../utils/weatherUtils.js';
 
 // Strict Prohibited Topics (Politics, Violence, Weapons, Drugs, Hate, Jailbreak/Prompt Injection)
 const PROHIBITED_KEYWORDS = [
