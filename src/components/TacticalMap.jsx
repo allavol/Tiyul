@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import FloatingMapCard from './FloatingMapCard';
 import NationalRadarCard from './NationalRadarCard';
@@ -20,6 +20,18 @@ export default function TacticalMap({
   const tileLayerRef = useRef(null);
   const markersRef = useRef({});
   const polylineRef = useRef(null);
+
+  // Filters State
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'water', 'stroller', 'safe'
+
+  // Filter Assets
+  const filteredAssets = assets.filter((asset) => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'water') return (asset.type || []).some(t => t.includes('מים') || t.includes('מעיין') || t.includes('נחל'));
+    if (activeFilter === 'stroller') return asset.stroller_accessible || asset.min_age === 0;
+    if (activeFilter === 'safe') return !asset.vulnerabilities?.includes('Extreme Heat') && !asset.status;
+    return true;
+  });
 
   // Initialize Map
   useEffect(() => {
@@ -76,7 +88,7 @@ export default function TacticalMap({
     Object.values(markersRef.current).forEach((m) => m.remove());
     markersRef.current = {};
 
-    assets.forEach((asset) => {
+    filteredAssets.forEach((asset) => {
       const isSafeHaven = asset.vulnerabilities?.includes('Safe Haven') || asset.category === 'safe_haven';
       const isAlert = asset.status === 'CRITICAL' || asset.status === 'REROUTED';
       const isSelected = selectedAssetId === asset.id;
@@ -218,18 +230,46 @@ export default function TacticalMap({
     const map = mapInstanceRef.current;
     if (!map || !selectedAssetId) return;
 
-    const asset = assets.find((a) => a.id === selectedAssetId);
+    const asset = filteredAssets.find((a) => a.id === selectedAssetId);
     if (asset) {
       map.flyTo([asset.lat, asset.lng], 10, { duration: 0.8 });
     }
-  }, [selectedAssetId, assets]);
+  }, [selectedAssetId, filteredAssets]);
 
-  const selectedAsset = assets.find((a) => a.id === selectedAssetId);
+  const selectedAsset = filteredAssets.find((a) => a.id === selectedAssetId);
 
   return (
     <div className="w-full h-full relative">
       {/* Map Container */}
       <div ref={mapContainerRef} className="w-full h-full" />
+
+      {/* Floating Filter Pills */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] flex items-center gap-2 bg-brand-deep/80 backdrop-blur-md px-3 py-2 rounded-full border border-white/[0.08] shadow-lg pointer-events-auto">
+        <button 
+          onClick={() => setActiveFilter('all')}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilter === 'all' ? 'bg-accent text-white shadow-[0_0_10px_rgba(45,212,191,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+        >
+          הכל
+        </button>
+        <button 
+          onClick={() => setActiveFilter('water')}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${activeFilter === 'water' ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+        >
+          <span>💧</span> מים
+        </button>
+        <button 
+          onClick={() => setActiveFilter('stroller')}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${activeFilter === 'stroller' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+        >
+          <span>👶</span> עגלות
+        </button>
+        <button 
+          onClick={() => setActiveFilter('safe')}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${activeFilter === 'safe' ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+        >
+          <span>🛡️</span> בטוח כעת
+        </button>
+      </div>
 
       {/* Floating Rich Detail Card over the map on the left */}
       {selectedAsset && (

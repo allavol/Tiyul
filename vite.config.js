@@ -1,9 +1,31 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   base: './',
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      devOptions: { enabled: true },
+      manifest: {
+        name: 'Tiyul - GeoGuard',
+        short_name: 'Tiyul',
+        theme_color: '#09090b',
+        background_color: '#09090b',
+        display: 'standalone',
+        start_url: './',
+        icons: [
+          {
+            src: 'https://cdn-icons-png.flaticon.com/512/854/854878.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
+    })
+  ],
   server: {
     port: 5173,
     host: true,

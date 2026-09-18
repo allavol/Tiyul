@@ -102,6 +102,7 @@ export default function FloatingMapCard({
   const [driveTime, setDriveTime] = useState(null);
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [alternatives, setAlternatives] = useState([]);
+  const [timeOfDay, setTimeOfDay] = useState('noon'); // 'morning', 'noon', 'evening'
 
   const fallbackWeather = getSiteWeather(asset, activeScenario, selectedDayIndex);
   const waterAdvisory = getWaterAdvisory(asset);
@@ -168,6 +169,19 @@ export default function FloatingMapCard({
         isLive: false,
         sourceLabel: selectedDayIndex === 0 ? 'תחזית IMS' : `תחזית ליום ${selectedDayIndex + 1}`,
       };
+
+  // Adjust temperature based on time of day
+  if (timeOfDay === 'morning') {
+    effectiveWeather.tempNum -= 3;
+    effectiveWeather.heatLoad = effectiveWeather.tempNum >= 30 ? 'חם' : effectiveWeather.tempNum >= 22 ? 'נוח לטיול' : 'קריר';
+    effectiveWeather.isTempSafe = effectiveWeather.tempNum < 38;
+  } else if (timeOfDay === 'evening') {
+    effectiveWeather.tempNum -= 4;
+    effectiveWeather.heatLoad = effectiveWeather.tempNum >= 30 ? 'חם' : effectiveWeather.tempNum >= 22 ? 'נוח לטיול' : 'קריר';
+    effectiveWeather.isTempSafe = effectiveWeather.tempNum < 38;
+  }
+  
+  effectiveWeather.temp = `${effectiveWeather.tempNum}°C`;
 
   const isSafe = effectiveWeather.isTempSafe && effectiveWeather.isRainSafe && (!waterAdvisory || waterAdvisory.level !== 'danger');
   const isWarning = waterAdvisory && waterAdvisory.level === 'warning';
@@ -258,6 +272,28 @@ export default function FloatingMapCard({
           ) : (
             <><ShieldAlert size={20} /><span>לא מומלץ כעת ✗</span></>
           )}
+        </div>
+
+        {/* Time of Day Slider */}
+        <div className="bg-brand-deep/40 rounded-xl p-3 border border-white/[0.04]">
+          <div className="flex justify-between text-[10px] font-bold text-zinc-400 mb-2">
+            <span className={timeOfDay === 'morning' ? 'text-accent' : ''} onClick={() => setTimeOfDay('morning')} style={{cursor: 'pointer'}}>בוקר (08:00)</span>
+            <span className={timeOfDay === 'noon' ? 'text-accent' : ''} onClick={() => setTimeOfDay('noon')} style={{cursor: 'pointer'}}>צהריים (14:00)</span>
+            <span className={timeOfDay === 'evening' ? 'text-accent' : ''} onClick={() => setTimeOfDay('evening')} style={{cursor: 'pointer'}}>ערב (19:00)</span>
+          </div>
+          <input 
+            type="range" 
+            min="0" max="2" 
+            step="1"
+            value={timeOfDay === 'morning' ? 0 : timeOfDay === 'noon' ? 1 : 2}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              if (val === 0) setTimeOfDay('morning');
+              else if (val === 1) setTimeOfDay('noon');
+              else setTimeOfDay('evening');
+            }}
+            className="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-accent"
+          />
         </div>
 
         {/* Mini Metrics Row */}
