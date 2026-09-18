@@ -97,6 +97,7 @@ export default function FloatingMapCard({
 }) {
   if (!asset) return null;
 
+  const [activeDay, setActiveDay] = useState(selectedDayIndex);
   const [liveWeather, setLiveWeather] = useState(null);
   const [isLoadingLive, setIsLoadingLive] = useState(false);
   const [driveTime, setDriveTime] = useState(null);
@@ -104,7 +105,42 @@ export default function FloatingMapCard({
   const [alternatives, setAlternatives] = useState([]);
   const [timeOfDay, setTimeOfDay] = useState('noon'); // 'morning', 'noon', 'evening'
 
-  const fallbackWeather = getSiteWeather(asset, activeScenario, selectedDayIndex);
+  // Build 4-day forecast data (Today + 3 upcoming days)
+  const fourDaysForecast = React.useMemo(() => {
+    const days = [];
+    const now = new Date();
+    const dayNames = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'שבת'];
+
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+
+      const label = i === 0 ? 'היום' : i === 1 ? 'מחר' : `יום ${dayNames[d.getDay()]}`;
+      const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
+      const weather = getSiteWeather(asset, activeScenario, i);
+      const waterAdv = getWaterAdvisory(asset);
+      const isDaySafe = weather.isTempSafe && weather.isRainSafe && (!waterAdv || waterAdv.level !== 'danger');
+      const isDayWarning = waterAdv && waterAdv.level === 'warning';
+
+      let weatherIcon = '☀️';
+      if (activeScenario === 'FLOOD' || !weather.isRainSafe) weatherIcon = '🌧️';
+      else if (activeScenario === 'HEATWAVE' || !weather.isTempSafe) weatherIcon = '🌡️';
+      else if (weather.tempVal < 23) weatherIcon = '🌤️';
+
+      days.push({
+        index: i,
+        label,
+        dateStr,
+        weather,
+        weatherIcon,
+        isSafe: isDaySafe,
+        isWarning: isDayWarning,
+      });
+    }
+    return days;
+  }, [asset, activeScenario]);
+
+  const fallbackWeather = getSiteWeather(asset, activeScenario, activeDay);
   const waterAdvisory = getWaterAdvisory(asset);
   const ageBadge = getAgeBadge(asset.min_age);
   const categoryIcon = getCategoryIconChar(asset);
@@ -115,7 +151,7 @@ export default function FloatingMapCard({
   useEffect(() => {
     let isMounted = true;
 
-    if (selectedDayIndex === 0 && activeScenario === 'NORMAL') {
+    if (activeDay === 0 && activeScenario === 'NORMAL') {
       setIsLoadingLive(true);
       WeatherService.fetchLiveWeather(asset)
         .then((data) => {
@@ -135,7 +171,7 @@ export default function FloatingMapCard({
     return () => {
       isMounted = false;
     };
-  }, [asset?.id, selectedDayIndex, activeScenario]);
+  }, [asset?.id, activeDay, activeScenario]);
 
   // Fetch OSRM Drive Time from Tel Aviv
   useEffect(() => {
@@ -152,7 +188,7 @@ export default function FloatingMapCard({
   }, [asset?.id, asset?.lat, asset?.lng]);
 
   // Use live data if available, otherwise fallback to forecast model
-  const effectiveWeather = (liveWeather && selectedDayIndex === 0 && activeScenario === 'NORMAL')
+  const effectiveWeather = (liveWeather && activeDay === 0 && activeScenario === 'NORMAL')
     ? {
         ...fallbackWeather,
         temp: liveWeather.temp,
@@ -167,7 +203,7 @@ export default function FloatingMapCard({
     : {
         ...fallbackWeather,
         isLive: false,
-        sourceLabel: selectedDayIndex === 0 ? 'תחזית IMS' : `תחזית ליום ${selectedDayIndex + 1}`,
+        sourceLabel: activeDay === 0 ? 'תחזית IMS' : `תחזית ליום ${activeDay + 1}`,
       };
 
   // Adjust temperature based on time of day
@@ -188,12 +224,12 @@ export default function FloatingMapCard({
 
   useEffect(() => {
     if (!isSafe && asset) {
-      setAlternatives(getSafeAlternatives(asset, assetsData, activeScenario, selectedDayIndex, 3));
+      setAlternatives(getSafeAlternatives(asset, assetsData, activeScenario, activeDay, 3));
     } else {
       setAlternatives([]);
       setShowAlternatives(false);
     }
-  }, [isSafe, asset, activeScenario, selectedDayIndex]);
+  }, [isSafe, asset, activeScenario, activeDay]);
 
   return (
     <div className="fixed top-24 left-3 right-3 sm:absolute sm:top-24 sm:left-5 sm:right-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
@@ -252,10 +288,55 @@ export default function FloatingMapCard({
       )}
 
       {/* ═══════════════════════════════════════════════════════ */}
-      {/* SECTION 1: האם בטוח?                                   */}
+      {/* SECTION 1: האם בטוח? + תחזית 4 ימים                    */}
       {/* ═══════════════════════════════════════════════════════ */}
       <div className="mx-4 mb-3 bg-brand-card rounded-2xl border border-white/[0.06] p-3.5 space-y-3">
-        <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">האם בטוח?</h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">האם בטוח? • תחזית 4 ימים</h4>
+          <span className="text-[10px] text-accent font-mono font-bold">
+            {fourDaysForecast[activeDay]?.label} ({fourDaysForecast[activeDay]?.dateStr})
+          </span>
+        </div>
+
+        {/* ── 4-Day Forecast Interactive Grid (Today + 3 Days) ── */}
+        <div className="grid grid-cols-4 gap-1.5">
+          {fourDaysForecast.map((day) => {
+            const isSelected = activeDay === day.index;
+            return (
+              <button
+                key={day.index}
+                onClick={() => setActiveDay(day.index)}
+                className={`p-2 rounded-xl flex flex-col items-center justify-between border transition-all text-center ${
+                  isSelected
+                    ? 'bg-accent/15 border-accent text-white shadow-[0_0_12px_rgba(45,212,191,0.25)]'
+                    : 'bg-brand-deep/50 hover:bg-brand-deep/80 border-white/[0.06] text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <span className={`text-[10px] font-bold ${isSelected ? 'text-accent' : ''}`}>
+                  {day.label}
+                </span>
+                <span className="text-[9px] text-zinc-500 font-mono -mt-0.5">
+                  {day.dateStr}
+                </span>
+                <div className="text-base my-0.5">
+                  {day.weatherIcon}
+                </div>
+                <span className={`text-xs font-black font-mono leading-none ${isSelected ? 'text-white' : 'text-zinc-300'}`}>
+                  {day.weather.tempVal}°
+                </span>
+                <span className={`text-[8px] font-bold px-1 py-0.5 mt-1 rounded leading-tight ${
+                  day.isSafe && !day.isWarning
+                    ? 'bg-emerald-500/20 text-emerald-300'
+                    : day.isWarning
+                    ? 'bg-amber-500/20 text-amber-300'
+                    : 'bg-red-500/20 text-red-300'
+                }`}>
+                  {day.isSafe && !day.isWarning ? '✓ בטוח' : day.isWarning ? '⚠️ זהירות' : '✗ שרב'}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         
         {/* Big Status Badge */}
         <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2.5 text-sm font-black border ${
