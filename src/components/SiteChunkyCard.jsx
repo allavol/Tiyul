@@ -1,5 +1,6 @@
 import React from 'react';
-import { Shield, AlertTriangle, CheckCircle, Calendar, CloudSun, Radio } from 'lucide-react';
+import { Shield, AlertTriangle, CheckCircle, CloudSun, Navigation, Baby } from 'lucide-react';
+import { getSiteWeather, getWaterAdvisory } from '../utils/weatherUtils';
 
 export default function SiteChunkyCard({
   asset,
@@ -9,107 +10,96 @@ export default function SiteChunkyCard({
   const isSafeHaven = asset.vulnerabilities?.includes('Safe Haven') || asset.category === 'safe_haven';
   const isAlert = asset.status === 'CRITICAL' || asset.status === 'REROUTED';
 
-  // 1. Classification text
-  const classification = asset.type?.join(' • ') || 'שמורת טבע';
-
-  // 2. Busy Days
-  const busyDays = asset.busy_days || 'עומס שיא: סופי שבוע וחגים (Peak: Weekends)';
-
-  // 3. Status Banner Config
-  let bannerBg = 'bg-emerald-600 text-white';
-  let bannerText = 'SAFE (בטוח לביקור)';
-  let bannerIcon = <CheckCircle size={14} className="flex-shrink-0" />;
-
-  if (isAlert) {
-    bannerBg = 'bg-red-600 text-white';
-    bannerText = 'ALERT (סכנת פגיעה - הופנה למקלט)';
-    bannerIcon = <AlertTriangle size={14} className="flex-shrink-0" />;
-  } else if (isSafeHaven) {
-    bannerBg = 'bg-sky-600 text-white';
-    bannerText = 'SAFE HAVEN (מקלט חירום מוגן)';
-    bannerIcon = <Shield size={14} className="flex-shrink-0" />;
-  }
-
-  // 4. Agent Logic Matrix
-  const weatherStatus = isAlert ? 'ALERT (סכנה)' : 'OK (תקין)';
-  const weatherBg = isAlert ? 'bg-red-950/80 text-red-300 border-red-800' : 'bg-slate-900 text-slate-300 border-slate-700';
-
-  const fieldAlertsStatus = isAlert ? 'ALERT (פעיל)' : 'OK (אין)';
-  const fieldAlertsBg = isAlert ? 'bg-red-950/80 text-red-300 border-red-800' : 'bg-slate-900 text-slate-300 border-slate-700';
-
-  const summarySentence = asset.agentSummary || (
-    isAlert
-      ? `זוהה איום בסמיכות לאתר. מפנה אוטונומית אל ${asset.rerouteTarget?.name || 'מקלט בטוח'}.`
-      : isSafeHaven
-      ? 'מוגדר כמקלט בטוח מבוצר עם נגישות מלאה לצוותי חירום.'
-      : 'כל מדדי מזג האוויר וה-OSINT תקינים. פתוח לפעילות מלאה.'
-  );
+  const weather = getSiteWeather(asset, 'NORMAL', 0); // basic fallback
+  const advisory = getWaterAdvisory(asset);
 
   return (
     <div
       onClick={() => onSelect?.(asset.id)}
-      className={`bg-slate-800 rounded-lg p-4 mb-3 border transition cursor-pointer select-none ${
+      className={`rounded-xl p-3 mb-3 border transition cursor-pointer select-none flex flex-col gap-2.5 ${
         isSelected
-          ? 'border-sky-500 shadow-md ring-1 ring-sky-500'
+          ? 'bg-slate-800 border-accent shadow-[0_0_15px_rgba(45,212,191,0.2)]'
           : isAlert
-          ? 'border-red-600/80 hover:border-red-500'
-          : 'border-slate-700 hover:border-slate-500'
+          ? 'bg-red-950/20 border-red-900/50 hover:border-red-500/50'
+          : 'bg-slate-800/50 border-slate-700/50 hover:border-slate-600'
       }`}
     >
-      {/* 1. Header: Site Name & Classification */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div>
-          <h3 className="text-sm font-bold text-slate-100 leading-snug">{asset.name}</h3>
-          <span className="text-[11px] text-slate-400 font-medium">{classification}</span>
+      {/* Contingency Banner if Alert */}
+      {isAlert && (
+        <div className="bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg px-3 py-2 text-xs font-bold flex items-center gap-2">
+          <AlertTriangle size={14} />
+          <span>סכנה: תנאי מזג אוויר או שטח מסוכנים. מומלץ מקלט.</span>
         </div>
-        <span className="text-[10px] text-slate-400 bg-slate-900 border border-slate-700 px-2 py-0.5 rounded font-mono flex-shrink-0">
-          #{asset.id}
-        </span>
-      </div>
+      )}
 
-      {/* 2. Busy Days */}
-      <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mb-3">
-        <Calendar size={12} className="text-slate-500 flex-shrink-0" />
-        <span className="truncate">{busyDays}</span>
-      </div>
-
-      {/* 3. Status Banner */}
-      <div className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded font-bold text-xs tracking-wide uppercase mb-3 ${bannerBg}`}>
-        {bannerIcon}
-        <span>{bannerText}</span>
-      </div>
-
-      {/* 4. Agent Logic Matrix */}
-      <div className="bg-slate-900/90 rounded border border-slate-700/80 p-2.5 flex flex-col gap-2">
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-slate-800 pb-1">
-          <span>Agent Logic Matrix</span>
-          <span className="text-[9px] font-mono text-sky-400">המדריך-v2</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className={`p-1.5 rounded border flex flex-col gap-0.5 ${weatherStatus.includes('ALERT') ? 'bg-red-950/70 border-red-800 text-red-200' : 'bg-slate-800/80 border-slate-700 text-slate-300'}`}>
-            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-              <CloudSun size={11} />
-              <span>Weather Data</span>
-            </span>
-            <span className="font-mono font-bold text-[11px]">{weatherStatus}</span>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {/* Status Badge */}
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            isAlert ? 'bg-red-500/20 text-red-500' : isSafeHaven ? 'bg-sky-500/20 text-sky-500' : 'bg-emerald-500/20 text-emerald-500'
+          }`}>
+            {isAlert ? <AlertTriangle size={16} /> : isSafeHaven ? <Shield size={16} /> : <CheckCircle size={16} />}
           </div>
-
-          <div className={`p-1.5 rounded border flex flex-col gap-0.5 ${fieldAlertsStatus.includes('ALERT') ? 'bg-red-950/70 border-red-800 text-red-200' : 'bg-slate-800/80 border-slate-700 text-slate-300'}`}>
-            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-              <Radio size={11} />
-              <span>Field Alerts</span>
-            </span>
-            <span className="font-mono font-bold text-[11px]">{fieldAlertsStatus}</span>
+          <div>
+            <h3 className="text-sm font-bold text-slate-100">{asset.name}</h3>
+            <span className="text-[10px] text-slate-400 uppercase tracking-wider">{asset.type?.join(' • ') || 'שמורת טבע'}</span>
           </div>
         </div>
-
-        {/* Summary sentence */}
-        <div className="text-[11px] text-slate-300 leading-relaxed font-sans pt-1 border-t border-slate-800/80">
-          <span className="text-slate-400 font-semibold">סיכום סוכן: </span>
-          <span>{summarySentence}</span>
-        </div>
       </div>
+
+      {/* Micro-Indicators (Safe/Safe Haven Mode) */}
+      {!isAlert && (
+        <div className="flex items-center gap-2">
+          <div className="bg-slate-900/50 border border-slate-700/50 rounded-full px-2 py-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-300">
+            <CloudSun size={12} className="text-amber-400" />
+            <span>{weather.tempNum}°C</span>
+          </div>
+          <div className="bg-slate-900/50 border border-slate-700/50 rounded-full px-2 py-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-300">
+            <span className="text-blue-400">💧</span>
+            <span>{advisory?.level === 'danger' ? 'סכנה' : advisory?.level === 'warning' ? 'אזהרה' : 'בטוח'}</span>
+          </div>
+          <div className="bg-slate-900/50 border border-slate-700/50 rounded-full px-2 py-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-300">
+            <Baby size={12} className="text-emerald-400" />
+            <span>{asset.min_age === 0 ? '0+ (עגלות)' : `${asset.min_age}+ שנים`}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Inline Plan B (Contingency Mode) */}
+      {isAlert && asset.rerouteTarget && (
+        <div className="bg-slate-900/60 border border-slate-700 rounded-lg p-2.5 flex flex-col gap-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase">חלופה בטוחה (Plan B):</span>
+          <div className="flex items-center gap-2">
+            <div className="bg-accent/20 text-accent w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
+              <Shield size={12} />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-200">{asset.rerouteTarget.name}</div>
+              <div className="text-[10px] text-slate-400">מרחק בטוח מגורם הסיכון</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CTA Button */}
+      <button className={`w-full py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+        isAlert 
+          ? 'bg-red-600 hover:bg-red-500 text-white' 
+          : 'bg-accent/10 text-accent hover:bg-accent hover:text-white border border-accent/20'
+      }`}>
+        {isAlert ? (
+          <>
+            <Navigation size={14} />
+            <span>שינוי מסלול לתוכנית ב'</span>
+          </>
+        ) : (
+          <>
+            <Navigation size={14} />
+            <span>ניווט בטוח במסלול</span>
+          </>
+        )}
+      </button>
     </div>
   );
 }
