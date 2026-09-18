@@ -24,7 +24,7 @@ export default function TerminalConsole({ logs = [], onClearLogs }) {
     if (type === 'success' || text.includes('Verified') || text.includes('STABLE')) {
       return '#00ff66';
     }
-    if (text.includes('[BAAL]')) {
+    if (text.includes('[BAAL]') || text.includes('[המדריך]')) {
       return '#00f0ff';
     }
     return '#94a3b8';
@@ -67,7 +67,7 @@ export default function TerminalConsole({ logs = [], onClearLogs }) {
               letterSpacing: '1px',
             }}
           >
-            BAAL TACTICAL CONSOLE // C4I KERNEL
+            המדריך TACTICAL CONSOLE // C4I KERNEL
           </span>
           <span
             style={{
@@ -141,7 +141,7 @@ export default function TerminalConsole({ logs = [], onClearLogs }) {
 
         {/* Prompt with Blinking Cursor */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-          <span style={{ color: 'var(--accent-cyan)' }}>BAAL&gt;</span>
+          <span style={{ color: 'var(--accent-cyan)' }}>המדריך&gt;</span>
           <span className="cursor-blink" style={{ color: 'var(--accent-green)', fontWeight: 800 }}>
             █
           </span>

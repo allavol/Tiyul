@@ -81,7 +81,7 @@ export default function LuxeTopBar({
               </span>
             </div>
             <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8' }}>
-              חמ"ל טקטי לניטור איומים, מזג אוויר ו-OSINT בזמן אמת // סוכן BAAL
+              חמ"ל טקטי לניטור איומים, מזג אוויר ו-OSINT בזמן אמת // סוכן המדריך
             </p>
           </div>
         </div>

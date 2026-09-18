@@ -80,7 +80,7 @@ export default function HeaderHUD({
               letterSpacing: '0.8px',
             }}
           >
-            FAMILY MISSION CONTROL // AUTONOMOUS AGENT: BAAL
+            FAMILY MISSION CONTROL // AUTONOMOUS AGENT: המדריך
           </div>
         </div>
       </div>

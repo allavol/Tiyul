@@ -83,7 +83,7 @@ export default function SiteChunkyCard({
       <div className="bg-slate-900/90 rounded border border-slate-700/80 p-2.5 flex flex-col gap-2">
         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-slate-800 pb-1">
           <span>Agent Logic Matrix</span>
-          <span className="text-[9px] font-mono text-sky-400">BAAL-v2</span>
+          <span className="text-[9px] font-mono text-sky-400">המדריך-v2</span>
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-xs">

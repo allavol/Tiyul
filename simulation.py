@@ -11,7 +11,7 @@ from skills.update_c4i_dashboard import update_c4i_dashboard
 
 
 def run_c4i_simulation():
-    print(">> [BAAL C4I AGENT]: Initializing Asset Threat Scan...")
+    print(">> [המדריך C4I AGENT]: Initializing Asset Threat Scan...")
     
     # Target Asset: Ein Gedi Nature Reserve (ID: 103)
     asset_id = 103
@@ -46,9 +46,9 @@ def run_c4i_simulation():
             confidence_score=confidence_score,
             reasoning_log=reasoning_log
         )
-        print(">> [BAAL C4I AGENT]: Reroute execution completed successfully.")
+        print(">> [המדריך C4I AGENT]: Reroute execution completed successfully.")
     else:
-        print(">> [BAAL C4I AGENT]: Asset within safe operational parameters. No rerouting needed.")
+        print(">> [המדריך C4I AGENT]: Asset within safe operational parameters. No rerouting needed.")
 
 
 if __name__ == "__main__":
