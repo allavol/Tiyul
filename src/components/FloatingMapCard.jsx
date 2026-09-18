@@ -172,16 +172,16 @@ export default function FloatingMapCard({
 
   // Adjust temperature based on time of day
   if (timeOfDay === 'morning') {
-    effectiveWeather.tempNum -= 3;
-    effectiveWeather.heatLoad = effectiveWeather.tempNum >= 30 ? 'חם' : effectiveWeather.tempNum >= 22 ? 'נוח לטיול' : 'קריר';
-    effectiveWeather.isTempSafe = effectiveWeather.tempNum < 38;
+    effectiveWeather.tempVal -= 3;
+    effectiveWeather.heatIndex = effectiveWeather.tempVal >= 30 ? 'חם' : effectiveWeather.tempVal >= 22 ? 'נוח לטיול' : 'קריר';
+    effectiveWeather.isTempSafe = effectiveWeather.tempVal < 38;
   } else if (timeOfDay === 'evening') {
-    effectiveWeather.tempNum -= 4;
-    effectiveWeather.heatLoad = effectiveWeather.tempNum >= 30 ? 'חם' : effectiveWeather.tempNum >= 22 ? 'נוח לטיול' : 'קריר';
-    effectiveWeather.isTempSafe = effectiveWeather.tempNum < 38;
+    effectiveWeather.tempVal -= 4;
+    effectiveWeather.heatIndex = effectiveWeather.tempVal >= 30 ? 'חם' : effectiveWeather.tempVal >= 22 ? 'נוח לטיול' : 'קריר';
+    effectiveWeather.isTempSafe = effectiveWeather.tempVal < 38;
   }
   
-  effectiveWeather.temp = `${effectiveWeather.tempNum}°C`;
+  effectiveWeather.temp = `${effectiveWeather.tempVal}°C`;
 
   const isSafe = effectiveWeather.isTempSafe && effectiveWeather.isRainSafe && (!waterAdvisory || waterAdvisory.level !== 'danger');
   const isWarning = waterAdvisory && waterAdvisory.level === 'warning';
@@ -196,7 +196,7 @@ export default function FloatingMapCard({
   }, [isSafe, asset, activeScenario, selectedDayIndex]);
 
   return (
-    <div className="fixed top-3 left-3 right-3 sm:absolute sm:top-5 sm:left-5 sm:right-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
+    <div className="fixed top-20 left-3 right-3 sm:absolute sm:top-20 sm:right-5 sm:left-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
 
       {/* ── Header: Name + Region + Close ────────────────────── */}
       <div className="p-4 pb-3 flex items-start justify-between gap-2">
