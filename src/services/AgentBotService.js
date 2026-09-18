@@ -300,6 +300,38 @@ export class AgentBotService {
     const text = message.toLowerCase();
     const currentState = sessionState || this.getInitialState();
 
+    // 1.1 Handle Full Conversation Reset ("התחל מחדש", "אפס שיחה", "נקה שיחה", "restart", "reset")
+    if (
+      text.includes('התחל מחדש') ||
+      text.includes('להתחיל מחדש') ||
+      text.includes('אפס שיחה') ||
+      text.includes('לאפס שיחה') ||
+      text.includes('התחל מהתחלה') ||
+      text.includes('להתחיל מהתחלה') ||
+      text.includes('אפס הכל') ||
+      text.includes('נקה שיחה') ||
+      text === 'ריסט' ||
+      text === 'איפוס' ||
+      text === 'מחדש' ||
+      text === 'restart' ||
+      text === 'reset'
+    ) {
+      const freshState = this.getInitialState();
+      return {
+        text: 'השיחה אופסה בהצלחה! 🌿 ספרו לי: **לאיזה אזור בארץ תרצו לטייל ומתי?** (למשל: *"רוצים לטייל מחר בצפון עם ילדים קטנים בני 4, מחפשים מים"*).',
+        state: freshState,
+        options: [
+          { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+          { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
+          { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
+          { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
+          { label: '🎲 לא משנה לי / כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
+        ],
+        proposals: [],
+        toolActivity: null,
+      };
+    }
+
     // 1.2 Handle Explicit Parameter Reset Buttons ("שנה אזור", "בדוק תאריך אחר", "שנה גיל מטייל")
     if (text.includes('שנה אזור') || text.includes('אזור אחר') || text.includes('איזור אחר')) {
       const resetState = { ...currentState, region: null, regionLabel: null };
