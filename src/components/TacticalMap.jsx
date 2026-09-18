@@ -176,7 +176,7 @@ export default function TacticalMap({
         duration: 1.2,
       });
     }
-  }, [assets, selectedAssetId, onSelectAsset]);
+  }, [filteredAssets, selectedAssetId, onSelectAsset]);
 
   // Handle flyTo when a single asset is selected
   useEffect(() => {
