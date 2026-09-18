@@ -1,4 +1,4 @@
-import { AgentBotService } from '../src/services/AgentBotService.js';
+import { AgentBotService, calculateHaversineDistanceKm } from '../src/services/AgentBotService.js';
 import assert from 'node:assert';
 
 console.log('🧪 Starting AgentBot Resilience & Infinite Loop Prevention Test Suite...\n');
@@ -189,6 +189,42 @@ await runTest('Loop Test 8: Complete Full-Parameter One-Shot Generation', async 
   assert.strictEqual(response.state.region, 'north');
   assert.strictEqual(response.state.feature, 'water');
   assert.strictEqual(response.state.minAge, 4);
+});
+
+// ── Test 9: Distance / Proximity Radius Queries ──────────────────
+await runTest('Loop Test 9: Distance Radius Queries ("40 קמ מתל אביב", "30 קמ מירושלים")', async () => {
+  // Query 1: 40 km from Tel Aviv
+  const res1 = await AgentBotService.processUserMessage('טיול מים מחר עד 40 קמ מתל אביב לגיל 4');
+  assert.strictEqual(res1.state.region, 'radius');
+  assert.strictEqual(res1.state.maxDistanceKm, 40);
+  assert.strictEqual(res1.state.originName, 'תל אביב');
+  assert.ok(res1.proposals && res1.proposals.length > 0, 'Should return sites within 40km of Tel Aviv');
+  for (const p of res1.proposals) {
+    const dist = calculateHaversineDistanceKm(32.0853, 34.7818, p.lat, p.lng);
+    assert.ok(dist <= 40, `Site ${p.name} distance ${dist}km exceeds 40km`);
+  }
+
+  // Query 2: 30 km from Jerusalem
+  const res2 = await AgentBotService.processUserMessage('טיול מוצל מחר עד 30 קמ מירושלים לגיל 7');
+  assert.strictEqual(res2.state.region, 'radius');
+  assert.strictEqual(res2.state.maxDistanceKm, 30);
+  assert.strictEqual(res2.state.originName, 'ירושלים');
+  assert.ok(res2.proposals && res2.proposals.length > 0, 'Should return sites within 30km of Jerusalem');
+  for (const p of res2.proposals) {
+    const dist = calculateHaversineDistanceKm(31.7683, 35.2137, p.lat, p.lng);
+    assert.ok(dist <= 30, `Site ${p.name} distance ${dist}km exceeds 30km`);
+  }
+});
+
+// ── Test 10: Zero-Results Polite Rejection & Alternatives ───────
+await runTest('Loop Test 10: Zero-Results Polite Rejection & Alternatives', async () => {
+  // Impossible constraint: Abseiling within 2 km of Tel Aviv with a baby stroller (0+)
+  const impossible = 'רוצה מסלול סנפלינג אתגרי עד 2 קמ מתל אביב עם עגלת תינוק 0+ למחר';
+  const res = await AgentBotService.processUserMessage(impossible);
+
+  assert.ok(res.text.includes('לא מצאתי מסלולים המתאימים') || res.text.includes('נשמח לנסות שוב'), 'Must return polite explanation');
+  assert.strictEqual(res.proposals.length, 0, 'Must have 0 proposals (no hallucination/silent bad match)');
+  assert.ok(res.options && res.options.length > 0, 'Must provide retry/expansion options');
 });
 
 console.log(`\n==================================================`);
