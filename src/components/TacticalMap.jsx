@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import FloatingMapCard from './FloatingMapCard';
 import NationalRadarCard from './NationalRadarCard';
@@ -25,13 +25,15 @@ export default function TacticalMap({
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'water', 'stroller', 'safe'
 
   // Filter Assets
-  const filteredAssets = assets.filter((asset) => {
-    if (activeFilter === 'all') return true;
-    if (activeFilter === 'water') return (asset.type || []).some(t => t.includes('מים') || t.includes('מעיין') || t.includes('נחל'));
-    if (activeFilter === 'stroller') return asset.stroller_accessible || asset.min_age === 0;
-    if (activeFilter === 'safe') return !asset.vulnerabilities?.includes('Extreme Heat') && !asset.status;
-    return true;
-  });
+  const filteredAssets = useMemo(() => {
+    return assets.filter((asset) => {
+      if (activeFilter === 'all') return true;
+      if (activeFilter === 'water') return (asset.type || []).some(t => t.includes('מים') || t.includes('מעיין') || t.includes('נחל'));
+      if (activeFilter === 'stroller') return asset.stroller_accessible || asset.min_age === 0;
+      if (activeFilter === 'safe') return !asset.vulnerabilities?.includes('Extreme Heat') && !asset.status;
+      return true;
+    });
+  }, [assets, activeFilter]);
 
   // Initialize Map
   useEffect(() => {
