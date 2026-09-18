@@ -144,15 +144,18 @@ export class AgentBotService {
       updated.minAge = 0;
       updated.minAgeLabel = 'לכל הגילאים (0+)';
     }
-    if (text.includes('לא משנה לי סגנון') || text.includes('הכל מתאים') || text.includes('הכל הולך') || text.includes('מה שהכי מומלץ') || text.includes('ללא העדפה לסגנון')) {
+    if (text.includes('לא משנה לי סגנון') || text.includes('הכל מתאים') || text.includes('הכל הולך') || text.includes('מה שהכי מומלץ') || text.includes('ללא העדפה לסגנון') || text.includes('גם וגם') || text.includes('שניהם') || text.includes('שילוב')) {
       updated.feature = 'any';
-      updated.featureLabel = 'כל סגנונות המסלול';
+      updated.featureLabel = text.includes('גם וגם') ? 'גם וגם (שילוב סגנונות)' : 'כל סגנונות המסלול';
     }
 
-    // Generic "לא משנה לי" / "לא משנה" / "אין לי העדפה" when dimension wasn't explicit
+    // Generic "לא משנה לי" / "גם וגם" / "לא משנה" / "אין לי העדפה" when dimension wasn't explicit
     const isGenericAny = (
       text === 'לא משנה' || 
       text === 'לא משנה לי' || 
+      text === 'גם וגם' ||
+      text.includes('גם וגם') ||
+      text.includes('שניהם') ||
       text.includes('לא משנה לי') || 
       text.includes('לא משנה') || 
       text.includes('אין לי העדפה') || 
@@ -568,6 +571,7 @@ export class AgentBotService {
           { label: '🌲 יער מוצל וקריר', value: 'מעדיפים יער מוצל ושבילי הליכה', field: 'feature' },
           { label: '🧗 סנפלינג / מסלול אתגרי', value: 'מחפשים סנפלינג או מסלול אתגרי', field: 'feature' },
           { label: '🏰 תצפית ועתיקות', value: 'מעוניינים בתצפית נוף ואתר היסטורי', field: 'feature' },
+          { label: '✨ גם וגם / שילוב סגנונות', value: 'מעדיפים שילוב של מים, צל ונוף - גם וגם', field: 'feature' },
           { label: '🎲 לא משנה לי / הכל מתאים', value: 'לא משנה לי סגנון המסלול, מה שהכי מומלץ ובטוח', field: 'feature' },
         ];
         break;
