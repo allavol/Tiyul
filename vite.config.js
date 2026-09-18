@@ -9,6 +9,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: { enabled: true },
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         name: 'Tiyul - GeoGuard',
         short_name: 'Tiyul',

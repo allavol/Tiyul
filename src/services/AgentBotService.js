@@ -55,13 +55,53 @@ export class AgentBotService {
   }
 
   /**
-   * Check message against strict safety guardrails & foreign countries
+   * Check message against strict safety guardrails, foreign countries, and non-Hebrew languages
    */
   static checkGuardrails(message) {
     if (!message || typeof message !== 'string') return { safe: true };
-    const lower = message.toLowerCase();
+    const trimmed = message.trim();
+    const lower = trimmed.toLowerCase();
 
-    // 1. Check foreign countries / travel abroad
+    // 1. Check if user is writing in a foreign language (English, Russian, Arabic, French, Spanish, etc.)
+    const hebrewLetters = (trimmed.match(/[\u0590-\u05FF]/g) || []).length;
+    const cyrillicLetters = (trimmed.match(/[\u0400-\u04FF]/g) || []).length;
+    const arabicLetters = (trimmed.match(/[\u0600-\u06FF]/g) || []).length;
+    const latinLetters = (trimmed.match(/[a-zA-Z]/g) || []).length;
+
+    // If message is in a foreign language (has foreign characters and NO Hebrew):
+    if (hebrewLetters === 0 && (cyrillicLetters > 2 || arabicLetters > 2 || latinLetters > 3)) {
+      if (cyrillicLetters > 2) {
+        return {
+          safe: false,
+          refusal: 'Здравствуйте! 🌿 Я виртуальный гид по походам в Израиле. В настоящее время я общаюсь только на **иврите**. Пожалуйста, напишите мне на иврите, и я с радостью помогу вам спланировать отличный и безопасный маршрут!',
+        };
+      }
+      if (arabicLetters > 2) {
+        return {
+          safe: false,
+          refusal: 'مرحباً! 🌿 أنا المرشد الذكي لمסارات الطبيعة في إسرائيل. أتحدث باللغة **العبرية** فقط حالياً. يرجى مراسلتي باللغة العبرية لمساعدتك في العثور على أفضل المسارات والرحلات!',
+        };
+      }
+      if (lower.includes('bonjour') || lower.includes('salut') || lower.includes('merci') || lower.includes('randonn')) {
+        return {
+          safe: false,
+          refusal: 'Bonjour ! 🌿 Je suis le guide virtuel de randonnée en Israël. Pour le moment, je communique uniquement en **hébreu**. Veuillez m\'écrire en hébreu afin que je puisse vous aider à planifier votre itinéraire !',
+        };
+      }
+      if (lower.includes('hola') || lower.includes('buenos') || lower.includes('gracias') || lower.includes('ruta')) {
+        return {
+          safe: false,
+          refusal: '¡Hola! 🌿 Soy el guía virtual de senderismo en Israel. Actualmente solo me comunico en **hebreo**. ¡Por favor escríbeme en hebreo para ayudarte a planificar tu ruta perfecta!',
+        };
+      }
+      // Default English
+      return {
+        safe: false,
+        refusal: 'Hello! 🌿 I am the "Where to Hike?" AI guide for nature reserves and hiking trails in Israel. Currently, I only communicate in **Hebrew**. Please write to me in Hebrew so I can help you plan the perfect, safe outdoor adventure!',
+      };
+    }
+
+    // 2. Check foreign countries / travel abroad
     for (const fKw of FOREIGN_COUNTRIES_KEYWORDS) {
       if (lower.includes(fKw)) {
         return {
@@ -71,7 +111,7 @@ export class AgentBotService {
       }
     }
 
-    // 2. Check prohibited sensitive topics
+    // 3. Check prohibited sensitive topics
     for (const kw of PROHIBITED_KEYWORDS) {
       if (lower.includes(kw)) {
         return {
@@ -89,6 +129,53 @@ export class AgentBotService {
   static extractParameters(message, currentState) {
     const text = message.toLowerCase();
     const updated = { ...currentState };
+
+    // 0. Handle dimension-specific non-restrictive phrases
+    if (text.includes('לא משנה לי האזור') || text.includes('בכל הארץ') || text.includes('כל הארץ') || text.includes('כל מקום') || text.includes('ללא העדפה לאזור')) {
+      updated.region = 'all';
+      updated.regionLabel = 'כל הארץ';
+    }
+    if (text.includes('לא משנה לי התאריך') || text.includes('לא משנה מתי') || text.includes('בימים הקרובים') || text.includes('ללא העדפה לתאריך')) {
+      updated.timing = 'today';
+      updated.timingLabel = 'היום / בימים הקרובים';
+      updated.dayIndex = 0;
+    }
+    if (text.includes('לכל הגילאים') || text.includes('לא משנה הגיל') || text.includes('מתאים לכולם') || text.includes('ללא מגבלת גיל')) {
+      updated.minAge = 0;
+      updated.minAgeLabel = 'לכל הגילאים (0+)';
+    }
+    if (text.includes('לא משנה לי סגנון') || text.includes('הכל מתאים') || text.includes('הכל הולך') || text.includes('מה שהכי מומלץ') || text.includes('ללא העדפה לסגנון')) {
+      updated.feature = 'any';
+      updated.featureLabel = 'כל סגנונות המסלול';
+    }
+
+    // Generic "לא משנה לי" / "לא משנה" / "אין לי העדפה" when dimension wasn't explicit
+    const isGenericAny = (
+      text === 'לא משנה' || 
+      text === 'לא משנה לי' || 
+      text.includes('לא משנה לי') || 
+      text.includes('לא משנה') || 
+      text.includes('אין לי העדפה') || 
+      text.includes('אין העדפה') || 
+      text.includes('לא חשוב') ||
+      text.includes('לא קריטי')
+    );
+    if (isGenericAny) {
+      if (!updated.region) {
+        updated.region = 'all';
+        updated.regionLabel = 'כל הארץ';
+      } else if (!updated.timing) {
+        updated.timing = 'today';
+        updated.timingLabel = 'היום / בימים הקרובים';
+        updated.dayIndex = 0;
+      } else if (updated.minAge === null || updated.minAge === undefined) {
+        updated.minAge = 0;
+        updated.minAgeLabel = 'לכל הגילאים (0+)';
+      } else if (!updated.feature) {
+        updated.feature = 'any';
+        updated.featureLabel = 'כל סגנונות המסלול';
+      }
+    }
 
     // 1. Timing extraction
     if (text.includes('מחרתיים') || text.includes('בעוד יומיים')) {
@@ -415,6 +502,7 @@ export class AgentBotService {
           { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
           { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
           { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
+          { label: '🎲 לא משנה לי / כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
         ];
         break;
 
@@ -425,6 +513,7 @@ export class AgentBotService {
           { label: '🌅 מחר', value: 'מתכננים למחר', field: 'timing' },
           { label: '📆 מחרתיים', value: 'מתכננים למחרתיים', field: 'timing' },
           { label: '🏕️ סוף השבוע (שבת)', value: 'מתכננים לסוף השבוע', field: 'timing' },
+          { label: '🎲 לא משנה לי התאריך', value: 'לא משנה לי התאריך, בימים הקרובים', field: 'timing' },
         ];
         break;
 
@@ -435,6 +524,7 @@ export class AgentBotService {
           { label: '🧒 4+ (ילדים קטנים)', value: 'הילד הצעיר בן 4', field: 'minAge' },
           { label: '🧗 7+ (ילדים בוגרים)', value: 'הילד הצעיר בן 7', field: 'minAge' },
           { label: '🧗‍♂️ 10+ (נוער / מבוגרים)', value: 'כולם בני 10 ומעלה', field: 'minAge' },
+          { label: '🎲 לכל הגילאים / לא משנה', value: 'לכל הגילאים, מתאים לכולם', field: 'minAge' },
         ];
         break;
 
@@ -446,6 +536,7 @@ export class AgentBotService {
           { label: '🌲 יער מוצל וקריר', value: 'מעדיפים יער מוצל ושבילי הליכה', field: 'feature' },
           { label: '🧗 סנפלינג / מסלול אתגרי', value: 'מחפשים סנפלינג או מסלול אתגרי', field: 'feature' },
           { label: '🏰 תצפית ועתיקות', value: 'מעוניינים בתצפית נוף ואתר היסטורי', field: 'feature' },
+          { label: '🎲 לא משנה לי / הכל מתאים', value: 'לא משנה לי סגנון המסלול, מה שהכי מומלץ ובטוח', field: 'feature' },
         ];
         break;
     }
@@ -516,8 +607,14 @@ export class AgentBotService {
       return scoreB - scoreA;
     });
 
-    // Top 3 best matched sites
-    const topSites = candidates.slice(0, 3);
+    // Top 3 best matched sites (with guaranteed graceful fallback)
+    let topSites = candidates.slice(0, 3);
+    if (topSites.length === 0) {
+      topSites = assetsData.filter((s) => s.min_age <= targetAge).slice(0, 3);
+      if (topSites.length === 0) {
+        topSites = assetsData.slice(0, 3);
+      }
+    }
 
     // 3. Query Tomorrow.io live weather for each candidate
     const proposals = [];
