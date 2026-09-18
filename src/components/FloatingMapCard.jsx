@@ -196,7 +196,7 @@ export default function FloatingMapCard({
   }, [isSafe, asset, activeScenario, selectedDayIndex]);
 
   return (
-    <div className="fixed top-20 left-3 right-3 sm:absolute sm:top-20 sm:right-5 sm:left-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
+    <div className="fixed top-24 left-3 right-3 sm:absolute sm:top-24 sm:right-5 sm:left-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
 
       {/* ── Header: Name + Region + Close ────────────────────── */}
       <div className="p-4 pb-3 flex items-start justify-between gap-2">

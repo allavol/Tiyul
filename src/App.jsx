@@ -230,7 +230,7 @@ export default function App() {
   ];
 
   return (
-    <div className={`w-screen h-screen flex flex-col bg-brand-deep text-[var(--text-primary)] overflow-hidden font-body select-none relative ${isLightMode ? 'light' : ''}`}>
+    <div className={`fixed inset-0 flex flex-col bg-brand-deep text-[var(--text-primary)] overflow-hidden font-body select-none ${isLightMode ? 'light' : ''}`}>
       {/* ── Full-Width Map (100% Screen) ─────────────────── */}
       <div className="w-full h-full relative z-10">
         <TacticalMap
@@ -267,7 +267,7 @@ export default function App() {
         )}
 
         {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
-        <div className="absolute bottom-16 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
+        <div className="absolute bottom-4 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
           {/* Main Chatbot Trigger */}
           <button
             onClick={() => setIsChatBotOpen(true)}

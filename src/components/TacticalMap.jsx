@@ -246,7 +246,7 @@ export default function TacticalMap({
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* Floating Filter Pills */}
-      <div className="absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-wrap justify-center items-center gap-2 bg-brand-deep/80 backdrop-blur-md px-3 py-2 rounded-3xl sm:rounded-full border border-white/[0.08] shadow-lg pointer-events-auto w-[92vw] sm:w-max max-w-[500px]">
+      <div className="absolute top-6 sm:top-8 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-wrap justify-center items-center gap-2 bg-brand-deep/80 backdrop-blur-md px-4 py-2 rounded-3xl sm:rounded-full border border-white/[0.08] shadow-lg pointer-events-auto w-[92vw] sm:w-max max-w-[520px]">
         <button 
           onClick={() => setActiveFilter('all')}
           className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilter === 'all' ? 'bg-accent text-white shadow-[0_0_10px_rgba(45,212,191,0.5)]' : 'text-zinc-400 hover:text-white'}`}
@@ -257,19 +257,22 @@ export default function TacticalMap({
           onClick={() => setActiveFilter('water')}
           className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'water' ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
-          מים <span>💧</span>
+          <span>💧</span>
+          <span>מים</span>
         </button>
         <button 
           onClick={() => setActiveFilter('stroller')}
           className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'stroller' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
-          עגלות <span>👶</span>
+          <span>👶</span>
+          <span>עגלות</span>
         </button>
         <button 
           onClick={() => setActiveFilter('safe')}
           className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'safe' ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
-          בטוח כעת <span>🛡️</span>
+          <span>🛡️</span>
+          <span>בטוח כעת</span>
         </button>
       </div>
 
