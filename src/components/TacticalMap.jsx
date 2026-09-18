@@ -246,7 +246,7 @@ export default function TacticalMap({
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* Floating Filter Pills */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] flex items-center gap-2 bg-brand-deep/80 backdrop-blur-md px-3 py-2 rounded-full border border-white/[0.08] shadow-lg pointer-events-auto">
+      <div className="absolute top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-[1000] flex items-center gap-2 bg-brand-deep/80 backdrop-blur-md px-3 py-2 rounded-full border border-white/[0.08] shadow-lg pointer-events-auto">
         <button 
           onClick={() => setActiveFilter('all')}
           className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilter === 'all' ? 'bg-accent text-white shadow-[0_0_10px_rgba(45,212,191,0.5)]' : 'text-zinc-400 hover:text-white'}`}
@@ -255,21 +255,21 @@ export default function TacticalMap({
         </button>
         <button 
           onClick={() => setActiveFilter('water')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${activeFilter === 'water' ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'water' ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
-          <span>💧</span> מים
+          מים <span>💧</span>
         </button>
         <button 
           onClick={() => setActiveFilter('stroller')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${activeFilter === 'stroller' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'stroller' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
-          <span>👶</span> עגלות
+          עגלות <span>👶</span>
         </button>
         <button 
           onClick={() => setActiveFilter('safe')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${activeFilter === 'safe' ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'safe' ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
-          <span>🛡️</span> בטוח כעת
+          בטוח כעת <span>🛡️</span>
         </button>
       </div>
 
