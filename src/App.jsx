@@ -39,11 +39,6 @@ export default function App() {
 
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
-    // 0. If AI Bot recommendations are active, display ONLY them!
-    if (recommendedAssetIds && recommendedAssetIds.length > 0) {
-      return assets.filter((asset) => recommendedAssetIds.includes(asset.id));
-    }
-
     let list = assets.filter((asset) => {
       // 1. Search query filter
       if (searchQuery.trim()) {
@@ -247,24 +242,8 @@ export default function App() {
           showNationalRadar={showNationalRadar}
           onCloseNationalRadar={() => setShowNationalRadar(false)}
           isLightMode={isLightMode}
+          recommendedAssetIds={recommendedAssetIds}
         />
-
-        {/* Active AI Recommendation Filter Banner (Top Center on Map) */}
-        {recommendedAssetIds && recommendedAssetIds.length > 0 && (
-          <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[1000] glass-panel py-2.5 px-5 rounded-full shadow-2xl flex items-center gap-3 text-xs font-bold text-white pointer-events-auto" style={{ borderColor: 'var(--border-accent)' }}>
-            <span className="flex items-center gap-1.5 text-accent">
-              <Sparkles className="w-4 h-4 animate-spin-slow" />
-              <span>מציג {filteredAssets.length} מסלולים מומלצים ע״י סוכן הטיולים</span>
-            </span>
-            <button
-              onClick={() => setRecommendedAssetIds(null)}
-              className="bg-brand-surface hover:bg-brand-card text-zinc-300 hover:text-white px-3 py-1 rounded-full text-[11px] transition flex items-center gap-1 border border-white/10 shadow"
-            >
-              <span>הצג את כל האתרים</span>
-              <span>↺</span>
-            </button>
-          </div>
-        )}
 
         {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
         <div className="absolute bottom-4 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
