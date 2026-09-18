@@ -269,16 +269,25 @@ export default function FloatingMapCard({
           <div className="flex items-center gap-2 bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.04]">
             <CloudRain size={14} className="text-blue-400 flex-shrink-0" />
             <div className="min-w-0">
-              <div className="text-[10px] text-zinc-500 font-medium">שיטפון</div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.rain.split('•')[0].trim()}</span>
-                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${
-                  effectiveWeather.isRainSafe 
-                    ? 'status-safe' 
-                    : 'status-danger'
-                }`}>
-                  {effectiveWeather.isRainSafe ? '✓ בטוח' : '✗ שיטפון'}
-                </span>
+              <div className="text-[10px] text-zinc-500 font-medium">משקעים / גשם</div>
+              <div className="flex flex-col gap-0.5 mt-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-black font-mono text-zinc-100 leading-none">
+                    {effectiveWeather.rain.includes('•') ? effectiveWeather.rain.split('•')[0].trim() : effectiveWeather.rain}
+                  </span>
+                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border leading-none ${
+                    effectiveWeather.isRainSafe 
+                      ? 'status-safe' 
+                      : 'status-warning'
+                  }`}>
+                    {effectiveWeather.isRainSafe ? '✓ יבש' : '🌂 גשם אפשרי'}
+                  </span>
+                </div>
+                {effectiveWeather.rain.includes('•') && (
+                  <span className="text-[9px] text-zinc-400 font-medium">
+                    {effectiveWeather.rain.split('•')[1].trim()}
+                  </span>
+                )}
               </div>
             </div>
           </div>
