@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar } from '../utils/weatherUtils';
 import { WeatherService } from '../services/WeatherService';
+import { getDriveTimeFromTelAviv } from '../services/osrmService';
 
 /**
  * Maps Hebrew type keywords to emoji icons for the "מה יש באתר?" section.
@@ -96,6 +97,7 @@ export default function FloatingMapCard({
 
   const [liveWeather, setLiveWeather] = useState(null);
   const [isLoadingLive, setIsLoadingLive] = useState(false);
+  const [driveTime, setDriveTime] = useState(null);
 
   const fallbackWeather = getSiteWeather(asset, activeScenario, selectedDayIndex);
   const waterAdvisory = getWaterAdvisory(asset);
@@ -129,6 +131,20 @@ export default function FloatingMapCard({
       isMounted = false;
     };
   }, [asset?.id, selectedDayIndex, activeScenario]);
+
+  // Fetch OSRM Drive Time from Tel Aviv
+  useEffect(() => {
+    let isMounted = true;
+    if (asset?.lat && asset?.lng) {
+      setDriveTime(null);
+      getDriveTimeFromTelAviv(asset.lat, asset.lng).then(data => {
+        if (isMounted && data) {
+          setDriveTime(data);
+        }
+      });
+    }
+    return () => { isMounted = false; };
+  }, [asset?.id, asset?.lat, asset?.lng]);
 
   // Use live data if available, otherwise fallback to forecast model
   const effectiveWeather = (liveWeather && selectedDayIndex === 0 && activeScenario === 'NORMAL')
@@ -168,9 +184,17 @@ export default function FloatingMapCard({
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] text-accent font-bold uppercase tracking-wider">{asset.region}</span>
               <span className="text-zinc-600">•</span>
-              <span className="text-[9px] font-mono font-bold text-accent/70 bg-accent/[0.08] px-1.5 py-0.5 rounded border border-accent/20">
+              <span className="text-[10px] font-mono font-bold text-accent/70 bg-accent/[0.08] px-1.5 py-0.5 rounded border border-accent/20">
                 {asset.authority_id || 'VERIFIED'}
               </span>
+              {driveTime && (
+                <>
+                  <span className="text-zinc-600">•</span>
+                  <span className="text-[10px] text-zinc-300 font-medium">
+                    🚗 מת"א: <span className="font-bold text-white">{driveTime.durationMins} דק'</span> <span className="text-[9px] text-zinc-500">({driveTime.distanceKm} ק"מ)</span>
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
