@@ -121,9 +121,17 @@ export default function FloatingMapCard({
       const waterAdv = getWaterAdvisory(asset);
       const isDaySafe = weather.isTempSafe && weather.isRainSafe && (!waterAdv || waterAdv.level !== 'danger');
       const isDayWarning = waterAdv && waterAdv.level === 'warning';
+      const isFloodRisk = activeScenario === 'FLOOD' && weather.isFloodVulnerable;
+
+      // Extract rain amount
+      const rainStr = (weather.rain || '').split('•')[0].trim();
+      const rainMatch = rainStr.match(/(\d+)/);
+      const rainMmVal = rainMatch ? Number(rainMatch[1]) : 0;
+      const rainText = rainMmVal > 0 ? `${rainMmVal} מ"מ` : '0 מ"מ';
 
       let weatherIcon = '☀️';
-      if (activeScenario === 'FLOOD' || !weather.isRainSafe) weatherIcon = '🌧️';
+      if (isFloodRisk) weatherIcon = '🌊';
+      else if (activeScenario === 'FLOOD' || rainMmVal > 0) weatherIcon = '🌧️';
       else if (activeScenario === 'HEATWAVE' || !weather.isTempSafe) weatherIcon = '🌡️';
       else if (weather.tempVal < 23) weatherIcon = '🌤️';
 
@@ -133,6 +141,9 @@ export default function FloatingMapCard({
         dateStr,
         weather,
         weatherIcon,
+        isFloodRisk,
+        rainMmVal,
+        rainText,
         isSafe: isDaySafe,
         isWarning: isDayWarning,
       });
@@ -306,32 +317,56 @@ export default function FloatingMapCard({
               <button
                 key={day.index}
                 onClick={() => setActiveDay(day.index)}
-                className={`p-2 rounded-xl flex flex-col items-center justify-between border transition-all text-center ${
+                className={`p-2 rounded-2xl flex flex-col items-center justify-between border transition-all text-center relative overflow-hidden ${
                   isSelected
                     ? 'bg-accent/15 border-accent text-white shadow-[0_0_12px_rgba(45,212,191,0.25)]'
                     : 'bg-brand-deep/50 hover:bg-brand-deep/80 border-white/[0.06] text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                <span className={`text-[10px] font-bold ${isSelected ? 'text-accent' : ''}`}>
+                {/* Day Header */}
+                <span className={`text-[10.5px] font-bold leading-tight ${isSelected ? 'text-accent' : ''}`}>
                   {day.label}
                 </span>
                 <span className="text-[9px] text-zinc-500 font-mono -mt-0.5">
                   {day.dateStr}
                 </span>
-                <div className="text-base my-0.5">
+
+                {/* Weather & Flood / Rain Indicator */}
+                <div className="text-xl my-0.5">
                   {day.weatherIcon}
                 </div>
-                <span className={`text-xs font-black font-mono leading-none ${isSelected ? 'text-white' : 'text-zinc-300'}`}>
+
+                {/* Temperature */}
+                <span className={`text-xs font-black font-mono leading-none ${isSelected ? 'text-white' : 'text-zinc-200'}`}>
                   {day.weather.tempVal}°
                 </span>
-                <span className={`text-[8px] font-bold px-1 py-0.5 mt-1 rounded leading-tight ${
+
+                {/* Rain mm or Flood Alert Badge */}
+                <div className="mt-1.5 w-full">
+                  {day.isFloodRisk ? (
+                    <span className="block text-[8.5px] font-black px-1 py-0.5 rounded bg-red-500/25 text-red-300 border border-red-500/40 leading-none">
+                      שיטפון! ⚠️
+                    </span>
+                  ) : (
+                    <span className={`block text-[8.5px] font-bold px-1 py-0.5 rounded font-mono leading-none ${
+                      day.rainMmVal > 0 
+                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' 
+                        : 'bg-zinc-800 text-zinc-400'
+                    }`}>
+                      {day.rainText}
+                    </span>
+                  )}
+                </div>
+
+                {/* Status Pill */}
+                <span className={`text-[8px] font-bold px-1 py-0.5 mt-1 rounded leading-tight w-full truncate ${
                   day.isSafe && !day.isWarning
                     ? 'bg-emerald-500/20 text-emerald-300'
                     : day.isWarning
                     ? 'bg-amber-500/20 text-amber-300'
                     : 'bg-red-500/20 text-red-300'
                 }`}>
-                  {day.isSafe && !day.isWarning ? '✓ בטוח' : day.isWarning ? '⚠️ זהירות' : '✗ שרב'}
+                  {day.isSafe && !day.isWarning ? '✓ בטוח' : day.isWarning ? '⚠️ זהירות' : '✗ סגור'}
                 </span>
               </button>
             );
@@ -347,11 +382,11 @@ export default function FloatingMapCard({
               : 'status-danger'
         }`}>
           {isSafe && !isWarning ? (
-            <><ShieldCheck size={20} /><span>בטוח לטיול ✓</span></>
+            <><ShieldCheck size={20} /><span>בטוח לטיול ✓ ({effectiveWeather.temp})</span></>
           ) : isWarning ? (
-            <><AlertTriangle size={20} /><span>זהירות — בדקו אזהרות</span></>
+            <><AlertTriangle size={20} /><span>זהירות — בדקו אזהרות ({effectiveWeather.temp})</span></>
           ) : (
-            <><ShieldAlert size={20} /><span>לא מומלץ כעת ✗</span></>
+            <><ShieldAlert size={20} /><span>לא מומלץ כעת ✗ ({effectiveWeather.temp})</span></>
           )}
         </div>
 
@@ -375,52 +410,6 @@ export default function FloatingMapCard({
             }}
             className="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-accent"
           />
-        </div>
-
-        {/* Mini Metrics Row */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.04]">
-            <Thermometer size={14} className="text-amber-400 flex-shrink-0" />
-            <div className="min-w-0">
-              <div className="text-[10px] text-zinc-500 font-medium">חום</div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-black font-mono text-zinc-100">{effectiveWeather.temp}</span>
-                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${
-                  effectiveWeather.isTempSafe 
-                    ? 'status-safe' 
-                    : 'status-danger'
-                }`}>
-                  {effectiveWeather.isTempSafe ? '✓ תקין' : '✗ שרב'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.04]">
-            <CloudRain size={14} className="text-blue-400 flex-shrink-0" />
-            <div className="min-w-0">
-              <div className="text-[10px] text-zinc-500 font-medium">משקעים / גשם</div>
-              <div className="flex flex-col gap-0.5 mt-0.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-black font-mono text-zinc-100 leading-none">
-                    {effectiveWeather.rain.includes('•') ? effectiveWeather.rain.split('•')[0].trim() : effectiveWeather.rain}
-                  </span>
-                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border leading-none ${
-                    effectiveWeather.isRainSafe 
-                      ? 'status-safe' 
-                      : 'status-warning'
-                  }`}>
-                    {effectiveWeather.isRainSafe ? '✓ יבש' : '🌂 גשם אפשרי'}
-                  </span>
-                </div>
-                {effectiveWeather.rain.includes('•') && (
-                  <span className="text-[9px] text-zinc-400 font-medium">
-                    {effectiveWeather.rain.split('•')[1].trim()}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* ── Alternatives Button & List (if unsafe) ── */}
