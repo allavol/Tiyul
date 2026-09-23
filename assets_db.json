@@ -1823,5 +1823,179 @@
       "עומס מבקרים בשבתות"
     ],
     "description": "פנינת טבע משוקמת עם אגמון ענק, מסתורי צפרות מעוצבים, גשרי עץ צפים ושבילים רחבים מונגשים לעגלות ופעוטות."
+  },
+  {
+    "id": 801,
+    "name": "שמורת שיזף ומצפור השלום - עין יהב",
+    "name_en": "Shezaf Reserve & Peace Vista - Ein Yahav",
+    "authority_id": "INPA-115",
+    "org": "רשות הטבע והגנים וקהילת עין יהב",
+    "region": "הערבה התיכונה ועין יהב",
+    "region_group": "south",
+    "lat": 30.665,
+    "lng": 35.242,
+    "category": "desert",
+    "type": [
+      "עין יהב",
+      "ערבה",
+      "דרך השלום",
+      "חולות אדומים",
+      "ציפורי מדבר",
+      "תצפית נוף",
+      "שביל קל"
+    ],
+    "type_en": [
+      "Ein Yahav",
+      "Arava",
+      "Desert Sands",
+      "Lookout",
+      "Family Trail"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום קיצוני בקיץ"
+    ],
+    "description": "שמורה מרהיבה בעין יהב עם שבילי חול רכים, עצי שיזף עתיקים ומצפור נוף מרהיב הצופה אל הרי אדום וגבול ירדן. מושלם לילדים ולעגלות."
+  },
+  {
+    "id": 802,
+    "name": "פארק ספיר - נווה מדבר ואגם בערבה (סמוך לעין יהב)",
+    "name_en": "Sapir Park Desert Oasis & Lake",
+    "authority_id": "KKL-509",
+    "org": "קק״ל ומועצה אזורית ערבה תיכונה",
+    "region": "הערבה התיכונה ועין יהב",
+    "region_group": "south",
+    "lat": 30.6015,
+    "lng": 35.1872,
+    "category": "water",
+    "type": [
+      "עין יהב",
+      "נווה מדבר",
+      "אגם מים",
+      "עצי דקל",
+      "חורשה מוצלת",
+      "פיקניק",
+      "עגלות"
+    ],
+    "type_en": [
+      "Desert Lake",
+      "Oasis",
+      "Palm Trees",
+      "Picnic Park",
+      "Accessible"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום קיצוני בצהריים"
+    ],
+    "description": "נווה מדבר נסתר ליד עין יהב עם אגם מים יפהפה, מדשאות ירוקות, עצי דקל מצלים, ברווזים ומפל מים קטן. גן עדן מוצל ונגיש לכל המשפחה."
+  },
+  {
+    "id": 803,
+    "name": "פארק צבעי מכתש רמון והמנסרה",
+    "name_en": "Ramon Crater Colors Park & The Carpentry",
+    "authority_id": "INPA-116",
+    "org": "רשות הטבע והגנים",
+    "region": "מכתש רמון והר הנגב",
+    "region_group": "south",
+    "lat": 30.612,
+    "lng": 34.825,
+    "category": "desert",
+    "type": [
+      "מכתש רמון",
+      "מכתשים",
+      "המנסרה",
+      "אבני חול צבעוניות",
+      "שביל גשר עץ",
+      "פארק גיאולוגי",
+      "עגלות"
+    ],
+    "type_en": [
+      "Ramon Crater",
+      "Prism Rocks",
+      "Boardwalk",
+      "Colored Sandstone",
+      "Geological Park"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום",
+      "קרינת שמש"
+    ],
+    "description": "אתר חובה במכתש רמון עם גשר עץ מונגש הצף מעל 'המנסרה' (תופעה גיאולוגית נדירה של עמודי פריזמה מאבן חול) ותצוגת חולות בשלל צבעים."
+  },
+  {
+    "id": 804,
+    "name": "חולות צבעוניים - המכתש הגדול (ירוחם)",
+    "name_en": "Colored Sands - Great Crater",
+    "authority_id": "INPA-118",
+    "org": "רשות הטבע והגנים וקק״ל",
+    "region": "הנגב הצפוני והמכתש הגדול",
+    "region_group": "south",
+    "lat": 30.934,
+    "lng": 34.975,
+    "category": "desert",
+    "type": [
+      "המכתש הגדול",
+      "מכתשים",
+      "חולות צבעוניים",
+      "שביל חולות",
+      "אטרקציה לילדים",
+      "מדבר"
+    ],
+    "type_en": [
+      "Great Crater",
+      "Colored Sands",
+      "Kids Sand Art",
+      "Short Walk"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בקיץ"
+    ],
+    "description": "האטרקציה האהובה ביותר על ילדים במכתשים! דיונות אבן חול בצבעי אדום, צהוב, סגול ולבן. מתאים להפליא לילדים בני 5 למילוי בקבוקים ומשחקי חול."
+  },
+  {
+    "id": 805,
+    "name": "חאן סהרונים ועין סהרונים - מכתש רמון",
+    "name_en": "Saharonim Fort & Spring - Ramon Crater",
+    "authority_id": "INPA-117",
+    "org": "רשות הטבע והגנים",
+    "region": "מכתש רמון",
+    "region_group": "south",
+    "lat": 30.598,
+    "lng": 34.908,
+    "category": "desert",
+    "type": [
+      "מכתש רמון",
+      "מכתשים",
+      "חאן נבטי",
+      "עין סהרונים",
+      "מעיין מדברי",
+      "פרסת נקרות",
+      "מדבר"
+    ],
+    "type_en": [
+      "Ramon Crater",
+      "Nabataean Caravanserai",
+      "Desert Spring",
+      "Canyon"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום"
+    ],
+    "description": "חאן שיירות נבטי קדום ומעיין מדברי עונתי בלב מכתש רמון, עם תצפיות אל קניון נחל נקרות. שביל קצר ומרתק לילדים סקרנים."
   }
 ]

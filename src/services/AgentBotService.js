@@ -464,7 +464,12 @@ export class AgentBotService {
       } else if (text.includes('ירושלים') || text.includes('שפלה') || text.includes('יהודה') || text.includes('בית שמש') || text.includes('עציון')) {
         updated.region = 'jerusalem';
         updated.regionLabel = 'ירושלים והשפלה';
-      } else if (text.includes('דרום') || text.includes('נגב') || text.includes('ים המלח') || text.includes('מדבר') || text.includes('ערבה') || text.includes('רמון') || text.includes('אילת')) {
+      } else if (
+        text.includes('דרום') || text.includes('נגב') || text.includes('ים המלח') || text.includes('מדבר') ||
+        text.includes('ערבה') || text.includes('רמון') || text.includes('אילת') ||
+        text.includes('מכתש') || text.includes('מכתשים') || text.includes('יהב') || text.includes('עין יהב') ||
+        text.includes('ספיר') || text.includes('ירוחם')
+      ) {
         updated.region = 'south';
         updated.regionLabel = 'דרום, נגב וים המלח';
       }
@@ -493,7 +498,7 @@ export class AgentBotService {
       updated.feature = 'stroller';
       updated.featureLabel = 'שביל סלול / נגיש (כיסא גלגלים)';
       updated.wheelchairNote = true;
-    } else if (text.includes('עגלה') || text.includes('עגלות') || text.includes('סלול') || text.includes('נגיש')) {
+    } else if (text.includes('עגלה') || text.includes('עגלות') || text.includes('שביל סלול') || text.includes('סלול ל') || /(?:^|[^\u0590-\u05fe])סלול(?=[^\u0590-\u05fe]|$)/.test(text) || text.includes('נגיש לעגלות')) {
       updated.feature = 'stroller';
       updated.featureLabel = 'שביל סלול / נגיש לעגלות';
     } else if (text.includes('נוף') || text.includes('תצפית') || text.includes('פריחה') || text.includes('מבצר') || text.includes('עתיקות')) {
@@ -516,6 +521,21 @@ export class AgentBotService {
       } else {
         updated.minAge = 10;
         updated.minAgeLabel = '10+ (נוער ומבוגרים)';
+      }
+    }
+
+    // 5. Subregion / destination keyword tracking (persists crater, Ein Yahav across turns)
+    if (text.includes('מכתש') || text.includes('מכתשים') || text.includes('רמון') || text.includes('מנסרה')) {
+      updated.subRegionKeyword = 'crater';
+      if (!updated.region) {
+        updated.region = 'south';
+        updated.regionLabel = 'מכתש רמון והנגב';
+      }
+    } else if (text.includes('יהב') || text.includes('עין יהב') || text.includes('ספיר') || text.includes('שיזף')) {
+      updated.subRegionKeyword = 'yahav';
+      if (!updated.region) {
+        updated.region = 'south';
+        updated.regionLabel = 'הערבה התיכונה ועין יהב';
       }
     }
 
@@ -712,11 +732,20 @@ export class AgentBotService {
     const directLookupIntents = ['ספר לי על', 'מה יש ב', 'מידע על', 'האם', 'פתוח', 'תגיד לי על', 'מכיר את'];
     const hasLookupIntent = directLookupIntents.some((intent) => text.includes(intent));
     if (hasLookupIntent) {
+      const GENERIC_PREFIXES = ['עין', 'נחל', 'פארק', 'שמורת', 'גן', 'יער', 'הר', 'תל', 'חוף', 'דרך', 'בית', 'ספר', 'שדה', 'מצפור', 'מצפה', 'חורבת'];
       const matchedSite = assetsData.find((site) => {
         const siteName = site.name.toLowerCase();
-        // Check if any 3+ char segment of the site name appears in the query
-        const words = siteName.split(/\s+/).filter((w) => w.length >= 3);
-        return words.some((w) => text.includes(w)) || text.includes(siteName);
+        // Exact name match
+        if (text.includes(siteName)) return true;
+        // Two-word phrase match (e.g. "עין יהב", "עין גדי", "מכתש רמון", "פארק ספיר")
+        const words = siteName.split(/[\s\-–—]+/).filter(Boolean);
+        for (let i = 0; i < words.length - 1; i++) {
+          const phrase = `${words[i]} ${words[i + 1]}`;
+          if (phrase.length >= 5 && text.includes(phrase)) return true;
+        }
+        // Distinctive non-generic word match (e.g. "יהב", "סהרונים", "המנסרה", "יורקעם", "עבדת", "שבטה")
+        const distinctiveWords = words.filter((w) => w.length >= 3 && !GENERIC_PREFIXES.includes(w));
+        return distinctiveWords.some((w) => text.includes(w));
       });
       if (matchedSite) {
         let weather = null;
@@ -1064,7 +1093,12 @@ export class AgentBotService {
       };
     }
 
-    // 2. Rank candidates by feature preference, proximity, and explicit query keyword match (e.g. דליות, מג'רסה)
+    // 2. Rank candidates by feature preference, proximity, and explicit query keyword match (e.g. דליות, מג'רסה, מכתש, עין יהב)
+    const activeSubRegion = state.subRegionKeyword || (
+      (rawText.includes('מכתש') || rawText.includes('מכתשים') || rawText.includes('רמון') || rawText.includes('מנסרה')) ? 'crater' :
+      (rawText.includes('יהב') || rawText.includes('עין יהב') || rawText.includes('ספיר') || rawText.includes('שיזף')) ? 'yahav' : null
+    );
+
     candidates.sort((a, b) => {
       const aTypes = (a.type || []).join(' ') + ' ' + (a.name || '');
       const bTypes = (b.type || []).join(' ') + ' ' + (b.name || '');
@@ -1072,23 +1106,66 @@ export class AgentBotService {
       let scoreA = 0;
       let scoreB = 0;
 
-      // Explicit keyword boost if user mentioned site/stream name (e.g. דליות / מג'רסה)
+      // Primary nature attraction bonus vs facility / field school / base / night campground
+      if (a.name.includes('בית ספר שדה') || aTypes.includes('חניון לילה')) scoreA -= 20;
+      if (b.name.includes('בית ספר שדה') || bTypes.includes('חניון לילה')) scoreB -= 20;
+
+      // Targeted subregion boosts (persists across multi-turn dialogs via state.subRegionKeyword)
+      if (activeSubRegion === 'crater') {
+        if (aTypes.includes('מכתש') || a.name.includes('מכתש') || a.name.includes('רמון') || a.name.includes('מנסרה') || a.name.includes('יורקעם')) scoreA += 40;
+        if (bTypes.includes('מכתש') || b.name.includes('מכתש') || b.name.includes('רמון') || b.name.includes('מנסרה') || b.name.includes('יורקעם')) scoreB += 40;
+      } else if (activeSubRegion === 'yahav') {
+        if (aTypes.includes('עין יהב') || a.name.includes('יהב') || a.name.includes('ספיר') || a.name.includes('שיזף')) scoreA += 40;
+        if (bTypes.includes('עין יהב') || b.name.includes('יהב') || b.name.includes('ספיר') || b.name.includes('שיזף')) scoreB += 40;
+      }
+
+      // Explicit keyword boost if user mentioned site/stream/region name in current message
       if (rawText.includes('דליות') || rawText.includes('מג\'רסה') || rawText.includes('מג׳רסה') || rawText.includes('מגרסה')) {
         if (a.name.includes('דליות') || a.name.includes('מג׳רסה') || a.name.includes('מג\'רסה')) scoreA += 25;
         if (b.name.includes('דליות') || b.name.includes('מג׳רסה') || b.name.includes('מג\'רסה')) scoreB += 25;
       }
+      if (rawText.includes('מכתש') || rawText.includes('מכתשים') || rawText.includes('רמון') || rawText.includes('מנסרה')) {
+        if (aTypes.includes('מכתש') || a.name.includes('מכתש') || a.name.includes('רמון') || a.name.includes('מנסרה')) scoreA += 30;
+        if (bTypes.includes('מכתש') || b.name.includes('מכתש') || b.name.includes('רמון') || b.name.includes('מנסרה')) scoreB += 30;
+      }
+      if (rawText.includes('יהב') || rawText.includes('עין יהב') || rawText.includes('ספיר') || rawText.includes('שיזף')) {
+        if (aTypes.includes('עין יהב') || a.name.includes('יהב') || a.name.includes('ספיר')) scoreA += 30;
+        if (bTypes.includes('עין יהב') || b.name.includes('יהב') || b.name.includes('ספיר')) scoreB += 30;
+      }
+
+      // Flagship regional nature pillars (when general South is selected without a specific subregion)
+      if (state.region === 'south' && !activeSubRegion) {
+        // Craters, Arava/Ein Yahav, and Dead Sea Oasis are the 3 flagship pillars of South hiking
+        const isFlagshipSouth = (types, name) => (
+          types.includes('מכתש') || types.includes('מכתשים') || name.includes('מכתש') || name.includes('רמון') || name.includes('המנסרה') ||
+          types.includes('עין יהב') || types.includes('ערבה') || name.includes('יהב') || name.includes('ספיר') || name.includes('שיזף') ||
+          name.includes('עין גדי')
+        );
+        if (isFlagshipSouth(aTypes, a.name)) scoreA += 15;
+        if (isFlagshipSouth(bTypes, b.name)) scoreB += 15;
+      }
+
+      // Kid-friendly bonus for young kids (targetAge <= 5)
+      if (targetAge <= 5) {
+        if (a.stroller_accessible || aTypes.includes('חולות') || aTypes.includes('גשר עץ') || aTypes.includes('אגם') || aTypes.includes('מונגש') || a.min_age === 0) scoreA += 10;
+        if (b.stroller_accessible || bTypes.includes('חולות') || bTypes.includes('גשר עץ') || bTypes.includes('אגם') || bTypes.includes('מונגש') || b.min_age === 0) scoreB += 10;
+      }
 
       if (state.feature === 'water' || state.feature === 'spring') {
-        if (aTypes.includes('מים') || aTypes.includes('בריכות') || aTypes.includes('מעיין') || aTypes.includes('שניר') || aTypes.includes('דן') || aTypes.includes('דליות') || aTypes.includes('מג׳רסה')) scoreA += 5;
-        if (bTypes.includes('מים') || bTypes.includes('בריכות') || bTypes.includes('מעיין') || bTypes.includes('שניר') || bTypes.includes('דן') || bTypes.includes('דליות') || bTypes.includes('מג׳רסה')) scoreB += 5;
+        if (aTypes.includes('מים') || aTypes.includes('בריכות') || aTypes.includes('מעיין') || aTypes.includes('שניר') || aTypes.includes('דן') || aTypes.includes('דליות') || aTypes.includes('מג׳רסה')) scoreA += 10;
+        if (bTypes.includes('מים') || bTypes.includes('בריכות') || bTypes.includes('מעיין') || bTypes.includes('שניר') || bTypes.includes('דן') || bTypes.includes('דליות') || bTypes.includes('מג׳רסה')) scoreB += 10;
       }
       if (state.feature === 'shade') {
-        if (aTypes.includes('חורש') || aTypes.includes('יער') || aTypes.includes('טבע') || aTypes.includes('כרמל') || aTypes.includes('מירון')) scoreA += 5;
-        if (bTypes.includes('חורש') || bTypes.includes('יער') || bTypes.includes('טבע') || bTypes.includes('כרמל') || bTypes.includes('מירון')) scoreB += 5;
+        if (aTypes.includes('חורש') || aTypes.includes('יער') || aTypes.includes('טבע') || aTypes.includes('כרמל') || aTypes.includes('מירון')) scoreA += 10;
+        if (bTypes.includes('חורש') || bTypes.includes('יער') || bTypes.includes('טבע') || bTypes.includes('כרמל') || bTypes.includes('מירון')) scoreB += 10;
       }
       if (state.feature === 'adventure') {
-        if (aTypes.includes('הרים') || aTypes.includes('אתגרי') || aTypes.includes('מצוק') || aTypes.includes('סנפלינג')) scoreA += 5;
-        if (bTypes.includes('הרים') || bTypes.includes('אתגרי') || bTypes.includes('מצוק') || bTypes.includes('סנפלינג')) scoreB += 5;
+        if (aTypes.includes('הרים') || aTypes.includes('אתגרי') || aTypes.includes('מצוק') || aTypes.includes('סנפלינג')) scoreA += 10;
+        if (bTypes.includes('הרים') || bTypes.includes('אתגרי') || bTypes.includes('מצוק') || bTypes.includes('סנפלינג')) scoreB += 10;
+      }
+      if (state.feature === 'stroller') {
+        if (a.stroller_accessible) scoreA += 15;
+        if (b.stroller_accessible) scoreB += 15;
       }
 
       if (scoreB !== scoreA) {
@@ -1103,8 +1180,49 @@ export class AgentBotService {
       return 0;
     });
 
-    // Top 3 best matched sites
-    const topSites = candidates.slice(0, 3);
+    // Top 3 best matched sites with sub-regional cluster diversity (prevents duplicate Ein Gedi or clustered sites)
+    const topSites = [];
+    const seenClusters = new Set();
+    for (const site of candidates) {
+      const aTypes = (site.type || []).join(' ') + ' ' + (site.name || '');
+      let clusterKey = site.name;
+
+      if (!activeSubRegion) {
+        // Broad regional query: ensure diverse distribution across Dead Sea, Craters, and Arava/Ein Yahav
+        if (site.name.includes('עין גדי') || aTypes.includes('מדבר יהודה') || aTypes.includes('ים המלח')) {
+          clusterKey = 'dead_sea_oasis';
+        } else if (site.name.includes('רמון') || aTypes.includes('מכתש') || aTypes.includes('מכתשים') || site.name.includes('המנסרה') || site.name.includes('יורקעם')) {
+          clusterKey = 'crater_region';
+        } else if (site.name.includes('יהב') || site.name.includes('ספיר') || aTypes.includes('ערבה') || aTypes.includes('עין יהב')) {
+          clusterKey = 'arava_yahav';
+        }
+      } else {
+        // Specific sub-region query: only deduplicate direct overlaps (e.g. two Ramon boardwalks or two Ein Gedi paths)
+        if (site.name.includes('עין גדי')) clusterKey = 'ein_gedi';
+        else if (site.name.includes('מנסרה') || site.name.includes('צבעי מכתש רמון')) clusterKey = 'ramon_boardwalk';
+        else if (site.name.includes('סהרונים')) clusterKey = 'ramon_saharonim';
+        else if (site.name.includes('המכתש הגדול')) clusterKey = 'great_crater';
+        else if (site.name.includes('ספיר')) clusterKey = 'sapir';
+        else if (site.name.includes('שיזף') || site.name.includes('מצפור השלום')) clusterKey = 'shizaf';
+      }
+
+      if (site.name.includes('דן')) clusterKey = 'tel_dan';
+      if (site.name.includes('שניר')) clusterKey = 'snir';
+      
+      if (!seenClusters.has(clusterKey)) {
+        seenClusters.add(clusterKey);
+        topSites.push(site);
+      }
+      if (topSites.length === 3) break;
+    }
+    if (topSites.length < 3) {
+      for (const site of candidates) {
+        if (!topSites.some((s) => s.id === site.id)) {
+          topSites.push(site);
+        }
+        if (topSites.length === 3) break;
+      }
+    }
 
     // 3. Query Tomorrow.io live weather for each candidate
     const proposals = [];

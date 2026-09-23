@@ -387,6 +387,49 @@ await runTest('Edge Case 20: Typo Resilience (B4 — "גלליל", "מוצאל",
   assert.ok(true, 'Typo correction for "עין גידי" → "עין גדי" applied without error');
 });
 
+// ── Test 21: South Hiking Diversity (Craters + Ein Yahav + Dead Sea) ─
+await runTest('Edge Case 21: South Hiking Diversity ("רוצה לטייל מחר בדרום עם ילד בן 5")', async () => {
+  const r1 = await AgentBotService.processUserMessage('רוצה לטייל מחר בדרום עם ילד בן 5.');
+  assert.strictEqual(r1.state.region, 'south');
+  assert.strictEqual(r1.state.timing, 'tomorrow');
+  assert.strictEqual(r1.state.minAge, 4);
+
+  // Turn 2: Follow up with "הכל מתאים"
+  const r2 = await AgentBotService.processUserMessage('לא משנה לי סגנון המסלול, מה שהכי מומלץ ובטוח', r1.state);
+  assert.ok(r2.proposals && r2.proposals.length === 3, 'Must return 3 proposals');
+
+  const names = r2.proposals.map(p => p.name).join(' ');
+  const types = r2.proposals.map(p => (p.type || []).join(' ')).join(' ');
+  const allText = `${names} ${types}`;
+
+  // Must include a Crater site
+  const hasCrater = allText.includes('מכתש') || allText.includes('רמון') || allText.includes('המנסרה');
+  assert.ok(hasCrater, `South recommendations must include a Crater site, got: ${names}`);
+
+  // Must include Ein Yahav / Arava site
+  const hasYahav = allText.includes('יהב') || allText.includes('ספיר') || allText.includes('ערבה');
+  assert.ok(hasYahav, `South recommendations must include Ein Yahav / Arava site, got: ${names}`);
+
+  // Must NOT be overrun by field school accommodation centers
+  const fieldSchoolCount = r2.proposals.filter(p => p.name.includes('בית ספר שדה')).length;
+  assert.ok(fieldSchoolCount <= 1, `Should prioritize hiking trails over field schools, found ${fieldSchoolCount}`);
+});
+
+// ── Test 22: Direct Lookup Disambiguation ("עין יהב" vs "עין גדי") ─
+await runTest('Edge Case 22: Direct Lookup Disambiguation ("עין יהב" matches site 801, not 103)', async () => {
+  const res = await AgentBotService.processUserMessage('ספר לי על עין יהב');
+  assert.ok(res.proposals && res.proposals.length === 1, 'Should return exactly 1 matched site');
+  assert.strictEqual(res.proposals[0].id, 801, 'Should match site 801 (עין יהב), NOT site 103 (עין גדי)');
+  assert.ok(res.proposals[0].name.includes('עין יהב'), 'Matched site name must include עין יהב');
+});
+
+// ── Test 23: Word "מסלול" Stroller Immunity ───────────────────────
+await runTest('Edge Case 23: Word "מסלול" does not trigger stroller filter', async () => {
+  const state = AgentBotService.extractParameters('רוצה מסלול מים בצפון למחר לילד בן 6', AgentBotService.getInitialState());
+  assert.strictEqual(state.feature, 'water', 'Feature must be water, not stroller');
+  assert.notStrictEqual(state.feature, 'stroller', 'The word "מסלול" must not match stroller regex');
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);
@@ -394,4 +437,5 @@ console.log(`==================================================\n`);
 if (passedTests !== totalTests) {
   process.exit(1);
 }
+
 
