@@ -318,3 +318,12 @@
 .light .leaflet-control-zoom a:hover {
   background: #F3F4F6 !important;
 }
+
+/* ─── Hide Scrollbars (Single-Line Mobile Carousels & Pills) ─ */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

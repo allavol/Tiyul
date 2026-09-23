@@ -39,4 +39,28 @@ test.describe('Visual Regression Tests', () => {
       fullPage: true,
     });
   });
+
+  test('Mobile Viewport: Top Filter Bar strictly stays on a single line (no wrapping)', async ({ page }) => {
+    // Test on mobile viewport (375px width, iPhone SE)
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/');
+
+    await page.waitForSelector('.leaflet-container', { state: 'visible' });
+    const allBtn = page.locator('button:has-text("הכל")');
+    await expect(allBtn).toBeVisible();
+
+    const filterContainer = page.locator('div:has(> button:has-text("הכל"))');
+    await expect(filterContainer).toBeVisible();
+
+    // Verify all filter buttons share the same vertical Y coordinate (single line, no wrapping)
+    const buttons = filterContainer.locator('button');
+    const count = await buttons.count();
+    expect(count).toBeGreaterThanOrEqual(4);
+
+    const firstBox = await buttons.nth(0).boundingBox();
+    for (let i = 1; i < count; i++) {
+      const box = await buttons.nth(i).boundingBox();
+      expect(Math.abs(box.y - firstBox.y)).toBeLessThan(5);
+    }
+  });
 });

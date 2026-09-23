@@ -262,12 +262,12 @@ export default function TacticalMap({
       {/* Map Container */}
       <div ref={mapContainerRef} className="w-full h-full" />
 
-      {/* Floating Filter Pills */}
-      <div className="absolute top-6 sm:top-8 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-wrap justify-center items-center gap-2 bg-brand-deep/80 backdrop-blur-md px-4 py-2 rounded-3xl sm:rounded-full border border-white/[0.08] shadow-lg pointer-events-auto w-[92vw] sm:w-max max-w-[580px]">
+      {/* Floating Filter Pills — strictly single row on mobile with horizontal scroll */}
+      <div className="absolute top-4 sm:top-8 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-nowrap items-center gap-1.5 sm:gap-2 bg-brand-deep/90 backdrop-blur-md px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/[0.08] shadow-lg pointer-events-auto max-w-[95vw] sm:max-w-max overflow-x-auto no-scrollbar">
         {recommendedAssetIds && recommendedAssetIds.length > 0 && (
           <button 
             onClick={() => setActiveFilter('proposals')}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeFilter === 'proposals'
                 ? 'bg-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.5)]'
                 : 'text-amber-400 hover:text-white bg-amber-500/10'
@@ -279,27 +279,27 @@ export default function TacticalMap({
         )}
         <button 
           onClick={() => setActiveFilter('all')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeFilter === 'all' ? 'bg-accent text-white shadow-[0_0_10px_rgba(45,212,191,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+          className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all ${activeFilter === 'all' ? 'bg-accent text-white shadow-[0_0_10px_rgba(45,212,191,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
           הכל
         </button>
         <button 
           onClick={() => setActiveFilter('water')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'water' ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+          className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'water' ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
           <span>💧</span>
           <span>מים</span>
         </button>
         <button 
           onClick={() => setActiveFilter('stroller')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'stroller' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+          className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'stroller' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
           <span>👶</span>
           <span>עגלות</span>
         </button>
         <button 
           onClick={() => setActiveFilter('safe')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'safe' ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-zinc-400 hover:text-white'}`}
+          className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 ${activeFilter === 'safe' ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-zinc-400 hover:text-white'}`}
         >
           <span>🛡️</span>
           <span>בטוח כעת</span>
