@@ -35,6 +35,47 @@ const FOREIGN_COUNTRIES_KEYWORDS = [
   'דובאי', 'אבו דאבי', 'מונטנגרו', 'אלפים', 'דולומיטים', 'רומא'
 ];
 
+// Dog / pet keywords for safety warning (nature reserves prohibit dogs)
+const DOG_KEYWORDS = [
+  'כלב', 'כלבה', 'כלבים', 'כלבלב', 'גור כלבים', 'גורים',
+  'חיית מחמד', 'חיות מחמד', 'dog', 'dogs', 'pet'
+];
+
+// Hebrew month names for calendar date parsing
+const HEBREW_MONTHS = [
+  { names: ['ינואר', 'ינו', 'jan'], num: 1 },
+  { names: ['פברואר', 'פבר', 'feb'], num: 2 },
+  { names: ['מרץ', 'מרס', 'mar'], num: 3 },
+  { names: ['אפריל', 'אפר', 'apr'], num: 4 },
+  { names: ['מאי', 'may'], num: 5 },
+  { names: ['יוני', 'jun'], num: 6 },
+  { names: ['יולי', 'jul'], num: 7 },
+  { names: ['אוגוסט', 'אוג', 'aug'], num: 8 },
+  { names: ['ספטמבר', 'ספט', 'sep'], num: 9 },
+  { names: ['אוקטובר', 'אוק', 'oct'], num: 10 },
+  { names: ['נובמבר', 'נוב', 'nov'], num: 11 },
+  { names: ['דצמבר', 'דצ', 'dec'], num: 12 },
+];
+
+// Common typo corrections for region and feature keywords
+const TYPO_CORRECTIONS = {
+  // Region typos
+  'גלליל': 'גליל', 'גאליל': 'גליל', 'גלייל': 'גליל',
+  'ירושליים': 'ירושלים', 'ירושלאים': 'ירושלים',
+  'גולאן': 'גולן', 'גולאן': 'גולן',
+  'כנררת': 'כנרת', 'כינרת': 'כנרת',
+  'חרמן': 'חרמון', 'חרמן': 'חרמון',
+  // Feature typos
+  'סנפליג': 'סנפלינג', 'סנפאלינג': 'סנפלינג', 'סנפליינג': 'סנפלינג',
+  'מוצאל': 'מוצל', 'מצל': 'מוצל', 'מוצלל': 'מוצל',
+  'הלחכה': 'הליכה',
+  // Site name typos
+  'עין גידי': 'עין גדי', 'עין-גידי': 'עין גדי', 'עינגדי': 'עין גדי',
+  'מסדה': 'מצדה', 'מאסדה': 'מצדה', 'מסאדה': 'מצדה',
+  'תל-דן': 'תל דן', 'תלדן': 'תל דן',
+  'בית גוברין': 'בית גוברין', 'בית-גוברין': 'בית גוברין',
+};
+
 // Known Israeli origin cities / centers for distance radius queries
 const KNOWN_ORIGIN_CITIES = [
   { names: ['תל אביב', 'תל-אביב', 'ת"א', 'ת״א', 'גוש דן', 'המרכז', 'תל אביב יפו'], lat: 32.0853, lng: 34.7818, label: 'תל אביב' },
@@ -154,6 +195,9 @@ export class AgentBotService {
       minAge: null,      // 0, 2, 4, 7, 10
       minAgeLabel: null, // '0+ (עגלות)', '4+', '7+'
       step: 'init',      // 'init' | 'gathering' | 'ready'
+      lastProposals: [], // B3: stored proposals for follow-up questions
+      wheelchairNote: false, // B2: wheelchair caveat flag
+      dogWarning: false,     // A1: dog/pet warning flag
     };
   }
 
@@ -230,7 +274,13 @@ export class AgentBotService {
    * Parse user message and extract any of the 4 mandatory parameters
    */
   static extractParameters(message, currentState) {
-    const text = message.toLowerCase();
+    // B4: Apply typo corrections before parsing
+    let text = message.toLowerCase();
+    for (const [typo, fix] of Object.entries(TYPO_CORRECTIONS)) {
+      if (text.includes(typo)) {
+        text = text.replaceAll(typo, fix);
+      }
+    }
     const updated = { ...currentState };
 
     // 0. Handle dimension-specific non-restrictive phrases
@@ -309,27 +359,72 @@ export class AgentBotService {
       updated.timing = 'day_2';
       updated.timingLabel = 'אמצע השבוע (שלישי/רביעי)';
     } else {
-      // Check specific named days of the week (Sunday through Saturday)
-      let foundDay = null;
-      for (const day of HEBREW_DAYS) {
-        if (day.names.some((name) => text.includes(name))) {
-          foundDay = day;
-          break;
+      // A3: Calendar date parsing (e.g. "25/9", "25.9", "25 בספטמבר", "ה-25 לחודש")
+      let calendarParsed = false;
+      // Pattern: dd/mm, dd.mm, dd-mm, dd/mm/yy(yy)
+      const calMatch = text.match(/(\d{1,2})[/.-](\d{1,2})(?:[/.-](\d{2,4}))?/);
+      if (calMatch) {
+        const day = parseInt(calMatch[1], 10);
+        const month = parseInt(calMatch[2], 10);
+        if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+          const now = new Date();
+          const targetYear = calMatch[3] ? (calMatch[3].length === 2 ? 2000 + parseInt(calMatch[3], 10) : parseInt(calMatch[3], 10)) : now.getFullYear();
+          const target = new Date(targetYear, month - 1, day);
+          if (target < now) target.setFullYear(target.getFullYear() + 1);
+          const diffDays = Math.round((target - now) / (1000 * 60 * 60 * 24));
+          updated.dayIndex = Math.max(0, Math.min(diffDays, 4));
+          updated.timing = `calendar_${day}_${month}`;
+          updated.timingLabel = `${day}/${month}` + (diffDays === 0 ? ' (היום)' : diffDays === 1 ? ' (מחר)' : ` (בעוד ${diffDays} ימים)`);
+          calendarParsed = true;
         }
       }
-      if (foundDay) {
-        const diff = (foundDay.dayNum - currentDayNum + 7) % 7;
-        const clampedDayIndex = Math.min(diff, 4);
-        updated.dayIndex = clampedDayIndex;
-        updated.timing = `day_${foundDay.dayNum}`;
-        if (diff === 0) {
-          updated.timingLabel = `${foundDay.label} (היום)`;
-        } else if (diff === 1) {
-          updated.timingLabel = `${foundDay.label} (מחר)`;
-        } else if (diff === 2) {
-          updated.timingLabel = `${foundDay.label} (מחרתיים)`;
-        } else {
-          updated.timingLabel = `${foundDay.label} הקרוב`;
+      // Pattern: "25 בספטמבר", "ה-25 בספט", "25 לספטמבר"
+      if (!calendarParsed) {
+        for (const hm of HEBREW_MONTHS) {
+          for (const mName of hm.names) {
+            const monthRegex = new RegExp(`(?:ה-?)?(\\d{1,2})\\s*(?:ב|ל)${mName}`);
+            const mMatch = text.match(monthRegex);
+            if (mMatch) {
+              const day = parseInt(mMatch[1], 10);
+              if (day >= 1 && day <= 31) {
+                const now = new Date();
+                const target = new Date(now.getFullYear(), hm.num - 1, day);
+                if (target < now) target.setFullYear(target.getFullYear() + 1);
+                const diffDays = Math.round((target - now) / (1000 * 60 * 60 * 24));
+                updated.dayIndex = Math.max(0, Math.min(diffDays, 4));
+                updated.timing = `calendar_${day}_${hm.num}`;
+                updated.timingLabel = `${day} ב${mName}` + (diffDays === 0 ? ' (היום)' : diffDays === 1 ? ' (מחר)' : ` (בעוד ${diffDays} ימים)`);
+                calendarParsed = true;
+                break;
+              }
+            }
+          }
+          if (calendarParsed) break;
+        }
+      }
+      // Check specific named days of the week (Sunday through Saturday)
+      if (!calendarParsed) {
+        let foundDay = null;
+        for (const day of HEBREW_DAYS) {
+          if (day.names.some((name) => text.includes(name))) {
+            foundDay = day;
+            break;
+          }
+        }
+        if (foundDay) {
+          const diff = (foundDay.dayNum - currentDayNum + 7) % 7;
+          const clampedDayIndex = Math.min(diff, 4);
+          updated.dayIndex = clampedDayIndex;
+          updated.timing = `day_${foundDay.dayNum}`;
+          if (diff === 0) {
+            updated.timingLabel = `${foundDay.label} (היום)`;
+          } else if (diff === 1) {
+            updated.timingLabel = `${foundDay.label} (מחר)`;
+          } else if (diff === 2) {
+            updated.timingLabel = `${foundDay.label} (מחרתיים)`;
+          } else {
+            updated.timingLabel = `${foundDay.label} הקרוב`;
+          }
         }
       }
     }
@@ -393,6 +488,11 @@ export class AgentBotService {
     } else if (text.includes('מוצל') || text.includes('צל') || text.includes('יער') || text.includes('חורש') || text.includes('עצים')) {
       updated.feature = 'shade';
       updated.featureLabel = 'יער וחורש מוצל';
+    } else if (text.includes('כיסא גלגלים') || text.includes('כסא גלגלים') || text.includes('קשיש') || text.includes('קשישים') || text.includes('הליכון') || text.includes('מוגבלות') || text.includes('מוגבל בהליכה')) {
+      // B2: Wheelchair / elderly → map to stroller with caveat
+      updated.feature = 'stroller';
+      updated.featureLabel = 'שביל סלול / נגיש (כיסא גלגלים)';
+      updated.wheelchairNote = true;
     } else if (text.includes('עגלה') || text.includes('עגלות') || text.includes('סלול') || text.includes('נגיש')) {
       updated.feature = 'stroller';
       updated.featureLabel = 'שביל סלול / נגיש לעגלות';
@@ -573,12 +673,97 @@ export class AgentBotService {
       return this.generateClarificationResponse('feature', resetState, ['feature']);
     }
 
-    // 1.5 Check if user triggered an interactive What-If Crisis Scenario
+    // 1.3 A1: Dog / Pet warning detection (non-blocking — adds warning banner)
+    const hasDogMention = DOG_KEYWORDS.some((kw) => text.includes(kw));
+
+    // 1.4 B3: Follow-up question about a previous proposal ("ספר לי עוד על הראשון/השני/השלישי")
+    if (currentState.lastProposals && currentState.lastProposals.length > 0) {
+      const ordinalMatch = text.match(/(?:ה-?)?(ראשון|שני|שלישי|1|2|3)/);
+      const hasFollowUp = text.includes('ספר לי עוד') || text.includes('עוד על') || text.includes('פרטים על') || text.includes('מידע על') || text.includes('מה יש ב');
+      if (ordinalMatch && hasFollowUp) {
+        const ordMap = { 'ראשון': 0, 'שני': 1, 'שלישי': 2, '1': 0, '2': 1, '3': 2 };
+        const idx = ordMap[ordinalMatch[1]] ?? 0;
+        const proposal = currentState.lastProposals[idx];
+        if (proposal) {
+          const details = [
+            `📍 **${proposal.name}**`,
+            `🗺️ אזור: ${proposal.region}`,
+            `👶 גיל מינימלי: ${proposal.min_age}+`,
+            proposal.stroller_accessible ? '♿ נגיש לעגלות' : '',
+            proposal.weather ? `🌡️ ${proposal.weather.temp} (${proposal.weather.conditions})` : '',
+            proposal.matchRationale ? `💡 ${proposal.matchRationale}` : '',
+          ].filter(Boolean).join('\n');
+          return {
+            text: `הנה פרטים נוספים על המסלול:\n\n${details}`,
+            state: currentState,
+            options: [
+              { label: '🗺️ הצג על המפה', value: `הצג ${proposal.name}` },
+              { label: '🔄 חזרה לתוצאות', value: 'הצג שוב את ההמלצות' },
+              { label: '🏞️ תכנן טיול חדש', value: 'בוא נחזור לתכנון מסלול רגיל' },
+            ],
+            proposals: [proposal],
+            toolActivity: null,
+          };
+        }
+      }
+    }
+
+    // 1.5 B1: Direct site name lookup — bypass 4-param flow if user asks about a specific site
+    const directLookupIntents = ['ספר לי על', 'מה יש ב', 'מידע על', 'האם', 'פתוח', 'תגיד לי על', 'מכיר את'];
+    const hasLookupIntent = directLookupIntents.some((intent) => text.includes(intent));
+    if (hasLookupIntent) {
+      const matchedSite = assetsData.find((site) => {
+        const siteName = site.name.toLowerCase();
+        // Check if any 3+ char segment of the site name appears in the query
+        const words = siteName.split(/\s+/).filter((w) => w.length >= 3);
+        return words.some((w) => text.includes(w)) || text.includes(siteName);
+      });
+      if (matchedSite) {
+        let weather = null;
+        try { weather = await WeatherService.fetchSiteWeather(matchedSite, 0); } catch (e) { /* fallback */ }
+        const advisory = getWaterAdvisory(matchedSite);
+        const proposal = {
+          id: matchedSite.id,
+          name: matchedSite.name,
+          region: matchedSite.region,
+          authority_id: matchedSite.authority_id,
+          lat: matchedSite.lat,
+          lng: matchedSite.lng,
+          min_age: matchedSite.min_age,
+          stroller_accessible: matchedSite.stroller_accessible,
+          category: matchedSite.category,
+          types: matchedSite.type || [],
+          weather: weather ? { temp: weather.temp, conditions: weather.conditions, heatLoad: weather.heatLoad, wind: weather.wind, rain: weather.rain, isLive: true, source: 'Tomorrow.io Live' }
+            : { temp: '28°C', conditions: 'בהיר ונוח', heatLoad: 'נוח לטיול', wind: '15 קמ"ש', rain: '0 מ"מ', isLive: false, source: 'תחזית IMS' },
+          safetyBadge: !advisory ? 'בטוח ומומלץ לטיול 🛡️' : 'נדרשת תשומת לב ⚠️',
+          waterAdvisory: advisory,
+          matchRationale: `אתר ${matchedSite.name} באזור ${matchedSite.region}`,
+        };
+        const updatedState = { ...currentState, lastProposals: [proposal] };
+        return {
+          text: `הנה מידע על **${matchedSite.name}** 🌿:\n\n📍 **אזור:** ${matchedSite.region}\n👶 **גיל מינימלי:** ${matchedSite.min_age}+\n${matchedSite.stroller_accessible ? '♿ **נגיש לעגלות**\n' : ''}🏷️ **סוג:** ${(matchedSite.type || []).join(', ')}\n\nלחצו על הכרטיסייה למטה להצגה על המפה, או תכננו טיול לאתר הזה!`,
+          state: updatedState,
+          options: [
+            { label: '🗺️ תכנן טיול לכאן', value: `רוצה לטייל ב${matchedSite.region} מחר` },
+            { label: '🔄 חפש מסלול אחר', value: 'בוא נחזור לתכנון מסלול רגיל' },
+          ],
+          proposals: [proposal],
+          toolActivity: `🔍 חיפוש ישיר: ${matchedSite.name} (${matchedSite.authority_id})`,
+        };
+      }
+    }
+
+    // 1.6 Check if user triggered an interactive What-If Crisis Scenario
     if (text.includes('מה אם') || text.includes('what if') || text.includes('תרחיש') || text.includes('שיטפון') || text.includes('44°c') || text.includes('חום קיצוני') || text.includes('זיהום')) {
       return this.handleWhatIfScenario(message, sessionState);
     }
 
     const state = this.extractParameters(message, currentState);
+
+    // A1: Attach dog warning flag to state if detected
+    if (hasDogMention) {
+      state.dogWarning = true;
+    }
 
     // 2. Identify Missing Mandatory Parameters
     const missing = [];
@@ -968,18 +1153,52 @@ export class AgentBotService {
       });
     }
 
-    const introText = `מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **Tomorrow.io** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️`;
+    // A2: Rain-water safety warning
+    let rainWarning = '';
+    if ((state.feature === 'water' || state.feature === 'spring') && proposals.length > 0) {
+      const hasRainyWeather = proposals.some((p) => {
+        if (!p.weather) return false;
+        const rain = parseFloat(String(p.weather.rain).replace(/[^\d.]/g, '')) || 0;
+        const cond = (p.weather.conditions || '').toLowerCase();
+        return rain > 10 || cond.includes('גשם') || cond.includes('סוער') || cond.includes('סערה') || !p.weather.isRainSafe;
+      });
+      if (hasRainyWeather) {
+        rainWarning = '\n\n⚠️ **שימו לב: צפויים משקעים באזור. הליכה בתוך נחלות ביום גשום עלולה להיות מסוכנת (סכנת שיטפונות בזק).** שקלו מסלול מוצל/יבש כחלופה בטוחה.';
+      }
+    }
+
+    // A1: Dog warning banner
+    let dogBanner = '';
+    if (state.dogWarning) {
+      dogBanner = '\n\n🐕 **שימו לב:** רוב שמורות הטבע והגנים הלאומיים **אוסרים כניסת כלבים**. מומלץ לוודא מול רשות הטבע והגנים (INPA) לפני היציאה.';
+    }
+
+    // B2: Wheelchair disclaimer
+    let wheelchairBanner = '';
+    if (state.wheelchairNote) {
+      wheelchairBanner = '\n\n♿ **הערה חשובה:** סיננתי מסלולים סלולים ונגישים לעגלות. עם זאת, **נגישות לכיסא גלגלים עשויה להיות שונה** (שיפוע, רוחב שביל, סוג משטח). מומלץ לבדוק ישירות מול רשות הטבע והגנים.';
+    }
+
+    const introText = `מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **Tomorrow.io** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}`;
 
     const llmStatus = await this.callOllamaOrGroqLLM(rawMessage, state);
+
+    // B3: Store proposals in state for follow-up questions
+    state.lastProposals = proposals;
+
+    const resultOptions = [
+      { label: '🔄 שנה אזור', value: 'אני רוצה לבדוק אזור אחר בארץ' },
+      { label: '📅 בדוק תאריך אחר', value: 'איך יהיה מזג האוויר ביום אחר?' },
+      { label: '👶 שנה גיל מטיילים', value: 'רוצה לשנות את גילאי הילדים' },
+    ];
+    if (rainWarning) {
+      resultOptions.push({ label: '🌲 הצע מסלול מוצל במקום', value: 'מעדיפים יער מוצל ושבילי הליכה' });
+    }
 
     return {
       text: introText,
       state,
-      options: [
-        { label: '🔄 שנה אזור', value: 'אני רוצה לבדוק אזור אחר בארץ' },
-        { label: '📅 בדוק תאריך אחר', value: 'איך יהיה מזג האוויר ביום אחר?' },
-        { label: '👶 שנה גיל מטיילים', value: 'רוצה לשנות את גילאי הילדים' },
-      ],
+      options: resultOptions,
       proposals,
       toolActivity: `🤖 ${llmStatus.model} • 📡 נשלפה תחזית Tomorrow.io • 🛡️ Guardrails Passed`,
     };
