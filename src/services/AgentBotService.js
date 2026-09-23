@@ -72,6 +72,52 @@ const HEBREW_DAYS = [
   { dayNum: 6, names: ['יום שבת', 'שבת הקרובה', 'שבת הקרוב', 'בשבת', 'שבת'], label: 'יום שבת' },
 ];
 
+// Hebrew number words mapping for textual age parsing (e.g. "בן חמש", "בן החמש", "בת ארבע", "בני שלוש", "בן שנתיים")
+const HEBREW_AGE_WORDS = [
+  { word: 'שמונה עשרה', age: 18 },
+  { word: 'שמונה עשר', age: 18 },
+  { word: 'שבע עשרה', age: 17 },
+  { word: 'שבעה עשר', age: 17 },
+  { word: 'שש עשרה', age: 16 },
+  { word: 'שישה עשר', age: 16 },
+  { word: 'חמש עשרה', age: 15 },
+  { word: 'חמישה עשר', age: 15 },
+  { word: 'ארבע עשרה', age: 14 },
+  { word: 'ארבעה עשר', age: 14 },
+  { word: 'שלוש עשרה', age: 13 },
+  { word: 'שלושה עשר', age: 13 },
+  { word: 'שתים עשרה', age: 12 },
+  { word: 'שנים עשר', age: 12 },
+  { word: 'אחת עשרה', age: 11 },
+  { word: 'אחד עשר', age: 11 },
+  { word: 'שנתיים וחצי', age: 2.5 },
+  { word: 'שנתיים', age: 2 },
+  { word: 'שנה וחצי', age: 1.5 },
+  { word: 'חצי שנה', age: 0.5 },
+  { word: 'עשרה', age: 10 },
+  { word: 'עשר', age: 10 },
+  { word: 'תשעה', age: 9 },
+  { word: 'תשע', age: 9 },
+  { word: 'שמונה', age: 8 },
+  { word: 'שבעה', age: 7 },
+  { word: 'שבע', age: 7 },
+  { word: 'שישה', age: 6 },
+  { word: 'שש', age: 6 },
+  { word: 'חמישה', age: 5 },
+  { word: 'חמש', age: 5 },
+  { word: 'ארבעה', age: 4 },
+  { word: 'ארבע', age: 4 },
+  { word: 'שלושה', age: 3 },
+  { word: 'שלוש', age: 3 },
+  { word: 'שתיים', age: 2 },
+  { word: 'שניים', age: 2 },
+  { word: 'אחת', age: 1 },
+  { word: 'אחד', age: 1 },
+  { word: 'שנה', age: 1 },
+  { word: 'חצי', age: 0.5 },
+  { word: 'אפס', age: 0 },
+];
+
 /**
  * Calculate high-precision Haversine great-circle distance in kilometers
  */
@@ -355,11 +401,10 @@ export class AgentBotService {
       updated.featureLabel = 'תצפיות ונוף';
     }
 
-    // 4. Youngest age extraction (with typo resilience: כיל/יד -> גיל, matches '4', '7', '10', '0')
-    const ageMatch = text.match(/(?:גיל|כיל|יד|גילאי|בן|בת|ילדים|ילד)?\s*(?:מינימלי|של)?\s*(?:גיל|כיל|יד)?\s*(\d+)/);
-    if (ageMatch && ageMatch[1]) {
-      const extractedAge = parseInt(ageMatch[1], 10);
-      if (extractedAge === 0 || text.includes('עגלה') || text.includes('תינוק')) {
+    // 4. Youngest age extraction (handles Hebrew words e.g. "בן החמש", "בת ארבע", "בני שלוש" and numbers e.g. "בן 5", "לגיל 4")
+    const extractedAge = AgentBotService.parseAgeFromText(text);
+    if (extractedAge !== null) {
+      if (extractedAge <= 2 || text.includes('עגלה') || text.includes('תינוק')) {
         updated.minAge = 0;
         updated.minAgeLabel = '0+ (תינוקות ועגלות)';
       } else if (extractedAge <= 6) {
@@ -372,18 +417,6 @@ export class AgentBotService {
         updated.minAge = 10;
         updated.minAgeLabel = '10+ (נוער ומבוגרים)';
       }
-    } else if (text.includes('תינוק') || text.includes('עגלה') || text.includes('0+')) {
-      updated.minAge = 0;
-      updated.minAgeLabel = '0+ (תינוקות ועגלות)';
-    } else if (text.includes('קטנים') || text.includes('גן')) {
-      updated.minAge = 4;
-      updated.minAgeLabel = '4+ (ילדים קטנים)';
-    } else if (text.includes('יסודי') || text.includes('בוגרים')) {
-      updated.minAge = 7;
-      updated.minAgeLabel = '7+ (ילדים בוגרים)';
-    } else if (text.includes('נוער') || text.includes('מבוגרים')) {
-      updated.minAge = 10;
-      updated.minAgeLabel = '10+ (נוער ומבוגרים)';
     }
 
     // If timing, feature and minAge are supplied but region was omitted in query, search nationwide
@@ -393,6 +426,78 @@ export class AgentBotService {
     }
 
     return updated;
+  }
+
+  /**
+   * Helper to parse and extract youngest hiker age from Hebrew text (numeric and textual phrases)
+   */
+  static parseAgeFromText(text) {
+    if (!text || typeof text !== 'string') return null;
+
+    const foundAges = [];
+
+    // 1. Explicit Hebrew age words after age markers (בן/בת/בני/בנות/בגיל/לגיל/גיל/הילד שלי בן...)
+    for (const item of HEBREW_AGE_WORDS) {
+      const escapedWord = item.word.replace(/\s+/g, '\\s+');
+      const prefixRegex = new RegExp(
+        `(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\\s+בן|ילדה\\s+בת|ילדים\\s+בני|תינוק\\s+בן|פעוט\\s+בן|הילד(?:\\s+שלי)?\\s+בן|הילדה(?:\\s+שלי)?\\s+בת)\\s+(?:ה-?|ה)?${escapedWord}(?:\\s+וחצי|\\s+שנים|\\s+שנה)?`,
+        'gi'
+      );
+      if (prefixRegex.test(text)) {
+        foundAges.push(item.age);
+      }
+    }
+
+    // Check standalone compound age terms when paired with child/baby context
+    if (/(?:ילד|ילדה|פעוט|תינוק|מטייל|הילד|הילדה|הילדים)?\s*(?:בן|בת|בני)?\s*(?:שנה וחצי|חצי שנה)/i.test(text) && (text.includes('ילד') || text.includes('תינוק') || text.includes('פעוט') || text.includes('בן') || text.includes('בת') || text.includes('גיל'))) {
+      foundAges.push(1);
+    }
+    if (/(?:ילד|ילדה|פעוט|תינוק|הילד|הילדה|הילדים)?\s*(?:בן|בת|בני)?\s*(?:שנתיים וחצי|שנתיים)/i.test(text)) {
+      foundAges.push(2);
+    }
+
+    // 2. Numeric age matches & compound multiple ages/ranges (e.g. "בני 8 ו-4", "גילאי 4-7", "בן 5", "בני 4, 7")
+    const compoundRegex = /(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\s+בן|ילדה\s+בת|הילד(?:\s+שלי)?\s+בן|הילדה(?:\s+שלי)?\s+בת)\s*(?:של|ה-?|ה)?\s*(\d+(?:\.\d+)?)\s*(?:-|–|עד|ו-|ו\s*|,|\s+וגם\s+)\s*(?:ה-?|ה)?(\d+(?:\.\d+)?)/gi;
+    let match;
+    while ((match = compoundRegex.exec(text)) !== null) {
+      if (match[1]) foundAges.push(parseFloat(match[1]));
+      if (match[2]) foundAges.push(parseFloat(match[2]));
+    }
+
+    const singleNumericRegex = /(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\s+בן|ילדה\s+בת|הילד(?:\s+שלי)?\s+בן|הילדה(?:\s+שלי)?\s+בת)\s*(?:של|ה-?|ה)?\s*(\d+(?:\.\d+)?)/gi;
+    while ((match = singleNumericRegex.exec(text)) !== null) {
+      if (match[1]) {
+        foundAges.push(parseFloat(match[1]));
+      }
+    }
+
+    // Number followed by "שנים" / "שנה" / "חודשים" with child context: e.g. "ילד 5 שנים"
+    const yearsRegex = /(?:ילד|ילדה|ילדים|פעוט|תינוק|מטייל)\s*(?:שלי|שלנו)?\s*(\d+)\s*(?:שנים|שנה)/gi;
+    while ((match = yearsRegex.exec(text)) !== null) {
+      if (match[1]) {
+        foundAges.push(parseInt(match[1], 10));
+      }
+    }
+
+    // 3. Categorical age keywords (if no explicit number found)
+    if (foundAges.length === 0) {
+      if (text.includes('תינוק') || text.includes('תינוקת') || text.includes('תינוקות') || text.includes('פעוט') || text.includes('פעוטות') || text.includes('עגלה') || text.includes('עגלות') || text.includes('0+')) {
+        foundAges.push(0);
+      } else if (text.includes('קטנים') || text.includes('קטנטנים') || text.includes('גן') || text.includes('ילדי גן')) {
+        foundAges.push(4);
+      } else if (text.includes('יסודי') || text.includes('ילדי יסודי') || text.includes('בוגרים') || text.includes('ילדים בוגרים')) {
+        foundAges.push(7);
+      } else if (text.includes('נוער') || text.includes('מתבגרים') || text.includes('מבוגרים') || text.includes('חטיבה') || text.includes('תיכון')) {
+        foundAges.push(10);
+      }
+    }
+
+    if (foundAges.length > 0) {
+      // Return youngest hiker age
+      return Math.min(...foundAges);
+    }
+
+    return null;
   }
 
   /**

@@ -246,6 +246,41 @@ await runTest('Loop Test 11: Specific Day of Week ("יום ראשון הקרוב
   assert.ok(res2.proposals && res2.proposals.length > 0, 'Must generate proposals for Tuesday');
 });
 
+// ── Test 12: Hebrew Textual Age Extraction (e.g. "בן החמש", "בת ארבע", "בני שלוש") ──
+await runTest('Loop Test 12: Exact User Prompt & Hebrew Age Words ("בן החמש", "בת ארבע", "בן שנתיים")', async () => {
+  // Exact user prompt from issue
+  const userPrompt = 'בא לטייל מחר עם הילד שלי בן החמש לדרום.';
+  const res = await AgentBotService.processUserMessage(userPrompt);
+
+  assert.strictEqual(res.state.timing, 'tomorrow', 'Timing should be tomorrow');
+  assert.strictEqual(res.state.region, 'south', 'Region should be south');
+  assert.strictEqual(res.state.minAge, 4, 'minAge should be extracted as 4 (from בן החמש)');
+  assert.ok(res.state.minAgeLabel.includes('4+'), 'minAgeLabel should show 4+');
+  assert.ok(!res.text.includes('מה גיל המטייל הצעיר'), 'Must NOT ask for age when already specified in prompt');
+  assert.ok(res.text.includes('סגנון מסלול'), 'Should ask for missing feature/style');
+  assert.ok(res.text.includes('גיל צעיר'), 'Summary should acknowledge the extracted age');
+});
+
+// ── Test 13: Comprehensive Hebrew Age Parsing Variations ─────────
+await runTest('Loop Test 13: Diverse Hebrew Age Expressions (Words, Numbers, Toddlers, Multi-Age)', async () => {
+  const testCases = [
+    { text: 'טיול מחר עם ילדה בת ארבע בצפון', expectedAge: 4, expectedMinAge: 4 },
+    { text: 'רוצה לטייל עם פעוט בן שנתיים במרכז', expectedAge: 2, expectedMinAge: 0 },
+    { text: 'מטיילים עם תינוק בן שנה', expectedAge: 1, expectedMinAge: 0 },
+    { text: 'יוצאים עם הילד שלי בן 5 לדרום', expectedAge: 5, expectedMinAge: 4 },
+    { text: 'טיול עם ילדים בני שבע בירושלים', expectedAge: 7, expectedMinAge: 7 },
+    { text: 'אנחנו עם שני ילדים, בני 8 ו-4 בצפון', expectedAge: 4, expectedMinAge: 4 },
+    { text: 'טיול לנוער בני 14', expectedAge: 14, expectedMinAge: 10 },
+  ];
+
+  for (const tc of testCases) {
+    const extracted = AgentBotService.parseAgeFromText(tc.text);
+    assert.strictEqual(extracted, tc.expectedAge, `Failed for "${tc.text}": expected ${tc.expectedAge}, got ${extracted}`);
+    const res = await AgentBotService.processUserMessage(tc.text);
+    assert.strictEqual(res.state.minAge, tc.expectedMinAge, `minAge mismatch for "${tc.text}": expected ${tc.expectedMinAge}, got ${res.state.minAge}`);
+  }
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);
@@ -253,3 +288,4 @@ console.log(`==================================================\n`);
 if (passedTests !== totalTests) {
   process.exit(1);
 }
+
