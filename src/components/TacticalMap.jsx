@@ -23,6 +23,8 @@ export default function TacticalMap({
   const tileLayerRef = useRef(null);
   const markersRef = useRef({});
   const polylineRef = useRef(null);
+  const prevSelectedIdRef = useRef(null);
+  const prevRecommendedIdsRef = useRef(null);
 
   // Filters State ('all', 'proposals', 'water', 'stroller', 'safe')
   const [activeFilter, setActiveFilter] = useState(
@@ -187,28 +189,41 @@ export default function TacticalMap({
 
       markersRef.current[asset.id] = marker;
     });
-
-    // If filtered to a small subset (e.g. AI Recommendations 1-5 sites), smoothly focus map on them!
-    if (assets.length > 0 && assets.length <= 6 && !selectedAssetId) {
-      const bounds = L.latLngBounds(assets.map((a) => [a.lat, a.lng]));
-      map.flyToBounds(bounds, {
-        padding: [80, 80],
-        maxZoom: 12,
-        duration: 1.2,
-      });
-    }
   }, [filteredAssets, selectedAssetId, onSelectAsset]);
+
+  // Smoothly frame newly recommended proposals when they are first generated
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !recommendedAssetIds || recommendedAssetIds.length === 0) return;
+
+    const idsKey = recommendedAssetIds.slice().sort().join(',');
+    if (idsKey === prevRecommendedIdsRef.current) return;
+    prevRecommendedIdsRef.current = idsKey;
+
+    const sites = assets.filter((a) => recommendedAssetIds.includes(a.id));
+    if (sites.length === 1 && typeof sites[0].lat === 'number') {
+      map.flyTo([sites[0].lat, sites[0].lng], 12, { duration: 1.0 });
+    } else if (sites.length > 1) {
+      const bounds = L.latLngBounds(sites.map((a) => [a.lat, a.lng]));
+      map.flyToBounds(bounds, { padding: [60, 60], maxZoom: 11, duration: 1.0 });
+    }
+  }, [recommendedAssetIds, assets]);
 
   // Handle flyTo when a single asset is selected
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !selectedAssetId) return;
+    if (!map) return;
 
-    const targetAsset = assets.find((a) => a.id === selectedAssetId);
-    if (targetAsset && typeof targetAsset.lat === 'number' && typeof targetAsset.lng === 'number') {
-      map.flyTo([targetAsset.lat, targetAsset.lng], 13, {
-        duration: 1.2,
-      });
+    if (selectedAssetId && selectedAssetId !== prevSelectedIdRef.current) {
+      prevSelectedIdRef.current = selectedAssetId;
+      const targetAsset = assets.find((a) => a.id === selectedAssetId);
+      if (targetAsset && typeof targetAsset.lat === 'number' && typeof targetAsset.lng === 'number') {
+        map.flyTo([targetAsset.lat, targetAsset.lng], 10, {
+          duration: 0.8,
+        });
+      }
+    } else if (!selectedAssetId) {
+      prevSelectedIdRef.current = null;
     }
   }, [selectedAssetId, assets]);
 
@@ -245,17 +260,6 @@ export default function TacticalMap({
       }
     }
   }, [activeRoute, assets]);
-
-  // Fly to selected asset
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || !selectedAssetId) return;
-
-    const asset = filteredAssets.find((a) => a.id === selectedAssetId);
-    if (asset) {
-      map.flyTo([asset.lat, asset.lng], 10, { duration: 0.8 });
-    }
-  }, [selectedAssetId, filteredAssets]);
 
   const selectedAsset = filteredAssets.find((a) => a.id === selectedAssetId);
 

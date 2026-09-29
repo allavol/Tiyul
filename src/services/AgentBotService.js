@@ -498,7 +498,10 @@ export class AgentBotService {
       updated.feature = 'stroller';
       updated.featureLabel = 'שביל סלול / נגיש (כיסא גלגלים)';
       updated.wheelchairNote = true;
-    } else if (text.includes('עגלה') || text.includes('עגלות') || text.includes('שביל סלול') || text.includes('סלול ל') || /(?:^|[^\u0590-\u05fe])סלול(?=[^\u0590-\u05fe]|$)/.test(text) || text.includes('נגיש לעגלות')) {
+    } else if (
+      (text.includes('עגלה') || text.includes('עגלות') || text.includes('שביל סלול') || text.includes('סלול ל') || /(?:^|[^\u0590-\u05fe])סלול(?=[^\u0590-\u05fe]|$)/.test(text) || text.includes('נגיש לעגלות')) &&
+      !text.includes('בלי עגלה') && !text.includes('ללא עגלה') && !text.includes('בלי עגלות') && !text.includes('ללא עגלות') && !text.includes('אין עגלה') && !text.includes('לא עגלה') && !text.includes('כולל מסלולים עם עגלות') && !text.includes('כולל עגלות') && !text.includes('כוללים עגלות')
+    ) {
       updated.feature = 'stroller';
       updated.featureLabel = 'שביל סלול / נגיש לעגלות';
     } else if (text.includes('נוף') || text.includes('תצפית') || text.includes('פריחה') || text.includes('מבצר') || text.includes('עתיקות')) {
@@ -509,7 +512,7 @@ export class AgentBotService {
     // 4. Youngest age extraction (handles Hebrew words e.g. "בן החמש", "בת ארבע", "בני שלוש" and numbers e.g. "בן 5", "לגיל 4")
     const extractedAge = AgentBotService.parseAgeFromText(text);
     if (extractedAge !== null) {
-      if (extractedAge <= 2 || text.includes('עגלה') || text.includes('תינוק')) {
+      if (extractedAge <= 2) {
         updated.minAge = 0;
         updated.minAgeLabel = '0+ (תינוקות ועגלות)';
       } else if (extractedAge <= 6) {
@@ -728,24 +731,57 @@ export class AgentBotService {
       }
     }
 
+    // 1.45 Inquiry about whether trails for older children / specific ages include stroller paths
+    const isStrollerInquiry = (
+      (text.includes('עגל') || text.includes('עגלה') || text.includes('עגלות')) &&
+      (text.includes('כולל') || text.includes('כוללים') || text.includes('נכלל') || text.includes('מתאים גם') || text.includes('האם זה כולל') || text.includes('האם מסלול') || text.includes('האם מסלולים')) &&
+      (text.includes('בן') || text.includes('בת') || text.includes('גיל') || text.includes('ילד') || text.includes('11') || text.includes('10') || text.includes('נוער') || text.includes('בוגר'))
+    );
+    if (isStrollerInquiry) {
+      return {
+        text: `שאלה מצוינת וחשובה לתכנון הטיול! 🌿 הנה ההסבר המלא:\n\n1. **עבירות ובטיחות:**\nכל מסלול שמוגדר כנגיש לעגלות (0+) הוא שביל מוסדר, סלול או מרוצף (למשל הטיילת בתל דן או שביל המבצר באפולוניה), ולכן הוא **עביר ובטוח לחלוטין גם לילד בן 11**.\n\n2. **רמת עניין ואתגר:**\nילד בן 11 כבר יכול ליהנות מ**מסלולים עשירים, אתגריים וחווייתיים בהרבה** (הליכה עמוקה בתוך נקיקי מים, טיפוס בסולמות ויתדות, בולדרים ומערות) — מסלולים אלו **אינם נגישים לעגלות כלל**.\n\n💡 **איך כדאי לבחור?**\n• **מטיילים ללא עגלה?** מומלץ לבחור במסלולי **7+ או 10+** כדי שהילד ייהנה מחוויית טבע מלאה ומאתגרת.\n• **מטיילים גם עם תינוק בעגלה וגם עם ילד בן 11?** יש לבחור במסלול **נגיש לעגלות (0+)**, או לחלופין להצטייד במנשא גב עבור התינוק כדי שכל המשפחה תוכל ליהנות ממסלול אתגרי!`,
+        state: currentState,
+        options: [
+          { label: '🧗‍♂️ מסלולים אתגריים לגילאי 10+', value: 'מחפש מסלול אתגרי בצפון למחר לבן 11' },
+          { label: '👶 מסלולים נגישים לעגלות (0+)', value: 'מחפש מסלול נגיש לעגלות בצפון למחר' },
+          { label: '🌊 מסלולי מים מותאמים למשפחה', value: 'מחפש מסלול מים בצפון למשפחה מחר' },
+        ],
+        proposals: [],
+        toolActivity: '💡 מענה לשאלת הכללת עגלות וגילאי מטיילים',
+      };
+    }
+
     // 1.5 B1: Direct site name lookup — bypass 4-param flow if user asks about a specific site
-    const directLookupIntents = ['ספר לי על', 'מה יש ב', 'מידע על', 'האם', 'פתוח', 'תגיד לי על', 'מכיר את'];
+    const directLookupIntents = [
+      'ספר לי על', 'מה יש ב', 'מידע על', 'תגיד לי על', 'מכיר את', 'איך מגיעים ל', 'איך להגיע ל',
+      'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר'
+    ];
     const hasLookupIntent = directLookupIntents.some((intent) => text.includes(intent));
     if (hasLookupIntent) {
-      const GENERIC_PREFIXES = ['עין', 'נחל', 'פארק', 'שמורת', 'גן', 'יער', 'הר', 'תל', 'חוף', 'דרך', 'בית', 'ספר', 'שדה', 'מצפור', 'מצפה', 'חורבת'];
+      const GENERIC_PREFIXES = [
+        'עין', 'נחל', 'פארק', 'שמורת', 'גן', 'יער', 'הר', 'תל', 'חוף', 'דרך', 'בית', 'ספר', 'שדה', 'מצפור', 'מצפה', 'חורבת',
+        'מסלול', 'מסלולים', 'מסלולי', 'שביל', 'שבילי', 'משפחתי', 'משפחתיים', 'טיול', 'טיולים', 'מעגלי', 'קצר', 'ארוך', 'לאומי', 'טבע'
+      ];
+      const inputWords = text.split(/[\s\-–—,?!.:;]+/).filter(Boolean);
       const matchedSite = assetsData.find((site) => {
         const siteName = site.name.toLowerCase();
         // Exact name match
         if (text.includes(siteName)) return true;
-        // Two-word phrase match (e.g. "עין יהב", "עין גדי", "מכתש רמון", "פארק ספיר")
+        // Two-word phrase match (e.g. "עין יהב", "עין גדי", "מכתש רמון", "פארק ספיר", "נחל עיון", "מפל התנור")
         const words = siteName.split(/[\s\-–—]+/).filter(Boolean);
         for (let i = 0; i < words.length - 1; i++) {
           const phrase = `${words[i]} ${words[i + 1]}`;
-          if (phrase.length >= 5 && text.includes(phrase)) return true;
+          if (
+            phrase.length >= 6 &&
+            text.includes(phrase) &&
+            !['מסלול משפחתי', 'שביל משפחתי', 'מסלול מעגלי', 'שביל מעגלי', 'טיול משפחתי'].includes(phrase)
+          ) {
+            return true;
+          }
         }
         // Distinctive non-generic word match (e.g. "יהב", "סהרונים", "המנסרה", "יורקעם", "עבדת", "שבטה")
         const distinctiveWords = words.filter((w) => w.length >= 3 && !GENERIC_PREFIXES.includes(w));
-        return distinctiveWords.some((w) => text.includes(w));
+        return distinctiveWords.some((w) => inputWords.includes(w));
       });
       if (matchedSite) {
         let weather = null;
