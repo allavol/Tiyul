@@ -430,6 +430,22 @@ await runTest('Edge Case 23: Word "מסלול" does not trigger stroller filter'
   assert.notStrictEqual(state.feature, 'stroller', 'The word "מסלול" must not match stroller regex');
 });
 
+// ── Test 24: Stroller Inclusion Inquiry (Exact User Query) ───────────
+await runTest('Edge Case 24: Stroller Inclusion Inquiry ("האם מסלולים עם ילד בן 11 כולל מסלולים עם עגלות?") does not trigger unrelated site', async () => {
+  const res = await AgentBotService.processUserMessage('האם מסלולים עם ילד בן 11 כולל מסלולים עם עגלות?');
+  assert.ok(res.text.includes('11'), 'Response text should explain age 11 suitability');
+  assert.ok(res.text.includes('עגלות'), 'Response text should address stroller accessibility');
+  assert.strictEqual(res.proposals.length, 0, 'Must not return false site proposal (e.g. Nahal Iyon 301)');
+  assert.ok(res.options.length > 0, 'Should provide actionable follow-up options');
+});
+
+// ── Test 25: Negative Stroller Does Not Override Feature or Age ──────
+await runTest('Edge Case 25: Negative stroller does not overwrite age or set stroller feature', async () => {
+  const state = AgentBotService.extractParameters('רוצה מסלול אתגרי לבן 11 בצפון מחר ללא עגלה', AgentBotService.getInitialState());
+  assert.strictEqual(state.minAge, 10, 'Min age for 11yo must be 10, not 0');
+  assert.strictEqual(state.feature, 'adventure', 'Feature must be adventure, not stroller');
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);

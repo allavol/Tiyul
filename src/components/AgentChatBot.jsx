@@ -383,7 +383,7 @@ export default function AgentChatBot({
                           )}
 
                           {/* Action Buttons: Fly to Map & Direct Waze */}
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-1.5">
                             <button
                               onClick={() => {
                                 if (onSelectSite) {
@@ -393,20 +393,20 @@ export default function AgentChatBot({
                                   setIsMinimized(true);
                                 }
                               }}
-                              className="py-2 px-2.5 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition"
+                              className="py-1.5 px-2 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 shadow-sm transition"
                             >
-                              <MapPin className="w-3.5 h-3.5" />
-                              <span>הצג מסלול ונתונים במפה 🗺️</span>
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">הצג מסלול ונתונים במפה 🗺️</span>
                             </button>
 
                             <a
                               href={`https://waze.com/ul?ll=${prop.lat},${prop.lng}&navigate=yes`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="py-2 px-2.5 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition text-center"
+                              className="py-1.5 px-2 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center"
                             >
-                              <Navigation className="w-3.5 h-3.5 text-blue-400" />
-                              <span>נווט ב-Waze</span>
+                              <Navigation className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                              <span className="truncate">נווט ב-Waze</span>
                             </a>
                           </div>
 
