@@ -33,9 +33,16 @@ export default function App() {
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const [isChatBotOpen, setIsChatBotOpen] = useState(false);
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
+  const [chatBotQueryTrigger, setChatBotQueryTrigger] = useState(null);
   const [activeRailTab, setActiveRailTab] = useState('trails'); // 'trails' | 'map' | 'settings'
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLightMode, setIsLightMode] = useState(true);
+
+  // Trigger conversational agent briefing for a specific site
+  const handleAskAgentAboutSite = (asset) => {
+    setIsChatBotOpen(true);
+    setChatBotQueryTrigger(`ספר לי על ${asset.name}`);
+  };
 
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
@@ -243,6 +250,8 @@ export default function App() {
           onCloseNationalRadar={() => setShowNationalRadar(false)}
           isLightMode={isLightMode}
           recommendedAssetIds={recommendedAssetIds}
+          onAskAgentAboutSite={handleAskAgentAboutSite}
+          onClearRecommendations={() => setRecommendedAssetIds(null)}
         />
 
         {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
@@ -326,6 +335,8 @@ export default function App() {
           setSelectedAssetId(site.id);
         }}
         assets={assets}
+        queryTrigger={chatBotQueryTrigger}
+        onClearQueryTrigger={() => setChatBotQueryTrigger(null)}
       />
     </div>
   );

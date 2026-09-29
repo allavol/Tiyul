@@ -16,7 +16,12 @@ import {
   RotateCcw,
   Radio,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Minimize2,
+  Maximize2,
+  Navigation,
+  Copy,
+  Check
 } from 'lucide-react';
 import { AgentBotService } from '../services/AgentBotService';
 import { getCategoryIconChar, getAgeBadge } from '../utils/weatherUtils';
@@ -32,7 +37,7 @@ const ThinkingIndicator = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setPhaseIndex((prev) => (prev + 1) % phases.length);
-    }, 1500);
+    }, 280);
     return () => clearInterval(interval);
   }, []);
 
@@ -58,6 +63,8 @@ export default function AgentChatBot({
   onSelectSite,
   onProposalsUpdate,
   assets = [],
+  queryTrigger = null,
+  onClearQueryTrigger = null,
 }) {
   const [messages, setMessages] = useState([
     {
@@ -76,6 +83,8 @@ export default function AgentChatBot({
 
   const [inputVal, setInputVal] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
   const [sessionState, setSessionState] = useState(AgentBotService.getInitialState());
   const messagesEndRef = useRef(null);
 
@@ -89,6 +98,28 @@ export default function AgentChatBot({
       scrollToBottom();
     }
   }, [messages, isOpen, isProcessing]);
+
+  // Handle external query trigger (e.g. from FloatingMapCard "שאל את הסוכן")
+  useEffect(() => {
+    if (queryTrigger && isOpen) {
+      setIsMinimized(false);
+      handleSendMessage(queryTrigger);
+      onClearQueryTrigger?.();
+    }
+  }, [queryTrigger, isOpen]);
+
+  // Copy recommendation to clipboard
+  const handleCopyProposal = (prop) => {
+    const text = `🧭 המלצת טיול: ${prop.name} (${prop.region})
+🌡️ מזג אוויר: ${prop.weather?.temp || ''} (${prop.weather?.conditions || ''})
+💡 נימוק: ${prop.matchRationale || ''}
+🚗 Waze: https://waze.com/ul?ll=${prop.lat},${prop.lng}&navigate=yes`;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+    }
+    setCopiedId(prop.id);
+    setTimeout(() => setCopiedId(null), 2500);
+  };
 
   // Handle Send message
   const handleSendMessage = async (textToSend) => {
@@ -108,8 +139,8 @@ export default function AgentChatBot({
 
     // 2. Process with AgentBotService
     try {
-      // Simulate multi-step tactical thinking delay
-      await new Promise((r) => setTimeout(r, 3500));
+      // Sub-second tactical thinking delay (<800ms)
+      await new Promise((r) => setTimeout(r, 650));
 
       const response = await AgentBotService.processUserMessage(text, sessionState);
 
@@ -174,6 +205,36 @@ export default function AgentChatBot({
 
   if (!isOpen) return null;
 
+  /* Minimized Docked Widget Pill */
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-[1200] pointer-events-auto animate-floating-card font-body select-none">
+        <button
+          onClick={() => setIsMinimized(false)}
+          data-testid="docked-chatbot-pill"
+          title="הרחב שיחת סוכן"
+          className="flex items-center gap-3 px-4 py-3 rounded-2xl glass-panel border border-accent/40 bg-brand-deep/95 text-zinc-100 shadow-2xl hover:border-accent hover:bg-brand-card transition-all group"
+        >
+          <div className="w-8 h-8 rounded-xl bg-accent/20 text-accent flex items-center justify-center shadow">
+            <Compass className="w-4 h-4 animate-spin-slow text-accent" />
+          </div>
+          <div className="text-right">
+            <div className="text-xs font-black text-white flex items-center gap-1.5">
+              <span>סוכן הטיולים</span>
+              {sessionState.lastProposals?.length > 0 && (
+                <span className="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full border border-accent/30 font-bold">
+                  {sessionState.lastProposals.length} הצעות
+                </span>
+              )}
+            </div>
+            <div className="text-[10px] text-zinc-400">לחץ להרחבת השיחה ↗</div>
+          </div>
+          <Maximize2 className="w-4 h-4 text-zinc-400 group-hover:text-accent transition ml-1" />
+        </button>
+      </div>
+    );
+  }
+
   return (
     /* Mobile & Desktop Responsive Floating Chatbot Widget */
     <div className="fixed inset-3 bottom-16 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[420px] sm:h-[580px] sm:max-h-[85vh] z-[1200] glass-panel rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 animate-floating-card font-body select-none pointer-events-auto" style={{ borderColor: 'var(--border-accent)' }}>
@@ -206,6 +267,13 @@ export default function AgentChatBot({
               className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-accent flex items-center justify-center transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setIsMinimized(true)}
+              title="מזער שיחה"
+              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200 flex items-center justify-center transition"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onClose}
@@ -314,18 +382,57 @@ export default function AgentChatBot({
                             </div>
                           )}
 
-                          {/* Action Button: Fly to Map */}
-                          <button
-                            onClick={() => {
-                              if (onSelectSite) {
-                                onSelectSite(fullAsset);
-                              }
-                            }}
-                            className="w-full py-2 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 shadow-md transition"
-                          >
-                            <MapPin className="w-3.5 h-3.5" />
-                            <span>הצג מסלול ונתונים במפה 🗺️</span>
-                          </button>
+                          {/* Action Buttons: Fly to Map & Direct Waze */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() => {
+                                if (onSelectSite) {
+                                  onSelectSite(fullAsset);
+                                }
+                                if (window.innerWidth < 640) {
+                                  setIsMinimized(true);
+                                }
+                              }}
+                              className="py-2 px-2.5 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition"
+                            >
+                              <MapPin className="w-3.5 h-3.5" />
+                              <span>הצג מסלול ונתונים במפה 🗺️</span>
+                            </button>
+
+                            <a
+                              href={`https://waze.com/ul?ll=${prop.lat},${prop.lng}&navigate=yes`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="py-2 px-2.5 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition text-center"
+                            >
+                              <Navigation className="w-3.5 h-3.5 text-blue-400" />
+                              <span>נווט ב-Waze</span>
+                            </a>
+                          </div>
+
+                          {/* Secondary Actions: Share / Copy & Coordinates */}
+                          <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 pt-0.5">
+                            <button
+                              onClick={() => handleCopyProposal(prop)}
+                              className="flex items-center gap-1 text-zinc-400 hover:text-accent transition py-0.5 font-medium"
+                              title="העתק פרטי מסלול לווטסאפ"
+                            >
+                              {copiedId === prop.id ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span className="text-emerald-400 font-semibold">הועתק ללוח!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>העתק המלצה</span>
+                                </>
+                              )}
+                            </button>
+                            <span className="text-[10px] text-zinc-500 font-mono">
+                              📍 {prop.lat.toFixed(3)}, {prop.lng.toFixed(3)}
+                            </span>
+                          </div>
                         </div>
                       );
                     })}

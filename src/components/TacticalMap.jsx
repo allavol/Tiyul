@@ -15,6 +15,8 @@ export default function TacticalMap({
   onCloseNationalRadar,
   isLightMode = false,
   recommendedAssetIds = null,
+  onAskAgentAboutSite = null,
+  onClearRecommendations = null,
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -314,6 +316,7 @@ export default function TacticalMap({
           selectedDayIndex={selectedDayIndex}
           onClose={onCloseCard}
           onSelectAlternative={(alt) => onSelectAsset(alt.id)}
+          onAskAgentAboutSite={onAskAgentAboutSite}
         />
       )}
 
