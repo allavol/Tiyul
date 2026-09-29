@@ -94,6 +94,7 @@ export default function FloatingMapCard({
   activeScenario = 'NORMAL',
   selectedDayIndex = 0,
   onSelectAlternative,
+  onAskAgentAboutSite,
 }) {
   if (!asset) return null;
 
@@ -528,6 +529,26 @@ export default function FloatingMapCard({
               : `[הסוכן המטייל] תנאי השטח ב${asset.name} מצוינים (${effectiveWeather.temp}, ${effectiveWeather.conditions}). מתאים לבילוי משפחתי בטוח ומהנה.`
           )}
         </p>
+      </div>
+
+      {/* ── Quick Action Buttons: Waze & Ask Agent ─────────────── */}
+      <div className="mx-4 mb-3 grid grid-cols-2 gap-2 text-xs">
+        <a
+          href={`https://waze.com/ul?ll=${asset.lat},${asset.lng}&navigate=yes`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="py-2.5 px-3 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] rounded-xl flex items-center justify-center gap-1.5 transition font-semibold"
+        >
+          <span>🚗</span>
+          <span>נווט ב-Waze</span>
+        </a>
+        <button
+          onClick={() => onAskAgentAboutSite?.(asset)}
+          className="py-2.5 px-3 bg-accent/[0.12] hover:bg-accent/[0.2] text-accent border border-accent/30 rounded-xl flex items-center justify-center gap-1.5 transition font-semibold active:scale-[0.98]"
+        >
+          <span>💬</span>
+          <span>שאל את הסוכן</span>
+        </button>
       </div>
 
       {/* ── Live Source Footer ────────────────────────────────── */}

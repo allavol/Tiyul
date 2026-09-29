@@ -21,6 +21,10 @@ __pycache__/
 # Scratch & temporary files
 scratch/
 
+# Test artifacts
+playwright-report/
+test-results/
+
 # IDE & OS files
 .vscode/
 .idea/

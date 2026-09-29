@@ -45,7 +45,47 @@ test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
     // Click "הצג מסלול ונתונים במפה" on the first proposal
     await proposalButtons.first().click();
 
-    // Verify chat drawer closes and map displays the selected site!
+    // Verify chat drawer closes / docks and map displays the selected site!
     await page.waitForTimeout(1000);
   });
+
+  test('Chatbot Minimization, Waze Navigation Link and FloatingMapCard Bidirectional Ask Agent', async ({ page }) => {
+    test.setTimeout(30000);
+
+    await page.goto('/');
+
+    // 1. Open Chatbot
+    const openChatBtn = page.locator('button:has-text("שאל את סוכן הטיולים")').first();
+    await openChatBtn.click();
+
+    // 2. Verify Minimize button
+    const minimizeBtn = page.locator('button[title="מזער שיחה"]').first();
+    await expect(minimizeBtn).toBeVisible();
+    await minimizeBtn.click();
+
+    // 3. Verify Docked Widget Pill is visible
+    const dockedPill = page.locator('[data-testid="docked-chatbot-pill"]');
+    await expect(dockedPill).toBeVisible();
+
+    // 4. Restore Chatbot by clicking docked pill
+    await dockedPill.click();
+    const chatInput = page.locator('input[type="text"]').last();
+    await expect(chatInput).toBeVisible();
+
+    // 5. Send a direct request to check Waze and Copy actions
+    await chatInput.fill('ספר לי על עין גדי');
+    const sendBtn = page.locator('button:has(svg.lucide-send)').last();
+    await sendBtn.click();
+
+    // 6. Verify Waze navigation link appears on the proposal card
+    const wazeLink = page.locator('a[href*="waze.com"]').first();
+    await expect(wazeLink).toBeVisible({ timeout: 10000 });
+
+    // 7. Verify Copy recommendation button appears
+    const copyBtn = page.locator('button:has-text("העתק המלצה")').first();
+    await expect(copyBtn).toBeVisible();
+    await copyBtn.click();
+    await expect(page.locator('text=הועתק ללוח!')).toBeVisible();
+  });
 });
+
