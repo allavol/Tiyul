@@ -57,6 +57,12 @@ const ThinkingIndicator = () => {
   );
 };
 
+// Clean any markdown asterisks formatting so raw stars are never shown in chat bubbles
+export function stripAsterisks(text) {
+  if (!text || typeof text !== 'string') return '';
+  return text.replace(/\*{1,2}/g, '');
+}
+
 export default function AgentChatBot({
   isOpen,
   onClose,
@@ -70,7 +76,7 @@ export default function AgentChatBot({
     {
       id: 'welcome',
       sender: 'bot',
-      text: 'שלום וברוכים הבאים! 🧭 אני **סוכן הטיולים החכם** שלכם.\n\nספרו לי: **לאן תרצו לטייל ומתי?** (למשל: *"רוצים לטייל מחר בצפון עם ילדים קטנים בני 3, מחפשים מים"*).',
+      text: 'שלום וברוכים הבאים! 🧭 אני סוכן הטיולים החכם שלכם.\n\nספרו לי: לאן תרצו לטייל ומתי? (למשל: "רוצים לטייל מחר בצפון עם ילדים קטנים בני 3, מחפשים מים").',
       options: [
         { label: '🏞️ טיול מים בצפון למחר (גיל 4+)', value: 'אני רוצה לטייל מחר בצפון עם ילדים קטנים בני 4, מחפשים מסלול מים' },
         { label: '👶 טיול עגלות מוצל בשרון (0+)', value: 'מחפשים מסלול נגיש לעגלות מוצל במרכז והשרון לסוף השבוע' },
@@ -190,7 +196,7 @@ export default function AgentChatBot({
       {
         id: `welcome-${Date.now()}`,
         sender: 'bot',
-        text: 'השיחה אופסה! 🌿 ספרו לי: **לאיזה אזור בארץ תרצו לטייל ומתי?**',
+        text: 'השיחה אופסה! 🌿 ספרו לי: לאיזה אזור בארץ תרצו לטייל ומתי?',
         options: [
           { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון' },
           { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון' },
@@ -304,7 +310,7 @@ export default function AgentChatBot({
                   }`}
                 >
                   <div className="whitespace-pre-line text-sm">
-                    {msg.text}
+                    {stripAsterisks(msg.text)}
                   </div>
 
                   {/* Tool Execution Badge */}

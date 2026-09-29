@@ -446,6 +446,22 @@ await runTest('Edge Case 25: Negative stroller does not overwrite age or set str
   assert.strictEqual(state.feature, 'adventure', 'Feature must be adventure, not stroller');
 });
 
+// ── Test 26: Zero Asterisks in All Agent Responses ────────────────────
+await runTest('Edge Case 26: Zero asterisks in all agent responses', async () => {
+  const testPrompts = [
+    'שלום',
+    'רוצה לטייל מחר בצפון עם ילדים, מים',
+    'האם מסלולים עם ילד בן 11 כולל מסלולים עם עגלות?',
+    'מה אם יש שיטפון פתאומי בעין גדי?',
+    'ספר לי על עין גדי',
+    'התחל מחדש'
+  ];
+  for (const prompt of testPrompts) {
+    const res = await AgentBotService.processUserMessage(prompt);
+    assert.strictEqual(res.text.includes('*'), false, `Response for "${prompt}" should not contain asterisks, got: ${res.text}`);
+  }
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);
