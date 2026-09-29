@@ -624,9 +624,17 @@ export class AgentBotService {
   }
 
   /**
-   * Process a user turn in conversation
+   * Process a user turn in conversation (strictly strips any markdown bold/italic asterisks from user-facing text)
    */
   static async processUserMessage(message, sessionState = null) {
+    const res = await this._processUserMessageInternal(message, sessionState);
+    if (res && typeof res.text === 'string') {
+      res.text = res.text.replace(/\*{1,2}/g, '');
+    }
+    return res;
+  }
+
+  static async _processUserMessageInternal(message, sessionState = null) {
     // 1. Guardrails Check
     const guardrail = this.checkGuardrails(message);
     if (!guardrail.safe) {
