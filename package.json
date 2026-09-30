@@ -1,5 +1,6 @@
 {
-  "name": "geoguard-c4i-dashboard",
+  "name": "tiyul-geo-guard",
+  "description": "לאן נטייל? // Autonomous AI Weather & Tactical Hiking Recommender System",
   "private": true,
   "version": "1.0.0",
   "type": "module",

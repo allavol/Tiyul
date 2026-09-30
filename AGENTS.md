@@ -24,3 +24,15 @@ To ensure code quality, regression prevention, and zero broken production states
    - GitHub Actions automatically runs all tests and builds on every push to a branch / Pull Request.
 4. **Merge to `main`**:
    - Merge into `main` only after CI is green and verified.
+
+---
+
+## 🤖 סמכות אוטונומית לאישור וביצוע שינויים (Agent BAAL Autonomous Approval Authority)
+
+1. **ייפוי כוח הנדסי מלא (Full Autonomous Proxy)**:
+   סוכן **BAAL** מוסמך ומורשה בזאת באופן מפורש על ידי המשתמש (USER) לאשר, לערוך, ליצור, לתקן, ולבצע שינויים בכל קובצי הפרויקט באופן אוטונומי, ללא צורך בעצירה לבקשת אישורים ידניים מהמשתמש.
+2. **ביצוע יזום ופרואקטיבי**:
+   הסוכן יבצע שינויים בקוד, יריץ בדיקות, יעדכן מסמכים, ויקדם את מפת הדרכים (Sprints) ברצף עד להשלמה.
+3. **שבירת לולאות אינסופיות (Infinite Loop Breaker)**:
+   במידה ומתרחשת לולאה אינסופית, חסימה, או כשל טכני חוזר — סוכן BAAL מוסמך לעצור את הלולאה מיידית, לבחור חלופת מעקף (Failsafe / Fallback), ולהמשיך הלאה בביצוע המשימות ללא עיכוב.
+

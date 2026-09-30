@@ -50,8 +50,8 @@ def fetch_weather_osint(
                 "active_alerts": []
             }
 
-    # Live Tomorrow.io API integration if configured
-    api_key = os.getenv("TOMORROW_IO_API_KEY") or os.getenv("VITE_TOMORROW_IO_API_KEY") or "2HESE6nVPsY0maF3uYCOwT0B3OcAx6lu"
+    # Live Tomorrow.io API integration if configured via environment
+    api_key = os.getenv("TOMORROW_IO_API_KEY") or os.getenv("VITE_TOMORROW_IO_API_KEY")
     if api_key and api_key != "your_tomorrow_io_api_key_here":
         try:
             url = f"https://api.tomorrow.io/v4/weather/realtime?location={lat},{lng}&apikey={api_key}&units=metric"

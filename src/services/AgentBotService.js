@@ -16,6 +16,7 @@
 import assetsData from '../../assets_db.json' with { type: 'json' };
 import { WeatherService } from './WeatherService.js';
 import { getWaterAdvisory } from '../utils/weatherUtils.js';
+import { calculateHaversineDistanceKm } from '../utils/geoUtils.js';
 
 // Strict Prohibited Topics (Politics, Violence, Weapons, Drugs, Hate, Jailbreak/Prompt Injection)
 const PROHIBITED_KEYWORDS = [
@@ -242,22 +243,7 @@ const HEBREW_AGE_WORDS = [
   { word: 'אפס', age: 0 },
 ];
 
-/**
- * Calculate high-precision Haversine great-circle distance in kilometers
- */
-export function calculateHaversineDistanceKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth radius in km
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round((R * c) * 10) / 10;
-}
+export { calculateHaversineDistanceKm } from '../utils/geoUtils.js';
 
 /**
  * Generate a contextual What-If crisis scenario tailored to a specific site
@@ -496,6 +482,22 @@ export class AgentBotService {
       text.includes('לא חשוב') ||
       text.includes('לא קריטי')
     );
+
+    // Surprise Me shortcut (Finding L6)
+    if (text.includes('הפתע אותי') || text.includes('הפתעה') || text.includes('תפתיע אותי')) {
+      updated.timing = updated.timing || 'today';
+      updated.timingLabel = updated.timingLabel || 'היום';
+      updated.dayIndex = updated.dayIndex !== undefined ? updated.dayIndex : 0;
+      updated.region = updated.region || 'all';
+      updated.regionLabel = updated.regionLabel || 'כל הארץ';
+      updated.feature = updated.feature || 'any';
+      updated.featureLabel = updated.featureLabel || 'מסלול מובחר מומלץ';
+      if (updated.minAge === null || updated.minAge === undefined) {
+        updated.minAge = 4;
+        updated.minAgeLabel = '4+';
+      }
+    }
+
     if (isGenericAny) {
       if (!updated.region) {
         updated.region = 'all';
@@ -1385,8 +1387,13 @@ export class AgentBotService {
     const targetAge = Number(state.minAge) || 4;
     const rawText = (rawMessage || '').toLowerCase();
 
+    // Deep clone assets to guarantee zero mutation on the base database (Finding C5)
+    const clonedAssets = typeof structuredClone === 'function'
+      ? structuredClone(assetsData)
+      : JSON.parse(JSON.stringify(assetsData));
+
     // 1. Filter database by region/radius, age, and stroller
-    let candidates = assetsData.filter((site) => {
+    let candidates = clonedAssets.filter((site) => {
       // Distance and driving time computation if origin coordinates are known
       if (state.originCoords) {
         const [oLat, oLng] = state.originCoords;

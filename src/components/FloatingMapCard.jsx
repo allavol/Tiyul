@@ -209,13 +209,13 @@ export default function FloatingMapCard({
         isRainSafe: liveWeather.isRainSafe,
         wind: liveWeather.wind,
         conditions: liveWeather.conditions,
-        isLive: true,
-        sourceLabel: `Tomorrow.io Live (${liveWeather.fetchTime})`,
+        isLive: liveWeather.isLive ?? true,
+        sourceLabel: liveWeather.badgeText || `${liveWeather.source || 'Live Weather'} (${liveWeather.fetchTime})`,
       }
     : {
         ...fallbackWeather,
         isLive: false,
-        sourceLabel: activeDay === 0 ? 'תחזית IMS' : `תחזית ליום ${activeDay + 1}`,
+        sourceLabel: activeDay === 0 ? 'נתוני הדמיה אזורית (Offline)' : `תחזית ליום ${activeDay + 1} (מודל)`,
       };
 
   // Adjust temperature based on time of day

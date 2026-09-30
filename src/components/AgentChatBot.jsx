@@ -57,6 +57,22 @@ const ThinkingIndicator = () => {
   );
 };
 
+// Renders clean formatted text, turning **bold** into stylish strong elements while preserving line breaks (Finding H7)
+export function renderFormattedText(text) {
+  if (!text || typeof text !== 'string') return '';
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={i} className="font-bold text-white bg-white/10 px-1 py-0.5 rounded">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part.replace(/\*/g, '');
+  });
+}
+
 // Clean any markdown asterisks formatting so raw stars are never shown in chat bubbles
 export function stripAsterisks(text) {
   if (!text || typeof text !== 'string') return '';
@@ -78,6 +94,7 @@ export default function AgentChatBot({
       sender: 'bot',
       text: 'שלום וברוכים הבאים! 🧭 אני סוכן הטיולים החכם שלכם.\n\nספרו לי: לאן תרצו לטייל ומתי? (למשל: "רוצים לטייל מחר בצפון עם ילדים קטנים בני 3, מחפשים מים").',
       options: [
+        { label: '🎲 הפתע אותי!', value: 'הפתע אותי עם מסלול טיול מומלץ ומותאם להיום' },
         { label: '🏞️ טיול מים בצפון למחר (גיל 4+)', value: 'אני רוצה לטייל מחר בצפון עם ילדים קטנים בני 4, מחפשים מסלול מים' },
         { label: '👶 טיול עגלות מוצל בשרון (0+)', value: 'מחפשים מסלול נגיש לעגלות מוצל במרכז והשרון לסוף השבוע' },
         { label: '🏰 טיול נוף ומבצרים בירושלים (6+)', value: 'מחפשים טיול נוף ועתיקות באזור ירושלים בסוף השבוע' },
@@ -145,8 +162,8 @@ export default function AgentChatBot({
 
     // 2. Process with AgentBotService
     try {
-      // Sub-second tactical thinking delay (<800ms)
-      await new Promise((r) => setTimeout(r, 650));
+      // Natural responsive micro-delay for smooth UI transition (<100ms, Finding H6)
+      await new Promise((r) => setTimeout(r, 80));
 
       const response = await AgentBotService.processUserMessage(text, sessionState);
 
@@ -310,7 +327,7 @@ export default function AgentChatBot({
                   }`}
                 >
                   <div className="whitespace-pre-line text-sm">
-                    {stripAsterisks(msg.text)}
+                    {renderFormattedText(msg.text)}
                   </div>
 
                   {/* Tool Execution Badge */}

@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red Team Audit — "לאן נטייל?" Agent Platform</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --border: #30363d;
+      --accent: #34d399;
+      --accent-dim: #065f46;
+      --red: #f87171;
+      --amber: #fbbf24;
+      --blue: #60a5fa;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --green-badge: #064e3b;
+      --red-badge: #7f1d1d;
+      --amber-badge: #78350f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', 'Heebo', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2rem;
+      color: white;
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 12px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+
+    /* Section Headers */
+    .section-header {
+      background: linear-gradient(135deg, var(--accent-dim), var(--card));
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 16px 24px;
+      margin: 40px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-header h2 {
+      font-size: 1.3rem;
+      color: white;
+    }
+    .section-header .badge {
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    /* Scoreboard */
+    .scoreboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 16px 0 32px;
+    }
+    .score-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+    .score-card .number {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: white;
+    }
+    .score-card .label {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .score-card.green .number { color: var(--accent); }
+    .score-card.red .number { color: var(--red); }
+    .score-card.amber .number { color: var(--amber); }
+    .score-card.blue .number { color: var(--blue); }
+
+    /* Finding Cards */
+    .finding {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .finding:hover { border-color: var(--accent); }
+    .finding.resolved { border-color: var(--accent); opacity: 0.6; }
+    .finding-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .severity {
+      font-size: 0.65rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+    }
+    .severity.critical { background: var(--red-badge); color: var(--red); border: 1px solid #991b1b; }
+    .severity.high { background: var(--amber-badge); color: var(--amber); border: 1px solid #92400e; }
+    .severity.medium { background: #1e3a5f; color: var(--blue); border: 1px solid #1d4ed8; }
+    .severity.low { background: var(--green-badge); color: var(--accent); border: 1px solid #047857; }
+    .finding-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+    }
+    .finding-desc {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+    .impact-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-dim);
+      margin-left: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* Fix Alternatives */
+    .fixes { margin-top: 12px; }
+    .fix-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .fix-item:hover { background: rgba(52, 211, 153, 0.04); }
+    .fix-item input[type="checkbox"] {
+      margin-top: 4px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .fix-label {
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+    .fix-label strong { color: white; }
+    .fix-tag {
+      font-size: 0.6rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+    .fix-tag.quick { background: var(--green-badge); color: var(--accent); }
+    .fix-tag.medium { background: #1e3a5f; color: var(--blue); }
+    .fix-tag.heavy { background: var(--amber-badge); color: var(--amber); }
+
+    /* Summary Table */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { padding: 10px 14px; text-align: right; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+    th { color: var(--accent); font-weight: 700; background: var(--card); }
+    td { color: var(--text); }
+    tr:hover td { background: rgba(52, 211, 153, 0.03); }
+
+    /* What Works */
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .works-card {
+      background: var(--card);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .works-card h4 {
+      color: var(--accent);
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+    .works-card p {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+
+    /* Verdict Footer */
+    .verdict {
+      background: linear-gradient(135deg, var(--card), var(--accent-dim));
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 40px;
+      text-align: center;
+    }
+    .verdict h2 { color: white; margin-bottom: 8px; }
+    .verdict p { color: var(--text); font-size: 0.9rem; }
+    .verdict .grade {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--amber);
+      margin: 12px 0;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .scoreboard { grid-template-columns: repeat(2, 1fr); }
+      .works-grid { grid-template-columns: 1fr; }
+    }
+
+    /* RICE / ICE Prioritization & Execution Styles */
+    .plan-hero {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08), var(--card));
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 32px 0 20px;
+    }
+    .plan-hero h3 { color: white; font-size: 1.25rem; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .plan-hero p { color: var(--text-dim); font-size: 0.88rem; line-height: 1.6; }
+    
+    .formula-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin: 18px 0;
+    }
+    .formula-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .formula-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .formula-math {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: #38bdf8;
+      display: inline-block;
+      margin-bottom: 10px;
+      direction: ltr;
+    }
+    .formula-desc { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+
+    /* Progress & Tracker Bar */
+    .progress-tracker {
+      background: var(--card);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 0 25px rgba(52, 211, 153, 0.08);
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .progress-title { font-size: 1.05rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
+    .progress-stats { font-size: 0.9rem; color: var(--accent); font-weight: 800; }
+    .progress-bar-bg {
+      width: 100%;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #06b6d4, #3b82f6);
+      border-radius: 999px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tracker-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    .tracker-metric-item strong { color: white; margin-right: 4px; }
+
+    /* Controls Toolbar */
+    .controls-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .pill-btn:hover { border-color: var(--accent); color: white; }
+    .pill-btn.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
+    }
+    .toolbar-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .search-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      color: white;
+      font-size: 0.82rem;
+      outline: none;
+      min-width: 220px;
+    }
+    .search-box:focus { border-color: var(--accent); }
+    .action-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .action-btn:hover { background: rgba(52, 211, 153, 0.15); border-color: var(--accent); color: white; }
+
+    /* Sprint Cards Overview */
+    .sprint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin: 16px 0 28px;
+    }
+    .sprint-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .sprint-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+    .sprint-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 3px;
+    }
+    .sprint-card.sprint-1::before { background: #10b981; }
+    .sprint-card.sprint-2::before { background: #06b6d4; }
+    .sprint-card.sprint-3::before { background: #f59e0b; }
+    .sprint-card.sprint-4::before { background: #8b5cf6; }
+
+    .sprint-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .sprint-1 .sprint-badge { background: #064e3b; color: #34d399; }
+    .sprint-2 .sprint-badge { background: #164e63; color: #38bdf8; }
+    .sprint-3 .sprint-badge { background: #78350f; color: #fbbf24; }
+    .sprint-4 .sprint-badge { background: #4c1d95; color: #c084fc; }
+
+    .sprint-title { font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 4px; }
+    .sprint-meta { font-size: 0.74rem; color: var(--text-dim); margin-bottom: 10px; }
+    .sprint-deliverables { list-style: none; padding: 0; font-size: 0.78rem; color: var(--text); }
+    .sprint-deliverables li { margin-bottom: 5px; display: flex; align-items: flex-start; gap: 6px; }
+
+    /* RICE / ICE Master Table */
+    .rice-table-wrap {
+      overflow-x: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin: 16px 0 32px;
+    }
+    .rice-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    .rice-table th {
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      background: #1a202c;
+      z-index: 2;
+    }
+    .rice-table th:hover { background: rgba(52, 211, 153, 0.12); color: white; }
+    .rice-table th .sort-icon { font-size: 0.7rem; margin-right: 4px; opacity: 0.6; }
+    .rice-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.76rem;
+    }
+    .rice-pill.high { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #059669; }
+    .rice-pill.medium { background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid #0891b2; }
+    .rice-pill.low { background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid #475569; }
+    
+    .ice-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.76rem;
+    }
+    .ice-pill.high { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #d97706; }
+    .ice-pill.medium { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #2563eb; }
+    .ice-pill.low { background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid #475569; }
+    
+    .item-row.done { background: rgba(16, 185, 129, 0.05); }
+    .item-row.done td { text-decoration: line-through; opacity: 0.55; }
+    .item-row.done td:first-child, .item-row.done td:last-child { text-decoration: none; opacity: 1; }
+    .task-link { color: white; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .task-link:hover { color: var(--accent); text-decoration: underline; }
+    .table-checkbox { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: #34d399;
+      border: 1px solid #34d399;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      z-index: 9999;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🔴 Red Team Audit — &ldquo;לאן נטייל?&rdquo;</h1>
+<p class="subtitle">
+  ביקורת עומק מנקודת מבט של <strong>מנהל מוצר מגייס</strong> שרואה את הפרויקט לראשונה.<br>
+  ציר הבדיקה: UX &bull; Architecture &bull; Agent Definitions &bull; Portfolio Readiness<br>
+  <em>נבדק: 30/09/2026 &bull; גרסה: 1.0.0 &bull; Stack: React 18 + Vite 6 + Leaflet + AgentBotService.js (1,753 LOC)</em>
+</p>
+
+<!-- ═══════════════════════════ SCOREBOARD ═══════════════════════════ -->
+<div class="scoreboard">
+  <div class="score-card green">
+    <div class="number">12</div>
+    <div class="label">✅ מה שעובד מצוין</div>
+  </div>
+  <div class="score-card red">
+    <div class="number">8</div>
+    <div class="label">🔴 קריטי / לתקן מיד</div>
+  </div>
+  <div class="score-card amber">
+    <div class="number">10</div>
+    <div class="label">🟡 בינוני / שיפור חשוב</div>
+  </div>
+  <div class="score-card blue">
+    <div class="number">6</div>
+    <div class="label">🔵 שיפור קל / Polish</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ WHAT WORKS ═══════════════════════════ -->
+<div class="section-header">
+  <span style="font-size:1.4rem">✅</span>
+  <h2>מה עובד מצוין (Recruiter Wow Factors)</h2>
+  <span class="badge" style="background:var(--green-badge);color:var(--accent);border:1px solid var(--accent)">12 ITEMS</span>
+</div>
+
+<div class="works-grid">
+  <div class="works-card">
+    <h4>🧠 Guardrails Engine חזק במיוחד</h4>
+    <p>סינון פוליטיקה, סמים, נשק, prompt injection, שפות זרות (5 שפות!) — עם refusal ייחודי בשפה של המשתמש. הגנות ברמת production שרוב הפרויקטים לא חושבים עליהן.</p>
+  </div>
+  <div class="works-card">
+    <h4>📐 ארכיטקטורת Zero-Cost מרשימה</h4>
+    <p>Ollama fallback → Groq free tier → Deterministic heuristic. שרשרת fail-safe של 3 שכבות. כל מגייס שמבין AI יתרשם שיש חשיבה על offline-first ועלויות.</p>
+  </div>
+  <div class="works-card">
+    <h4>🗣️ NLU עברית מקומי מרשים</h4>
+    <p>פירוז מספרים בעברית ("בן החמש"), חיפוש טיפוסיים (typo correction), תאריכים עבריים, ימים בשבוע, מילות הכנסה ("ב", "מ", "ל") — הכל local בלי API.</p>
+  </div>
+  <div class="works-card">
+    <h4>🧭 Haversine Distance + Radius Search</h4>
+    <p>חיפוש מבוסס מרחק אמיתי (קואורדינטות) עם 30+ ערים ו-Nominatim fallback. הפתרון ל"רוצה מים ליד פתח תקווה" — חכם וגאוגרפי.</p>
+  </div>
+  <div class="works-card">
+    <h4>🚨 What-If Crisis Simulation</h4>
+    <p>סימולציית חירום (שיטפון, חום, זיהום) עם ניתוב אוטומטי ל-Safe Haven הקרוב. מראה חשיבה מוצרית על בטיחות — הפיצ'ר הייחודי ביותר.</p>
+  </div>
+  <div class="works-card">
+    <h4>💡 XAI Explainability</h4>
+    <p>כל המלצה מגיעה עם matchRationale מפורט ("🚗 כ-40 דק' מפתח תקווה, נגיש לעגלות"). שקיפות אלגוריתמית שמפילה את רוב הצ'אטבוטים.</p>
+  </div>
+  <div class="works-card">
+    <h4>📡 Tomorrow.io Live Weather</h4>
+    <p>שאילתה חיה לכל אתר מומלץ, הצלבה עם סף בטיחות (טמפרטורה, גשם). חיבור ל-API אמיתי, לא מוק.</p>
+  </div>
+  <div class="works-card">
+    <h4>🐕 Edge Cases חכמים</h4>
+    <p>כלבים, כסאות גלגלים, תינוקות, "גם וגם", ילד בגיל 11 שואל על עגלות — טיפול edge cases שרק מוצר בוגר עושה.</p>
+  </div>
+  <div class="works-card">
+    <h4>🗺️ Waze Deep Link + Copy</h4>
+    <p>לחצן ניווט ישיר ל-Waze + "העתק המלצה" ללוח — CTA ישיר וברור שממיר שימוש ל-action.</p>
+  </div>
+  <div class="works-card">
+    <h4>🧪 31 Resilience Tests</h4>
+    <p>סוויטה של 31 טסטים (guardrails, proximity, ages, jailbreak defense) — מראה תהליך מוצרי מסודר עם CI integration.</p>
+  </div>
+  <div class="works-card">
+    <h4>📱 Mobile-First Responsive</h4>
+    <p>צ'אטבוט צף, כרטיסי המלצה, מפה אדפטיבית. תמיכה בניידי ודסקטופ מהיום הראשון.</p>
+  </div>
+  <div class="works-card">
+    <h4>🏗️ Feature Branching & CI</h4>
+    <p>GitHub Actions, feature branches, zero-commit-to-main — professional development lifecycle שמגייסים מחפשים.</p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ CRITICAL FINDINGS ═══════════════════════════ -->
+<div class="section-header">
+  <span style="font-size:1.4rem">🔴</span>
+  <h2>ממצאים קריטיים — לתקן לפני הצגה למגייס</h2>
+  <span class="badge severity critical">CRITICAL × 8</span>
+</div>
+
+<!-- FINDING 1 -->
+<div class="finding" id="C1">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C1: God Object — AgentBotService.js = 1,753 שורות</div>
+      <span class="impact-tag">Architecture</span>
+      <span class="impact-tag">Maintainability</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    קובץ אחד מכיל את כל ה-NLU, guardrails, geocoding, recommendation engine, weather integration, What-If, XAI ו-state management. 
+    זו <strong>Anti-Pattern קלאסית (God Object)</strong> שמגייס טכני יראה בשנייה. אי אפשר לבדוק, לתחזק, או להרחיב יחידות בנפרד.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c1a">
+      <label class="fix-label" for="c1a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>פירוק ל-4 מודולים:</strong> <code>NLUParser.js</code> (extractParameters, parseAge), <code>Guardrails.js</code> (checkGuardrails, prohibited lists), <code>RecommendationEngine.js</code> (generateRecommendations, ranking), <code>CrisisSimulator.js</code> (handleWhatIf, getSiteHazardScenario). AgentBotService מתנהג כ-Orchestrator בלבד.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c1b">
+      <label class="fix-label" for="c1b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Strategy Pattern:</strong> EngineStrategy interface עם RecommendByRadius, RecommendByRegion, RecommendByFeature — כל אחד plugin עצמאי.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c1c">
+      <label class="fix-label" for="c1c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>ארכיטקטורת Agentic Pipeline:</strong> Pipeline stages (Parse → Guard → Plan → Execute → Explain) כ-middleware chain, כמו LangChain-style בלי LangChain. כל Stage מורחב בנפרד.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING 2 -->
+<div class="finding" id="C2">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C2: אין Unit Tests ל-AgentBotService</div>
+      <span class="impact-tag">Testing</span>
+      <span class="impact-tag">Regression</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    הטסטים הקיימים (<code>test_agent_bot_resilience.js</code>) הם <strong>integration/E2E tests</strong> שרצים דרך Playwright. 
+    אין unit tests ישירים ל-<code>extractParameters</code>, <code>parseAgeFromText</code>, <code>checkGuardrails</code>, <code>generateRecommendations</code>. 
+    רגרסיה מובטחת בכל שינוי לוגי.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c2a">
+      <label class="fix-label" for="c2a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Vitest unit tests:</strong> כתוב 40+ test cases ישירים ל-extractParameters, parseAgeFromText, checkGuardrails, calculateHaversineDistanceKm עם <code>vitest</code> (כבר Vite-native).
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c2b">
+      <label class="fix-label" for="c2b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Snapshot-based golden tests:</strong> JSON fixtures של input/output לכל flow (Hebrew NLU, region matching, age edge cases), auto-compare על כל commit.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c2c">
+      <label class="fix-label" for="c2c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Property-based testing:</strong> שימוש ב-<code>fast-check</code> ליצירת אלפי קלטים עבריים רנדומליים — סינון guardrails, ווידוא שאף input לא מקריס את ה-parser.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING 3 -->
+<div class="finding" id="C3">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C3: Groq API Key חשוף ב-Client Bundle</div>
+      <span class="impact-tag">Security</span>
+      <span class="impact-tag">Zero-Cost Violation</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    ב-<code>callOllamaOrGroqLLM</code> (שורה 1072), ה-key נשלף מ-<code>import.meta.env.VITE_GROQ_API_KEY</code>. 
+    משתני VITE_ נכנסים ל-client bundle (Vite docs). כל מי שפותח DevTools רואה את ה-key. 
+    בנוסף, שימוש ב-Groq Cloud סותר את מדיניות Zero-Cost ב-<code>AGENTS.md</code> ("Never invoke paid cloud endpoints").
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c3a">
+      <label class="fix-label" for="c3a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>מחק את הנתיב ל-Groq לגמרי:</strong> הפתרון הנקי — אם Zero-Cost הוא חוק ברזל, ה-Groq path לא צריך להיות שם. fallback ישיר ל-Ollama → Heuristic.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c3b">
+      <label class="fix-label" for="c3b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Vite API Proxy:</strong> העבר את ה-call ל-<code>/api/llm</code> דרך Vite proxy middleware (server-side), כך שה-key לא נחשף לקליינט.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c3c">
+      <label class="fix-label" for="c3c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Serverless Edge Function:</strong> Cloudflare Worker / Vercel Edge (free tier) שמנתב ל-Groq ומאחסן את ה-key ב-server env. קליינט שולח ל-edge, לא ל-Groq ישירות.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING 4 -->
+<div class="finding" id="C4">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C4: אין README.md / Developer Onboarding</div>
+      <span class="impact-tag">Portfolio</span>
+      <span class="impact-tag">First Impression</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    הריפו נפתח ב-GitHub בלי <code>README.md</code>. 
+    מגייס שנכנס לריפו רואה רשימת קבצים — בלי demo GIF, בלי מבנה ארכיטקטורה, בלי הוראות הרצה, בלי screenshots. 
+    זה הדבר הראשון שכל hiring manager מסתכל עליו. <strong>ללא README הפרויקט כאילו לא קיים.</strong>
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c4a">
+      <label class="fix-label" for="c4a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>README.md מיידי:</strong> Title + 3-line pitch + Hero Screenshot + Architecture Diagram (Mermaid) + <code>npm install && npm run dev</code> + Tech Stack badges.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c4b">
+      <label class="fix-label" for="c4b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>README + Demo Video:</strong> הקלטת GIF של 30 שניות (chatbot → recommendation → map pin → Waze). אפשר להשתמש ב-ScreenToGif או Loom.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c4c">
+      <label class="fix-label" for="c4c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>README + Live Demo (GitHub Pages / Vercel):</strong> כמו שיש <code>npm run deploy</code> ב-package.json, פרוס את ה-app ב-GitHub Pages כדי שמגייסים יוכלו לראות את זה חי.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING 5 -->
+<div class="finding" id="C5">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C5: State Mutation ב-generateRecommendations</div>
+      <span class="impact-tag">Architecture</span>
+      <span class="impact-tag">Bug Risk</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    שורה 1396: <code>site._distKm = dist</code> — מוטציה ישירה על אובייקט מ-<code>assets_db.json</code>. 
+    מכיוון שה-JSON import הוא שיתוף רפרנס (module singleton), כל call ל-generateRecommendations משנה את הנתונים הגלובליים. 
+    זה יוצר <strong>race conditions</strong> ובאגים שמופיעים רק במשתמשים עם sessions מרובים.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c5a">
+      <label class="fix-label" for="c5a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Shallow clone:</strong> <code>candidates = assetsData.map(s => ({...s}))</code> לפני כל חישוב מרחק, כך שה-original לא משתנה.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c5b">
+      <label class="fix-label" for="c5b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>WeakMap sidecar:</strong> שמור <code>_distKm</code> ב-<code>WeakMap&lt;Site, ComputedFields&gt;</code> בנפרד מהנתונים המקוריים.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c5c">
+      <label class="fix-label" for="c5c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Immer / Structurally Immutable:</strong> שימוש ב-<code>immer</code> produce להבטחת immutability מלאה בכל pipeline ה-data.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING 6 -->
+<div class="finding" id="C6">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C6: כפילות Haversine — 3 מימושים שונים</div>
+      <span class="impact-tag">DRY Violation</span>
+      <span class="impact-tag">Bug Risk</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    Haversine distance מיושם ב-3 מקומות שונים: 
+    <code>AgentBotService.js:248</code>, <code>weatherUtils.js:6</code>, ו-<code>skills/find_safe_alternative.py</code>. 
+    שניים מהם ב-JS, אחד ב-Python. מימושים שונים = סיכון ל-inconsistency (למשל, עיגול שונה).
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c6a">
+      <label class="fix-label" for="c6a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Export יחיד:</strong> <code>import { haversineKm } from '../utils/geo.js'</code> — מחק את השכפולים, השאר מימוש אחד.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c6b">
+      <label class="fix-label" for="c6b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Utils Layer:</strong> ספריית <code>src/utils/geo.js</code> עם <code>haversineKm</code>, <code>bboxFilter</code>, <code>drivingTimeEstimate</code>. test file אחד מאומת.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c6c">
+      <label class="fix-label" for="c6c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Shared Core Package:</strong> <code>@tiyul/geo-utils</code> npm workspace שגם Python skills וגם JS משתמשים בפורמט אחיד (shared via JSON schema validation).
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING 7 -->
+<div class="finding" id="C7">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C7: Hardcoded fallback weather ("28°C, בהיר ונוח")</div>
+      <span class="impact-tag">Reliability</span>
+      <span class="impact-tag">Trust</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    כשה-API של Tomorrow.io נכשל (שורה 1620), הערכים הם קבועים: <code>28°C, בהיר ונוח, 15 קמ"ש, 0 מ"מ</code>. 
+    במציאות אם ה-API נפל זה יכול להיות באמצע סופת חורף. <strong>המשתמש רואה "בטוח ומומלץ" כשבחוץ 5°C וגשם שוטף.</strong>
+    ה-badge <code>isLive: false</code> קיים אבל ה-UI לא מראה אותו כלל.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c7a">
+      <label class="fix-label" for="c7a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Badge "תחזית לא זמינה":</strong> כשה-weather הוא fallback, הצג badge שונה: "⚠️ נתוני מזג אוויר לא זמינים" במקום "בהיר ונוח". אל תשקר למשתמש.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c7b">
+      <label class="fix-label" for="c7b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>IMS Fallback:</strong> השתמש ב-API חינמי של השירות המטאורולוגי הישראלי (IMS) כ-secondary source כשה-Tomorrow.io נכשל.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c7c">
+      <label class="fix-label" for="c7c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Cache Layer:</strong> שמור את ה-response האחרון ב-<code>localStorage</code> עם TTL של שעתיים. אם ה-API נכשל, הצג "עודכן לאחרונה לפני X דק'" + הנתונים האחרונים.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING 8 -->
+<div class="finding" id="C8">
+  <div class="finding-header">
+    <span class="severity critical">CRITICAL</span>
+    <div>
+      <div class="finding-title">C8: baal.md לא מעודכן — "19 אתרים" בפועל 50+</div>
+      <span class="impact-tag">Documentation</span>
+      <span class="impact-tag">Credibility</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    מסמך האפיון (<code>baal.md</code>) כתוב "19 אתרים ארציים" (שורה 72) אבל <code>assets_db.json</code> מכיל עכשיו 50+ אתרים אחרי כל ההעשרות. 
+    ה-Mermaid diagram מראה 30% sidebar + 70% map — שכבר לא קיים (הרכיב הוסר). 
+    <strong>מגייס שקורא את האפיון ואז רואה את הקוד — מאבד אמון.</strong>
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="c8a">
+      <label class="fix-label" for="c8a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>עדכון מספרים:</strong> שנה "19 אתרים" ל-"50+ אתרים מאומתים", עדכן Mermaid diagram ל-full-screen map + floating chatbot.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c8b">
+      <label class="fix-label" for="c8b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>מחולל אוטומטי:</strong> סקריפט <code>scripts/update-stats.js</code> שסופר אתרים, שכבות, features ומעדכן את baal.md וREADME אוטומטית.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="c8c">
+      <label class="fix-label" for="c8c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Living Documentation:</strong> <code>/status</code> endpoint שמחזיר JSON עם stats בזמן אמת (כמות אתרים, last update, coverage map).
+      </label>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ HIGH FINDINGS ═══════════════════════════ -->
+<div class="section-header">
+  <span style="font-size:1.4rem">🟡</span>
+  <h2>ממצאים בינוניים — שיפור חשוב לאיכות מוצר</h2>
+  <span class="badge severity high">HIGH × 10</span>
+</div>
+
+<!-- FINDING H1 -->
+<div class="finding" id="H1">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H1: אין TypeScript — כל הלוגיקה ב-JS חסר טיפוסים</div>
+      <span class="impact-tag">Code Quality</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    1,753 שורות לוגיקה קריטית (NLU, coordinates, states) ב-plain JS ללא type checking. 
+    פרמטרים כמו <code>sessionState</code> עם 15 שדות — בלי ממשק מוגדר. כל refactor הוא הימור.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h1a">
+      <label class="fix-label" for="h1a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>JSDoc Types:</strong> הוסף <code>@typedef</code> ו-<code>@param</code> annotations ל-sessionState, Proposal, WeatherData — VS Code auto-complete בלי migration.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h1b">
+      <label class="fix-label" for="h1b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>TypeScript gradual migration:</strong> התחל מ-<code>types.ts</code> (SessionState, Proposal, Site interfaces) + <code>tsconfig.json</code> allowJs=true.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h1c">
+      <label class="fix-label" for="h1c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Full TS migration:</strong> המר את AgentBotService.js ל-TS עם strict mode. Zod schema validation ל-assets_db.json runtime.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H2 -->
+<div class="finding" id="H2">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H2: Sidebar הוסר — אין דרך לגלוש באתרים בלי הצ'אטבוט</div>
+      <span class="impact-tag">UX</span>
+      <span class="impact-tag">Discoverability</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    ה-<code>TacticalSidebar</code> קיים כקומפוננטה אבל לא מרונדר ב-<code>App.jsx</code>. 
+    המשמעות: אם המשתמש לא פותח את הצ'אטבוט, <strong>אין שום דרך לראות רשימת אתרים, לסנן, או לחפש.</strong>
+    המפה מציגה markers אבל אין catalogue browsing.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h2a">
+      <label class="fix-label" for="h2a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Search pill צף:</strong> הוסף search input קטן מעל המפה שמסנן markers על המפה (כמו Google Maps). לא sidebar מלא — רק חיפוש.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h2b">
+      <label class="fix-label" for="h2b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Drawer-style Sidebar:</strong> כפתור hamburger שפותח sidebar מינימלי עם קטגוריות + search + age filter. נסגר בחזרה.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h2c">
+      <label class="fix-label" for="h2c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Dual Interface:</strong> Tab bar בתחתית ("🗺️ מפה | 📋 רשימה | 🤖 סוכן") — המשתמש בוחר את ה-mode שנוח לו.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H3 -->
+<div class="finding" id="H3">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H3: "מוח הסוכן" (C4I Modal) מנותק מהצ'אטבוט</div>
+      <span class="impact-tag">UX Confusion</span>
+      <span class="impact-tag">Information Architecture</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    שני כפתורים נפרדים: "שאל את סוכן הטיולים" ו-"מוח הסוכן". 
+    הצ'אטבוט מבצע What-If בעצמו (handleWhatIfScenario). ה-Modal גם עושה What-If (handleSimulateFlood). 
+    <strong>שני ממשקים שעושים דברים דומים → בלבול מוחלט למשתמש חדש.</strong>
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h3a">
+      <label class="fix-label" for="h3a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>מיזוג: What-If רק דרך הצ'אט.</strong> הסר את כפתורי ה-simulate מה-Modal. ה-Modal מציג רק agent status ו-reasoning log (read-only dashboard).
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h3b">
+      <label class="fix-label" for="h3b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Tab מאוחד:</strong> ה-Modal הופך ל-tab בתוך חלון הצ'אט ("💬 שיחה | 🧠 מצב הסוכן"). בתוך ה-tab השני — כל הסימולציות.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h3c">
+      <label class="fix-label" for="h3c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Command Palette:</strong> <code>/whatif flood</code>, <code>/whatif heat</code> — slash commands בתוך הצ'אט. אין צורך ב-Modal בכלל.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H4 -->
+<div class="finding" id="H4">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H4: Chat History אובד ב-Refresh</div>
+      <span class="impact-tag">UX</span>
+      <span class="impact-tag">Persistence</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    ה-<code>messages</code> state ו-<code>sessionState</code> נשמרים רק ב-React state. 
+    כל refresh של הדף (F5) — <strong>השיחה כולה נמחקת, הפרמטרים מתאפסים, ההמלצות נעלמות.</strong>
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h4a">
+      <label class="fix-label" for="h4a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>sessionStorage:</strong> שמור את <code>sessionState</code> + 3 הודעות אחרונות ב-<code>sessionStorage</code>. שחזר ב-mount.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h4b">
+      <label class="fix-label" for="h4b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>localStorage + TTL:</strong> שמור history מלא ב-<code>localStorage</code> עם TTL של 24 שעות. כפתור "נקה היסטוריה" בצ'אט.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h4c">
+      <label class="fix-label" for="h4c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>IndexedDB:</strong> שמור sessions, proposals, ו-weather snapshots ב-IndexedDB. מאפשר "חזור לשיחה אחרונה" + offline history.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H5 -->
+<div class="finding" id="H5">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H5: אין Accessibility (a11y) — 0 aria-labels, 0 keyboard nav בצ'אט</div>
+      <span class="impact-tag">UX</span>
+      <span class="impact-tag">Compliance</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    הצ'אטבוט לא מנגיש: אין <code>role="dialog"</code>, אין <code>aria-label</code> על כפתורים, אין focus trap, אין <code>aria-live</code> להודעות חדשות. 
+    משתמשים עם screen readers לא יכולים להשתמש בסוכן.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h5a">
+      <label class="fix-label" for="h5a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Minimal a11y:</strong> הוסף <code>role="dialog"</code>, <code>aria-label</code> על כפתורים (Send, Close, Reset), <code>aria-live="polite"</code> על message container.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h5b">
+      <label class="fix-label" for="h5b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Focus management:</strong> Focus trap בצ'אטבוט (Tab cycles between input → options → close). Enter על option שולח אותה.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h5c">
+      <label class="fix-label" for="h5c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>WCAG 2.1 AA:</strong> Lighthouse accessibility audit + axe-core automated testing in CI. Color contrast fixes for teal-on-dark.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H6 -->
+<div class="finding" id="H6">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H6: Artificial 650ms Delay — "Thinking" שאינו חישוב אמיתי</div>
+      <span class="impact-tag">UX</span>
+      <span class="impact-tag">Integrity</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    שורה 149: <code>await new Promise(r => setTimeout(r, 650))</code> — דיליי מלאכותי לפני כל תשובה. 
+    ה-"📡 שואב נתוני מזג אוויר" animation מציג פאזות מזויפות. 
+    מגייס טכני שרואה את הקוד יתהה: <strong>"למה לרמות את המשתמש?"</strong>
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h6a">
+      <label class="fix-label" for="h6a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>הורד ל-200ms:</strong> Micro-delay ל-UX smoothness (סטנדרטי) — אבל הפאזות יהיו <code>"מחשב..."</code> בלבד, לא "שואב נתוני שטח".
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h6b">
+      <label class="fix-label" for="h6b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Real streaming:</strong> הצג פאזות שמשקפות את מה שבאמת קורה: "🔍 מסנן אתרים..." → "📡 שואל Tomorrow.io..." (רק כשבאמת שולח request).
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h6c">
+      <label class="fix-label" for="h6c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Progressive rendering:</strong> הצג את הטקסט char-by-char (typewriter effect) כמו ChatGPT. זה כן מרגיש כמו AI בלי לשקר.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H7 -->
+<div class="finding" id="H7">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H7: "Markdown Stars" Strip מסתיר עיצוב טקסט</div>
+      <span class="impact-tag">UX</span>
+      <span class="impact-tag">Readability</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    שורה 842: <code>res.text.replace(/\*{1,2}/g, '')</code> — מוחק **bold** ו-*italic* markers מהטקסט.
+    כל ה-<code>**${state.regionLabel}**</code> בתשובות → מוצג כ-text רגיל בלי הדגשה. 
+    המשתמש מאבד hierarchy ויזואלית בטקסטים ארוכים.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h7a">
+      <label class="fix-label" for="h7a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Simple bold renderer:</strong> <code>text.split(/\*\*(.*?)\*\*/).map((t,i) => i%2 ? &lt;strong&gt;{t}&lt;/strong&gt; : t)</code> — 3 שורות קוד.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h7b">
+      <label class="fix-label" for="h7b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>react-markdown:</strong> <code>npm i react-markdown</code> → <code>&lt;ReactMarkdown&gt;{msg.text}&lt;/ReactMarkdown&gt;</code>. תומך bold, italic, links, lists.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h7c">
+      <label class="fix-label" for="h7c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Custom Chat Renderer:</strong> DSL ייעודי (e.g., <code>[bold:text]</code>, <code>[link:url:label]</code>) שמייצר React elements — ללא regex hacks.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H8 -->
+<div class="finding" id="H8">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H8: LLM Call תמיד נשלח — גם כשלא צריך</div>
+      <span class="impact-tag">Performance</span>
+      <span class="impact-tag">Cost</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    שורה 1689: <code>const llmStatus = await this.callOllamaOrGroqLLM(rawMessage, state)</code> — נקרא בכל recommendation,
+    אבל התוצאה <strong>לא משפיעה כלל על ההמלצות</strong>. ה-response נזרק, רק <code>llmStatus.model</code> מוצג ב-toolActivity badge.
+    ה-LLM call עולה latency (עד 3.5s) בלי ערך מוסף.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h8a">
+      <label class="fix-label" for="h8a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>מחק את ה-call:</strong> אם ה-response לא משמש, אל תקרא. הצג "Deterministic Heuristic Engine" ב-toolActivity.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h8b">
+      <label class="fix-label" for="h8b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Use LLM for XAI:</strong> שלח את ה-3 proposals ל-LLM ובקש narrative rationale בעברית. השתמש ב-response בפועל.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h8c">
+      <label class="fix-label" for="h8c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>LLM-as-Reranker:</strong> שלח את ה-candidates ל-LLM לדירוג סמנטי (למשל, "מסלול עם מפל" → LLM מזהה שנחל דוד עדיף על עין גדי).
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H9 -->
+<div class="finding" id="H9">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H9: Driving Time Estimate = Haversine × 1.25 — לא מדויק</div>
+      <span class="impact-tag">UX Trust</span>
+      <span class="impact-tag">Accuracy</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    שורה 1397: <code>site._driveMinutes = Math.max(10, Math.round(dist * 1.25))</code>. 
+    פקטור קבוע של 1.25 לא מתחשב בכבישי הרים, פקקים, כבישי עורקים vs כפרים. 
+    למשל: 30 ק"מ מירושלים לעין גדי = "37 דק'" אבל בפועל ~ 55 דק'.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h9a">
+      <label class="fix-label" for="h9a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Variable factor:</strong> 1.5 לאזורי הרים/דרום, 1.25 למרכז, 1.35 לצפון. + הצג "אומדן" במקום "זמן נסיעה".
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h9b">
+      <label class="fix-label" for="h9b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>OSRM integration:</strong> <code>osrmService.js</code> כבר קיים! השתמש בו לקבלת driving time אמיתי (free, self-hosted).
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h9c">
+      <label class="fix-label" for="h9c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Pre-computed matrix:</strong> חשב מראש lookup table של drive times בין כל KNOWN_ORIGIN_CITIES לכל site. טען כ-JSON.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING H10 -->
+<div class="finding" id="H10">
+  <div class="finding-header">
+    <span class="severity high">HIGH</span>
+    <div>
+      <div class="finding-title">H10: אין Loading / Error States במפה</div>
+      <span class="impact-tag">UX</span>
+      <span class="impact-tag">Resilience</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    כשה-tile server (CartoDB) לא עולה או ה-browser offline — המפה לבנה בלי שום הודעה. 
+    אין skeleton loading, אין error boundary, אין "אין חיבור" toast.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="h10a">
+      <label class="fix-label" for="h10a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Leaflet error event:</strong> <code>tileerror</code> listener + toast notification "שגיאה בטעינת המפה".
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h10b">
+      <label class="fix-label" for="h10b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>React Error Boundary:</strong> עטוף את TacticalMap ב-ErrorBoundary עם fallback UI ("🗺️ המפה לא זמינה, נסה שוב").
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="h10c">
+      <label class="fix-label" for="h10c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Offline tile cache:</strong> Service Worker + <code>workbox</code> שמשמר tiles אחרונים ב-Cache API. PWA שעובד גם offline.
+      </label>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ LOW FINDINGS ═══════════════════════════ -->
+<div class="section-header">
+  <span style="font-size:1.4rem">🔵</span>
+  <h2>שיפורים קלים — Polish & Portfolio Boost</h2>
+  <span class="badge severity medium">LOW × 6</span>
+</div>
+
+<!-- FINDING L1 -->
+<div class="finding" id="L1">
+  <div class="finding-header">
+    <span class="severity low">LOW</span>
+    <div>
+      <div class="finding-title">L1: Package name = "geoguard-c4i-dashboard" — לא תואם למותג</div>
+      <span class="impact-tag">Branding</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    ב-<code>package.json</code> השם הוא "geoguard-c4i-dashboard" אבל המוצר נקרא "לאן נטייל?" / "Tiyul". 
+    מגייס שרואה "C4I Dashboard" מצפה למוצר צבאי/לוגיסטי, לא לאפליקציית טיולים.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="l1a">
+      <label class="fix-label" for="l1a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>שנה שם:</strong> <code>"name": "tiyul-hiking-agent"</code>
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l1b">
+      <label class="fix-label" for="l1b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>מיתוג מלא:</strong> שנה שם + description + homepage URL + keywords ב-package.json.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l1c">
+      <label class="fix-label" for="l1c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Monorepo rename:</strong> שנה את שם הריפו ב-GitHub ל-<code>tiyul-hiking-agent</code> + custom domain.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING L2 -->
+<div class="finding" id="L2">
+  <div class="finding-header">
+    <span class="severity low">LOW</span>
+    <div>
+      <div class="finding-title">L2: Photos/Images — אין תמונות אתרים</div>
+      <span class="impact-tag">UX Delight</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    כרטיסי ההמלצה מכילים רק טקסט, אייקונים ונתונים. אין תמונה של האתר. 
+    <strong>תמונה שווה אלף מילים</strong> — במיוחד במוצר טיולים.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="l2a">
+      <label class="fix-label" for="l2a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Wikimedia Commons:</strong> הוסף <code>image_url</code> ל-assets_db.json עם לינקים ל-Wikimedia (חינמי, CC-BY).
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l2b">
+      <label class="fix-label" for="l2b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Lazy-loaded thumbnails:</strong> <code>&lt;img loading="lazy"&gt;</code> עם placeholder blur + actual image.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l2c">
+      <label class="fix-label" for="l2c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Hero Carousel:</strong> כל כרטיס המלצה עם 2-3 תמונות scrollable (carousel) של האתר.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING L3 -->
+<div class="finding" id="L3">
+  <div class="finding-header">
+    <span class="severity low">LOW</span>
+    <div>
+      <div class="finding-title">L3: אין PWA Manifest / Icons</div>
+      <span class="impact-tag">Mobile</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    <code>vite-plugin-pwa</code> מותקן ב-devDependencies אבל לא מוגדר ב-<code>vite.config.js</code>. 
+    אין manifest, אין service worker, אין app icon — המשתמש לא יכול "להוסיף למסך הבית".
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="l3a">
+      <label class="fix-label" for="l3a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>Minimal manifest:</strong> הוסף <code>VitePWA()</code> ל-vite.config.js עם name, icons, theme_color.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l3b">
+      <label class="fix-label" for="l3b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Full PWA:</strong> Manifest + service worker + offline page + installability prompt.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l3c">
+      <label class="fix-label" for="l3c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>PWA + Offline Maps:</strong> Cache tiles + assets_db.json + weather cache. אפליקציה שעובדת בשטח בלי חיבור.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING L4 -->
+<div class="finding" id="L4">
+  <div class="finding-header">
+    <span class="severity low">LOW</span>
+    <div>
+      <div class="finding-title">L4: אין Analytics / Usage Tracking</div>
+      <span class="impact-tag">Product</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    אין שום מעקב על שימוש: כמה משתמשים, אילו שאלות הכי נפוצות, conversion מהצ'אט ל-Waze, 
+    שימוש ב-What-If. אי אפשר להראות למגייס "data-driven product decisions".
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="l4a">
+      <label class="fix-label" for="l4a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>console.log events:</strong> הוסף structured logs: <code>event: 'recommendation_generated', region, feature, age</code>. אפילו בלי DB — ניתן להראות תהליך.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l4b">
+      <label class="fix-label" for="l4b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Plausible / Umami:</strong> אנליטיקס פתוח ופרטי (self-hosted, GDPR-compliant, חינמי).
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l4c">
+      <label class="fix-label" for="l4c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>In-app dashboard:</strong> עמוד /analytics עם גרפים של שימוש, top queries, conversion rates, agent confidence scores.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING L5 -->
+<div class="finding" id="L5">
+  <div class="finding-header">
+    <span class="severity low">LOW</span>
+    <div>
+      <div class="finding-title">L5: Proposal Cards — אין difficulty / duration / distance info</div>
+      <span class="impact-tag">UX Depth</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    כרטיס ההמלצה מציג: שם, אזור, גיל, מזג אוויר, rationale. 
+    חסר: <strong>אורך מסלול (ק"מ), זמן הליכה, רמת קושי, שעות פתיחה, מחיר כניסה.</strong> 
+    זה מידע שכל אתר טיולים מכבד מציג.
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="l5a">
+      <label class="fix-label" for="l5a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>הוסף שדות ל-DB:</strong> <code>trail_length_km</code>, <code>estimated_hours</code>, <code>difficulty</code> (easy/moderate/hard) ב-assets_db.json + הצג בכרטיס.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l5b">
+      <label class="fix-label" for="l5b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>Info chips:</strong> שורת pills: "🥾 3.2 ק"מ • ⏱️ 2 שעות • 💪 בינוני • 💰 חינם" — מתחת לאזור.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l5c">
+      <label class="fix-label" for="l5c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>INPA API scrape:</strong> סקריפט שמייבא trail details (אורך, זמן, קושי, מחיר) מאתר INPA לכל אתר ב-DB.
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- FINDING L6 -->
+<div class="finding" id="L6">
+  <div class="finding-header">
+    <span class="severity low">LOW</span>
+    <div>
+      <div class="finding-title">L6: Welcome Message — ארוך מדי, CTAs לא מגוונים</div>
+      <span class="impact-tag">Onboarding</span>
+    </div>
+  </div>
+  <div class="finding-desc">
+    הודעת הפתיחה: "שלום וברוכים הבאים!" + 3 כפתורים שכולם כוללים פרמטרים מלאים. 
+    למשתמש שרוצה "סתם לשחק" — אין CTA קל כמו "🎲 הפתע אותי!" (random recommendation).
+  </div>
+  <div class="fixes">
+    <div class="fix-item">
+      <input type="checkbox" id="l6a">
+      <label class="fix-label" for="l6a">
+        <span class="fix-tag quick">QUICK</span>
+        <strong>הוסף כפתור "🎲 הפתע אותי":</strong> שמלא את כל ה-4 parameters ברנדום ומייצר המלצה מיידית.
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l6b">
+      <label class="fix-label" for="l6b">
+        <span class="fix-tag medium">MEDIUM</span>
+        <strong>One-line welcome:</strong> "👋 היי! לאן נטייל היום?" + 4 כפתורים קצרים: צפון | מרכז | דרום | 🎲 הפתעה
+      </label>
+    </div>
+    <div class="fix-item">
+      <input type="checkbox" id="l6c">
+      <label class="fix-label" for="l6c">
+        <span class="fix-tag heavy">HEAVY</span>
+        <strong>Dynamic welcome:</strong> לפי שעה ("בוקר טוב!"), עונה ("קיץ חם — מומלץ מים!"), מיקום GPS ("קרוב לחיפה?").
+      </label>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ RICE & ICE PRIORITIZATION & EXECUTION PLAN ═══════════════════════════ -->
+<div class="section-header" id="execution-plan">
+  <span style="font-size:1.4rem">🎯</span>
+  <h2>תוכנית עבודה אופרטיבית — תיעדוף משימות RICE &amp; ICE</h2>
+  <span class="badge" style="background:#164e63;color:#38bdf8;border:1px solid #0891b2">28 INITIATIVES</span>
+</div>
+
+<div class="plan-hero">
+  <h3>📐 מתודולוגיות התיעדוף המוצריות (Framework Overview)</h3>
+  <p>
+    כדי לוודא שמשאבי הפיתוח מופנים לפעולות שמניבות את התשואה המקסימלית לרושם המגייס וליציבות המערכת, 
+    שילבנו שני מודלים משלימים: <strong>RICE</strong> (לתכנון ספרינטים מאוזן מבוסס משאבים) ו-<strong>ICE</strong> (לזיהוי מיידי של Quick Wins מהירים).
+  </p>
+
+  <div class="formula-grid">
+    <div class="formula-box">
+      <div class="formula-title">
+        <span>מודל RICE (Product Standard)</span>
+        <span class="rice-pill high">RICE</span>
+      </div>
+      <div class="formula-math">Score = (Reach × Impact × Confidence) / Effort</div>
+      <div class="formula-desc">
+        • <strong>Reach (1-10)</strong>: היקף האינטראקציות והמשתמשים שיושפעו.<br>
+        • <strong>Impact (1-5)</strong>: עוצמת ההשפעה (5=משנה משחק/קריטי, 3=משמעותי, 1=שולי).<br>
+        • <strong>Confidence (0.5-1.0)</strong>: ביטחון בפתרון ההנדסי ללא סיכון טכנולוגי.<br>
+        • <strong>Effort (ימי אדם)</strong>: השקעת זמן מוערכת (0.25d = עד שעתיים, 1d = יום מלא).
+      </div>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-title">
+        <span>מודל ICE (Quick Wins &amp; Velocity)</span>
+        <span class="ice-pill high">ICE</span>
+      </div>
+      <div class="formula-math">Score = Impact × Confidence × Ease</div>
+      <div class="formula-desc">
+        • <strong>Impact (1-10)</strong>: תרומה מיידית לציון הביקורת (Red Team Audit).<br>
+        • <strong>Confidence (1-10)</strong>: ודאות שאין רגרסיה ושהתיקון עובד כמצופה.<br>
+        • <strong>Ease (1-10)</strong>: קלות ומהירות הביצוע (10=מיידי וקל, 1=פיתוח כבד).<br>
+        • ציון מקסימלי: 1,000 נקודות.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PROGRESS TRACKER ═══════════════════════════ -->
+<div class="progress-tracker">
+  <div class="progress-header">
+    <div class="progress-title">
+      <span>⚡ התקדמות ביצוע וסגירת ממצאים (Live Progress Tracker)</span>
+    </div>
+    <div class="progress-stats">
+      הושלמו <span id="completed-count">0</span> מתוך 28 משימות (<span id="progress-percent">0%</span>)
+    </div>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+  </div>
+  <div class="tracker-metrics">
+    <div class="tracker-metric-item"><strong>🚀 Sprint 1:</strong> <span id="s1-stat">0/10</span></div>
+    <div class="tracker-metric-item"><strong>🏗️ Sprint 2:</strong> <span id="s2-stat">0/6</span></div>
+    <div class="tracker-metric-item"><strong>✨ Sprint 3:</strong> <span id="s3-stat">0/8</span></div>
+    <div class="tracker-metric-item"><strong>🧠 Sprint 4:</strong> <span id="s4-stat">0/4</span></div>
+    <div class="tracker-metric-item"><strong>⏱️ מאמץ שנותר:</strong> <span id="remaining-effort">21.8</span> ימי אדם</div>
+    <div class="tracker-metric-item"><strong>🏆 ציון מוערך נוכחי:</strong> <span id="projected-grade" style="color:var(--amber);font-weight:800">B+ (78)</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SPRINT ROADMAP CARDS ═══════════════════════════ -->
+<div class="sprint-grid">
+  <!-- Sprint 1 -->
+  <div class="sprint-card sprint-1">
+    <span class="sprint-badge">SPRINT 1 &bull; WEEK 1</span>
+    <div class="sprint-title">🚀 Quick Wins &amp; Trust Restoration</div>
+    <div class="sprint-meta">מאמץ: ~3.1 ימי אדם &bull; 10 משימות &bull; ממוצע ICE: 770</div>
+    <ul class="sprint-deliverables">
+      <li>🔒 <strong>C3:</strong> ביטול חשיפת API Key ב-Frontend</li>
+      <li>📄 <strong>C4:</strong> כתיבת README.md מנהלים מרשים + GIF</li>
+      <li>⛅ <strong>C7:</strong> תגית שקיפות מזג אוויר חיה (Live vs Sim)</li>
+      <li>⚡ <strong>H6:</strong> ביטול Fake 650ms delay לתגובה מיידית</li>
+      <li>📐 <strong>C6:</strong> איחוד 3 פונקציות Haversine כפולות</li>
+      <li>🛡️ <strong>C5:</strong> מניעת State Mutation בעזרת structuredClone</li>
+      <li>🎲 <strong>L6:</strong> כפתור "הפתע אותי" וקיצור Welcome</li>
+    </ul>
+  </div>
+
+  <!-- Sprint 2 -->
+  <div class="sprint-card sprint-2">
+    <span class="sprint-badge">SPRINT 2 &bull; WEEK 2</span>
+    <div class="sprint-title">🏗️ Core Architecture &amp; Quality Gate</div>
+    <div class="sprint-meta">מאמץ: ~4.7 ימי אדם &bull; 6 משימות &bull; ממוצע ICE: 580</div>
+    <ul class="sprint-deliverables">
+      <li>🧩 <strong>C1:</strong> פירוק God Object (1,753 LOC) ל-4 מודולים</li>
+      <li>🧪 <strong>C2:</strong> הוספת תשתית בדיקות Vitest לסוכן</li>
+      <li>💾 <strong>H4:</strong> שמירת היסטוריית שיחה ב-LocalStorage</li>
+      <li>🚫 <strong>H8:</strong> ביטול קריאות סרק ל-LLM ב-Failsafe</li>
+      <li>🗺️ <strong>H3:</strong> חיבור כפתור C4I Dashboard בממשק הראשי</li>
+      <li>🛡️ <strong>H10:</strong> Error Boundaries לטעינת מפה וטיילס</li>
+    </ul>
+  </div>
+
+  <!-- Sprint 3 -->
+  <div class="sprint-card sprint-3">
+    <span class="sprint-badge">SPRINT 3 &bull; WEEK 3</span>
+    <div class="sprint-title">✨ UX Polish &amp; Portfolio "Wow" Factors</div>
+    <div class="sprint-meta">מאמץ: ~7.0 ימי אדם &bull; 8 משימות &bull; ממוצע ICE: 350</div>
+    <ul class="sprint-deliverables">
+      <li>🔍 <strong>H2:</strong> ממשק קטלוג עיון עצמאי לצד הצ'אט</li>
+      <li>🚗 <strong>H9:</strong> חישוב זמני נסיעה אמיתיים דרך OSRM חינמי</li>
+      <li>🖼️ <strong>L2:</strong> תמונות טבע איכותיות לכל כרטיס אתר</li>
+      <li>🏷️ <strong>H1:</strong> טיפוסי JSDoc / TS מלאים ל-contracts</li>
+      <li>♿ <strong>H5:</strong> נגישות ARIA מלאה וניווט מקלדת</li>
+      <li>📱 <strong>L3:</strong> הגדרת PWA Manifest לפעולה בשטח Offline</li>
+    </ul>
+  </div>
+
+  <!-- Sprint 4 -->
+  <div class="sprint-card sprint-4">
+    <span class="sprint-badge">SPRINT 4 &bull; WEEK 4+</span>
+    <div class="sprint-title">🧠 Agent Evals &amp; Geospatial Scale</div>
+    <div class="sprint-meta">מאמץ: ~7.0 ימי אדם &bull; 4 משימות &bull; ממוצע ICE: 370</div>
+    <ul class="sprint-deliverables">
+      <li>🎯 <strong>A1:</strong> הרצת Golden Dataset של 50 שאילתות ב-CI</li>
+      <li>📍 <strong>A2:</strong> רדיוס 50 ק"מ דינמי לכל עיר ע"י Geocoding</li>
+      <li>🌿 <strong>A3:</strong> הזנת 30+ מעיינות ומסלולי חקלאות (Tiuli/GIS)</li>
+      <li>⚖️ <strong>A4:</strong> פרוטוקול LLM-as-a-Judge שבועי ל-XAI Quality</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ CONTROLS TOOLBAR ═══════════════════════════ -->
+<div class="controls-toolbar">
+  <div class="filter-pills" id="sprint-filters">
+    <button class="pill-btn active" data-filter="all">כל המשימות (28)</button>
+    <button class="pill-btn" data-filter="sprint-1">🚀 Sprint 1: Quick Wins (10)</button>
+    <button class="pill-btn" data-filter="sprint-2">🏗️ Sprint 2: Core Arch (6)</button>
+    <button class="pill-btn" data-filter="sprint-3">✨ Sprint 3: UX Polish (8)</button>
+    <button class="pill-btn" data-filter="sprint-4">🧠 Sprint 4: AI &amp; Scale (4)</button>
+  </div>
+
+  <div class="toolbar-actions">
+    <input type="text" class="search-box" id="task-search" placeholder="🔍 חיפוש משימה, רכיב או קטגוריה...">
+    <button class="action-btn" id="btn-complete-s1" title="סמן את כל ספרינט 1">✅ סמן Sprint 1</button>
+    <button class="action-btn" id="btn-reset" title="אפס סימונים">🔄 איפוס</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MASTER RICE & ICE TABLE ═══════════════════════════ -->
+<div class="rice-table-wrap">
+  <table class="rice-table" id="master-table">
+    <thead>
+      <tr>
+        <th style="width:40px;text-align:center;">בוצע</th>
+        <th onclick="sortTable(1)">ID <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(2)">משימה ורכיב מבוקש <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(3)">קטגוריה <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(4)">ספרינט <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(5)" title="Reach (1-10)">R <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(6)" title="Impact (1-5)">I <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(7)" title="Confidence (0.5-1.0)">Conf <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(8)" title="Effort in person-days">מאמץ (ימים) <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(9)" title="(Reach × Impact × Confidence) / Effort">ציון RICE <span class="sort-icon">⇅</span></th>
+        <th onclick="sortTable(10)" title="Impact × Confidence × Ease">ציון ICE <span class="sort-icon">⇅</span></th>
+        <th>פעולת ביצוע מומלצת</th>
+      </tr>
+    </thead>
+    <tbody id="master-tbody">
+      <!-- SPRINT 1 -->
+      <tr class="item-row" data-sprint="sprint-1" data-id="C3" data-effort="0.25" data-rice="200" data-ice="1000">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c3" data-target="C3"></td>
+        <td><a href="#C3" class="task-link">C3</a></td>
+        <td><strong>הסרת API Key חשוף מ-Frontend</strong></td>
+        <td><span class="severity critical">Security</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>10</td><td>5</td><td>1.0</td><td>0.25d</td>
+        <td><span class="rice-pill high">200.0</span></td>
+        <td><span class="ice-pill high">1,000</span></td>
+        <td>מחיקת המפתח מ-<code>weatherService.js</code> ומעבר ל-Open-Meteo בלבד</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="C4" data-effort="0.5" data-rice="100" data-ice="900">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c4" data-target="C4"></td>
+        <td><a href="#C4" class="task-link">C4</a></td>
+        <td><strong>כתיבת README.md מנהלים + ארכיטקטורה</strong></td>
+        <td><span class="impact-tag">Portfolio</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>10</td><td>5</td><td>1.0</td><td>0.50d</td>
+        <td><span class="rice-pill high">100.0</span></td>
+        <td><span class="ice-pill high">900</span></td>
+        <td>README מקצועי עם תגיות CI, דיאגרמת ארכיטקטורה, צילומי מסך ו-Runbook</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="C7" data-effort="0.25" data-rice="128" data-ice="810">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c7" data-target="C7"></td>
+        <td><a href="#C7" class="task-link">C7</a></td>
+        <td><strong>תגית שקיפות מזג אוויר חיה (Live vs Sim)</strong></td>
+        <td><span class="severity high">Reliability</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>8</td><td>4</td><td>1.0</td><td>0.25d</td>
+        <td><span class="rice-pill high">128.0</span></td>
+        <td><span class="ice-pill high">810</span></td>
+        <td>הוספת תגית שקופה המציינת האם הנתון מגיע מחיישן חי או מהדמיה דטרמיניסטית</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="H6" data-effort="0.25" data-rice="120" data-ice="800">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h6" data-target="H6"></td>
+        <td><a href="#H6" class="task-link">H6</a></td>
+        <td><strong>ביטול Fake 650ms delay לתגובה מיידית</strong></td>
+        <td><span class="severity high">UX / Perf</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>10</td><td>3</td><td>1.0</td><td>0.25d</td>
+        <td><span class="rice-pill high">120.0</span></td>
+        <td><span class="ice-pill high">800</span></td>
+        <td>הסרת ה-sleep המלאכותי במנוע ההיוריסטי — תגובה תת-שנייתית (<150ms)</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="C6" data-effort="0.25" data-rice="96" data-ice="800">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c6" data-target="C6"></td>
+        <td><a href="#C6" class="task-link">C6</a></td>
+        <td><strong>איחוד 3 פונקציות Haversine כפולות ל-util</strong></td>
+        <td><span class="impact-tag">Architecture</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>8</td><td>3</td><td>1.0</td><td>0.25d</td>
+        <td><span class="rice-pill high">96.0</span></td>
+        <td><span class="ice-pill high">800</span></td>
+        <td>הגדרת פונקציית <code>calculateHaversineDistance</code> יחידה ב-<code>geoUtils.js</code></td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="C5" data-effort="0.5" data-rice="64" data-ice="720">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c5" data-target="C5"></td>
+        <td><a href="#C5" class="task-link">C5</a></td>
+        <td><strong>מניעת State Mutation בעזרת structuredClone</strong></td>
+        <td><span class="severity critical">Architecture</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>8</td><td>4</td><td>1.0</td><td>0.50d</td>
+        <td><span class="rice-pill medium">64.0</span></td>
+        <td><span class="ice-pill high">720</span></td>
+        <td>שכפול אימוטבילי של מערך האתרים לפני הוספת שדות דינמיים</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="L6" data-effort="0.25" data-rice="108" data-ice="700">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-l6" data-target="L6"></td>
+        <td><a href="#L6" class="task-link">L6</a></td>
+        <td><strong>כפתור "🎲 הפתע אותי" וקיצור Welcome</strong></td>
+        <td><span class="severity low">Onboarding</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>9</td><td>3</td><td>1.0</td><td>0.25d</td>
+        <td><span class="rice-pill high">108.0</span></td>
+        <td><span class="ice-pill high">700</span></td>
+        <td>הוספת CTA מהיר לצ'אט שמגריל מסלול מותאם מיידית ללא שאילתה ארוכה</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="C8" data-effort="0.5" data-rice="56" data-ice="640">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c8" data-target="C8"></td>
+        <td><a href="#C8" class="task-link">C8</a></td>
+        <td><strong>סנכרון ועדכון baal.md מול קוד המערכת</strong></td>
+        <td><span class="impact-tag">Docs</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>7</td><td>4</td><td>1.0</td><td>0.50d</td>
+        <td><span class="rice-pill medium">56.0</span></td>
+        <td><span class="ice-pill medium">640</span></td>
+        <td>סנכרון מדויק של כל ארכיטקטורת הסוכן, גדלי המודלים ותוכנית ה-RICE</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="H7" data-effort="0.5" data-rice="48" data-ice="630">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h7" data-target="H7"></td>
+        <td><a href="#H7" class="task-link">H7</a></td>
+        <td><strong>רינדור Markdown תקין (Bold/Lists) בצ'אט</strong></td>
+        <td><span class="severity high">UX</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>8</td><td>3</td><td>1.0</td><td>0.50d</td>
+        <td><span class="rice-pill medium">48.0</span></td>
+        <td><span class="ice-pill medium">630</span></td>
+        <td>החלפת ה-regex strip ברכיב lightweight markdown renderer ייעודי</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-1" data-id="L1" data-effort="0.1" data-rice="50" data-ice="400">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-l1" data-target="L1"></td>
+        <td><a href="#L1" class="task-link">L1</a></td>
+        <td><strong>תיקון שם החבילה ב-package.json</strong></td>
+        <td><span class="severity low">Branding</span></td>
+        <td><span class="sprint-badge" style="background:#064e3b;color:#34d399;">Sprint 1</span></td>
+        <td>5</td><td>1</td><td>1.0</td><td>0.10d</td>
+        <td><span class="rice-pill medium">50.0</span></td>
+        <td><span class="ice-pill low">400</span></td>
+        <td>עדכון מ-<code>outlet-buddy</code> ל-<code>tiyul-geo-guard</code> ב-<code>package.json</code></td>
+      </tr>
+
+      <!-- SPRINT 2 -->
+      <tr class="item-row" data-sprint="sprint-2" data-id="C1" data-effort="1.5" data-rice="30" data-ice="540">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c1" data-target="C1"></td>
+        <td><a href="#C1" class="task-link">C1</a></td>
+        <td><strong>פירוק ה-God Object (1,753 LOC) ל-4 מודולים</strong></td>
+        <td><span class="severity critical">Architecture</span></td>
+        <td><span class="sprint-badge" style="background:#164e63;color:#38bdf8;">Sprint 2</span></td>
+        <td>10</td><td>5</td><td>0.9</td><td>1.50d</td>
+        <td><span class="rice-pill medium">30.0</span></td>
+        <td><span class="ice-pill medium">540</span></td>
+        <td>פיצול ל: <code>AgentNLUParser</code>, <code>AgentGeoEngine</code>, <code>AgentRulesEngine</code>, <code>AgentLLMClient</code></td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-2" data-id="C2" data-effort="1.0" data-rice="40.5" data-ice="567">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-c2" data-target="C2"></td>
+        <td><a href="#C2" class="task-link">C2</a></td>
+        <td><strong>הוספת תשתית בדיקות Vitest ובדיקות סוכן</strong></td>
+        <td><span class="severity critical">Testing</span></td>
+        <td><span class="sprint-badge" style="background:#164e63;color:#38bdf8;">Sprint 2</span></td>
+        <td>9</td><td>5</td><td>0.9</td><td>1.00d</td>
+        <td><span class="rice-pill medium">40.5</span></td>
+        <td><span class="ice-pill medium">567</span></td>
+        <td>התקנת Vitest והרצת בדיקות יחידה מלאות לחילוץ גיל, סינון פרמטרים ו-What-If</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-2" data-id="H4" data-effort="0.5" data-rice="48" data-ice="560">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h4" data-target="H4"></td>
+        <td><a href="#H4" class="task-link">H4</a></td>
+        <td><strong>שימור היסטוריית השיחה ב-LocalStorage</strong></td>
+        <td><span class="severity high">UX / State</span></td>
+        <td><span class="sprint-badge" style="background:#164e63;color:#38bdf8;">Sprint 2</span></td>
+        <td>8</td><td>3</td><td>1.0</td><td>0.50d</td>
+        <td><span class="rice-pill medium">48.0</span></td>
+        <td><span class="ice-pill medium">560</span></td>
+        <td>שמירה מקומית של ההודעות והאתרים שנבחרו עם כפתור "שיחה חדשה"</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-2" data-id="H8" data-effort="0.25" data-rice="84" data-ice="630">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h8" data-target="H8"></td>
+        <td><a href="#H8" class="task-link">H8</a></td>
+        <td><strong>ביטול קריאת סרק ל-LLM בעת הפעלת Failsafe</strong></td>
+        <td><span class="severity high">Performance</span></td>
+        <td><span class="sprint-badge" style="background:#164e63;color:#38bdf8;">Sprint 2</span></td>
+        <td>7</td><td>3</td><td>1.0</td><td>0.25d</td>
+        <td><span class="rice-pill high">84.0</span></td>
+        <td><span class="ice-pill medium">630</span></td>
+        <td>ניתוב ישיר למנוע היוריסטיקה מיידית ללא ניסיון HTTP מיותר כשהשרת סגור</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-2" data-id="H3" data-effort="0.5" data-rice="48" data-ice="640">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h3" data-target="H3"></td>
+        <td><a href="#H3" class="task-link">H3</a></td>
+        <td><strong>חיבור כפתור C4I Dashboard בממשק הראשי</strong></td>
+        <td><span class="severity high">UX / C4I</span></td>
+        <td><span class="sprint-badge" style="background:#164e63;color:#38bdf8;">Sprint 2</span></td>
+        <td>6</td><td>4</td><td>1.0</td><td>0.50d</td>
+        <td><span class="rice-pill medium">48.0</span></td>
+        <td><span class="ice-pill medium">640</span></td>
+        <td>הוספת כפתור "חמ״ל מבצעי" קבוע ב-Header לפתיחת ה-Modal הקיים</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-2" data-id="H10" data-effort="0.5" data-rice="32.4" data-ice="504">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h10" data-target="H10"></td>
+        <td><a href="#H10" class="task-link">H10</a></td>
+        <td><strong>טיפול בשגיאות טעינת מפה (Error Boundaries)</strong></td>
+        <td><span class="severity high">Reliability</span></td>
+        <td><span class="sprint-badge" style="background:#164e63;color:#38bdf8;">Sprint 2</span></td>
+        <td>6</td><td>3</td><td>0.9</td><td>0.50d</td>
+        <td><span class="rice-pill medium">32.4</span></td>
+        <td><span class="ice-pill medium">504</span></td>
+        <td>הצגת הודעת Fallback אסתטית בעת ניתוק רשת או כשל בשרת הטיילס</td>
+      </tr>
+
+      <!-- SPRINT 3 -->
+      <tr class="item-row" data-sprint="sprint-3" data-id="H2" data-effort="1.5" data-rice="21.6" data-ice="432">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h2" data-target="H2"></td>
+        <td><a href="#H2" class="task-link">H2</a></td>
+        <td><strong>מצב עיון עצמאי באתרים (Explore Catalog)</strong></td>
+        <td><span class="severity high">UX Feature</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>9</td><td>4</td><td>0.9</td><td>1.50d</td>
+        <td><span class="rice-pill medium">21.6</span></td>
+        <td><span class="ice-pill medium">432</span></td>
+        <td>סרגל צדדי עם טאב "עיון בקטלוג" המאפשר חיפוש וסינון עצמאי ללא צ'אט</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-3" data-id="H9" data-effort="1.0" data-rice="16.8" data-ice="336">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h9" data-target="H9"></td>
+        <td><a href="#H9" class="task-link">H9</a></td>
+        <td><strong>חישוב זמני נסיעה אמיתיים באמצעות OSRM</strong></td>
+        <td><span class="severity high">GIS / Trust</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>7</td><td>3</td><td>0.8</td><td>1.00d</td>
+        <td><span class="rice-pill low">16.8</span></td>
+        <td><span class="ice-pill low">336</span></td>
+        <td>שימוש ב-OSRM API חינמי לחישוב זמן נהיגה בכביש במקום נוסחה לינארית גולמית</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-3" data-id="L2" data-effort="1.0" data-rice="24.3" data-ice="441">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-l2" data-target="L2"></td>
+        <td><a href="#L2" class="task-link">L2</a></td>
+        <td><strong>תמונות איכותיות של אתרי טבע מ-Wikimedia</strong></td>
+        <td><span class="severity low">UX Delight</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>9</td><td>3</td><td>0.9</td><td>1.00d</td>
+        <td><span class="rice-pill medium">24.3</span></td>
+        <td><span class="ice-pill medium">441</span></td>
+        <td>הוספת שדה <code>image_url</code> ברישיון חופשי (Wikimedia CC) לכל 19 האתרים ב-DB</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-3" data-id="H1" data-effort="1.0" data-rice="18.9" data-ice="378">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h1" data-target="H1"></td>
+        <td><a href="#H1" class="task-link">H1</a></td>
+        <td><strong>הגדרת JSDoc / טיפוסים קפדניים לחוזים</strong></td>
+        <td><span class="severity high">Code Quality</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>7</td><td>3</td><td>0.9</td><td>1.00d</td>
+        <td><span class="rice-pill low">18.9</span></td>
+        <td><span class="ice-pill low">378</span></td>
+        <td>הוספת <code>@typedef</code> מקיף ל-<code>Site</code>, <code>WeatherReport</code>, ו-<code>AgentMessage</code></td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-3" data-id="H5" data-effort="1.0" data-rice="14.4" data-ice="288">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-h5" data-target="H5"></td>
+        <td><a href="#H5" class="task-link">H5</a></td>
+        <td><strong>נגישות ARIA מלאה, ניווט מקלדת ופוקוס</strong></td>
+        <td><span class="severity high">Accessibility</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>6</td><td>3</td><td>0.8</td><td>1.00d</td>
+        <td><span class="rice-pill low">14.4</span></td>
+        <td><span class="ice-pill low">288</span></td>
+        <td>הוספת <code>aria-live</code> לעדכוני צ'אט, Focus Trap ב-Modal, ותמיכה ב-Tab</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-3" data-id="L3" data-effort="1.0" data-rice="12.0" data-ice="288">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-l3" data-target="L3"></td>
+        <td><a href="#L3" class="task-link">L3</a></td>
+        <td><strong>הגדרת PWA Manifest ו-Offline Cache</strong></td>
+        <td><span class="severity low">Mobile</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>5</td><td>3</td><td>0.8</td><td>1.00d</td>
+        <td><span class="rice-pill low">12.0</span></td>
+        <td><span class="ice-pill low">288</span></td>
+        <td>קונפיגורציית <code>vite-plugin-pwa</code> להתקנה ישירה במסך הבית של מטיילים</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-3" data-id="L5" data-effort="1.5" data-rice="12.6" data-ice="315">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-l5" data-target="L5"></td>
+        <td><a href="#L5" class="task-link">L5</a></td>
+        <td><strong>הרחבת נתוני מסלול (אורך, קושי, מחיר)</strong></td>
+        <td><span class="severity low">UX Depth</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>7</td><td>3</td><td>0.9</td><td>1.50d</td>
+        <td><span class="rice-pill low">12.6</span></td>
+        <td><span class="ice-pill low">315</span></td>
+        <td>הוספת שדות <code>trail_km</code>, <code>difficulty_level</code>, <code>entry_fee</code> ב-<code>assets_db.json</code></td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-3" data-id="L4" data-effort="0.5" data-rice="21.6" data-ice="360">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-l4" data-target="L4"></td>
+        <td><a href="#L4" class="task-link">L4</a></td>
+        <td><strong>טלמטריה מקומית שקטה (Local Event Log)</strong></td>
+        <td><span class="severity low">Analytics</span></td>
+        <td><span class="sprint-badge" style="background:#78350f;color:#fbbf24;">Sprint 3</span></td>
+        <td>6</td><td>2</td><td>0.9</td><td>0.50d</td>
+        <td><span class="rice-pill medium">21.6</span></td>
+        <td><span class="ice-pill low">360</span></td>
+        <td>תיעוד אירועי שימוש מקומיים (הקלקות על אתרים, זמן תגובה) ללא שליחה לשרת חיצוני</td>
+      </tr>
+
+      <!-- SPRINT 4 -->
+      <tr class="item-row" data-sprint="sprint-4" data-id="A1" data-effort="1.5" data-rice="24.0" data-ice="486">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-a1" data-target="A1"></td>
+        <td><a href="#A1" class="task-link">A1</a></td>
+        <td><strong>הרצת Golden Dataset של 50 שאילתות ב-CI</strong></td>
+        <td><span class="impact-tag">AI Evals</span></td>
+        <td><span class="sprint-badge" style="background:#4c1d95;color:#c084fc;">Sprint 4</span></td>
+        <td>8</td><td>5</td><td>0.9</td><td>1.50d</td>
+        <td><span class="rice-pill medium">24.0</span></td>
+        <td><span class="ice-pill medium">486</span></td>
+        <td>אוטומציית בדיקת 50 שאילתות מתוך <code>agent_validation_plan.md</code> בכל PR</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-4" data-id="A2" data-effort="1.5" data-rice="17.1" data-ice="384">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-a2" data-target="A2"></td>
+        <td><a href="#A2" class="task-link">A2</a></td>
+        <td><strong>רדיוס 50 ק"מ דינמי לכל עיר ע"י Geocoding</strong></td>
+        <td><span class="impact-tag">Geo Search</span></td>
+        <td><span class="sprint-badge" style="background:#4c1d95;color:#c084fc;">Sprint 4</span></td>
+        <td>8</td><td>4</td><td>0.8</td><td>1.50d</td>
+        <td><span class="rice-pill low">17.1</span></td>
+        <td><span class="ice-pill low">384</span></td>
+        <td>תמיכה מלאה בכל נקודה בישראל עם OpenStreetMap Nominatim cache מקומי</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-4" data-id="A3" data-effort="2.0" data-rice="12.8" data-ice="320">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-a3" data-target="A3"></td>
+        <td><a href="#A3" class="task-link">A3</a></td>
+        <td><strong>הזנת 30+ מעיינות ומסלולי חקלאות (Tiuli/GIS)</strong></td>
+        <td><span class="impact-tag">Data Scale</span></td>
+        <td><span class="sprint-badge" style="background:#4c1d95;color:#c084fc;">Sprint 4</span></td>
+        <td>8</td><td>4</td><td>0.8</td><td>2.00d</td>
+        <td><span class="rice-pill low">12.8</span></td>
+        <td><span class="ice-pill low">320</span></td>
+        <td>הרחבת <code>assets_db.json</code> מ-19 אתרים ל-50+ אתרים מאומתים במרכז ובצפון</td>
+      </tr>
+
+      <tr class="item-row" data-sprint="sprint-4" data-id="A4" data-effort="2.0" data-rice="8.4" data-ice="280">
+        <td style="text-align:center;"><input type="checkbox" class="table-checkbox" id="rice-a4" data-target="A4"></td>
+        <td><a href="#A4" class="task-link">A4</a></td>
+        <td><strong>פרוטוקול LLM-as-a-Judge שבועי לאיכות XAI</strong></td>
+        <td><span class="impact-tag">Agent Evals</span></td>
+        <td><span class="sprint-badge" style="background:#4c1d95;color:#c084fc;">Sprint 4</span></td>
+        <td>6</td><td>4</td><td>0.7</td><td>2.00d</td>
+        <td><span class="rice-pill low">8.4</span></td>
+        <td><span class="ice-pill low">280</span></td>
+        <td>סריקת איכות ההסברתיות וציוני הביטחון של הסוכן באמצעות רובריקת הערכה מובנית</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════ VERDICT ═══════════════════════════ -->
+<div class="verdict">
+  <h2>🏁 Hiring Manager Verdict &amp; Evolution Path</h2>
+  <div class="grade" id="verdict-grade-display">B+</div>
+  <p>
+    <strong>הפוטנציאל: A+</strong> — הרעיון, ה-Guardrails החזקים, ה-NLU העברית המקומי, ומנגנון ה-What-If Crisis הם ייחודיים ומרשימים ביותר.<br>
+    <strong>המצב הנוכחי: B+</strong> — ארכיטקטורת God Object, חוסר ב-README, חשיפת מפתח API ופערים קטנים ב-UI מונעים ממגייס להתרשם באופן מיידי.<br><br>
+    <em>
+      📌 <strong>מסלול ההתקדמות המדורג:</strong><br>
+      • ביצוע Sprint 1 בלבד (מאמץ: ~3 ימים) מעלה את הציון ל-<strong>A-</strong> (רושם ראשוני מלוטש, ללא תקלות אבטחה).<br>
+      • ביצוע Sprint 2 (מודולריות ובדיקות Vitest) מעלה את הציון ל-<strong>A</strong> (רמת הנדסה של Senior Fullstack / AI Engineer).<br>
+      • השלמת Sprint 3 + Sprint 4 מייצרת <strong>Portfolio Showcase ברמת A+</strong> — פרויקט שמוביל לזימון ישיר לראיון מתקדם.
+    </em>
+  </p>
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<div style="text-align:center;margin-top:24px;color:var(--text-dim);font-size:0.75rem;">
+  Generated by Red Team Product Agent &bull; 30/09/2026 &bull; Tiyul Project v1.0.0
+</div>
+
+<!-- ═══════════════════════════ INTERACTIVE SCRIPTS ═══════════════════════════ -->
+<script>
+  const STORAGE_KEY = 'tiyul_redteam_fixes_v1';
+  let savedState = {};
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) savedState = JSON.parse(raw);
+  } catch (e) {
+    console.warn('LocalStorage unavailable', e);
+  }
+
+  // Initialize checkboxes from saved state
+  function initCheckboxes() {
+    // 1. Finding cards checkboxes
+    document.querySelectorAll('.fix-item input[type="checkbox"]').forEach(cb => {
+      if (savedState[cb.id]) {
+        cb.checked = true;
+      }
+      cb.addEventListener('change', () => {
+        savedState[cb.id] = cb.checked;
+        saveAndRecalculate();
+      });
+    });
+
+    // 2. Master table checkboxes
+    document.querySelectorAll('.table-checkbox').forEach(cb => {
+      const targetId = cb.dataset.target;
+      if (savedState['task_' + targetId]) {
+        cb.checked = true;
+        const row = cb.closest('tr');
+        if (row) row.classList.add('done');
+      }
+      cb.addEventListener('change', () => {
+        savedState['task_' + targetId] = cb.checked;
+        const row = cb.closest('tr');
+        if (row) {
+          if (cb.checked) row.classList.add('done');
+          else row.classList.remove('done');
+        }
+        // Also toggle card style
+        const card = document.getElementById(targetId);
+        if (card) {
+          if (cb.checked) card.classList.add('resolved');
+          else card.classList.remove('resolved');
+        }
+        saveAndRecalculate();
+      });
+    });
+
+    recalculateStats();
+  }
+
+  function saveAndRecalculate() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+    } catch (e) {}
+    recalculateStats();
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2200);
+  }
+
+  function recalculateStats() {
+    const masterCheckboxes = document.querySelectorAll('.table-checkbox');
+    const total = masterCheckboxes.length;
+    let completed = 0;
+    let s1Done = 0, s1Total = 0;
+    let s2Done = 0, s2Total = 0;
+    let s3Done = 0, s3Total = 0;
+    let s4Done = 0, s4Total = 0;
+    let effortRemaining = 0;
+
+    masterCheckboxes.forEach(cb => {
+      const row = cb.closest('tr');
+      const sprint = row ? row.dataset.sprint : '';
+      const effort = row ? parseFloat(row.dataset.effort) || 0 : 0;
+      const isDone = cb.checked;
+
+      if (isDone) completed++;
+      else effortRemaining += effort;
+
+      if (sprint === 'sprint-1') { s1Total++; if (isDone) s1Done++; }
+      if (sprint === 'sprint-2') { s2Total++; if (isDone) s2Done++; }
+      if (sprint === 'sprint-3') { s3Total++; if (isDone) s3Done++; }
+      if (sprint === 'sprint-4') { s4Total++; if (isDone) s4Done++; }
+    });
+
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    document.getElementById('completed-count').textContent = completed;
+    document.getElementById('progress-percent').textContent = percent + '%';
+    document.getElementById('progress-bar-fill').style.width = percent + '%';
+
+    document.getElementById('s1-stat').textContent = `${s1Done}/${s1Total}`;
+    document.getElementById('s2-stat').textContent = `${s2Done}/${s2Total}`;
+    document.getElementById('s3-stat').textContent = `${s3Done}/${s3Total}`;
+    document.getElementById('s4-stat').textContent = `${s4Done}/${s4Total}`;
+    document.getElementById('remaining-effort').textContent = effortRemaining.toFixed(1);
+
+    // Projected grade
+    let grade = 'B+ (78)';
+    if (completed >= 24) grade = 'A+ (98) 🏆';
+    else if (completed >= 16) grade = 'A (92)';
+    else if (completed >= 8) grade = 'A- (86)';
+    else if (completed >= 4) grade = 'B+ (82)';
+
+    document.getElementById('projected-grade').textContent = grade;
+    const verdictGradeDisplay = document.getElementById('verdict-grade-display');
+    if (verdictGradeDisplay) verdictGradeDisplay.textContent = grade.split(' ')[0];
+  }
+
+  // Filter Toolbar handler
+  document.querySelectorAll('#sprint-filters .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#sprint-filters .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      applyFilters(filter, document.getElementById('task-search').value);
+    });
+  });
+
+  // Search input handler
+  const searchInput = document.getElementById('task-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const activeBtn = document.querySelector('#sprint-filters .pill-btn.active');
+      const currentFilter = activeBtn ? activeBtn.dataset.filter : 'all';
+      applyFilters(currentFilter, e.target.value);
+    });
+  }
+
+  function applyFilters(sprintFilter, query) {
+    const q = (query || '').trim().toLowerCase();
+    document.querySelectorAll('#master-tbody tr').forEach(row => {
+      const sprint = row.dataset.sprint;
+      const text = row.textContent.toLowerCase();
+      const matchesSprint = (sprintFilter === 'all') || (sprint === sprintFilter);
+      const matchesQuery = !q || text.includes(q);
+
+      if (matchesSprint && matchesQuery) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  // Button: Complete Sprint 1
+  document.getElementById('btn-complete-s1').addEventListener('click', () => {
+    document.querySelectorAll('.table-checkbox').forEach(cb => {
+      const row = cb.closest('tr');
+      if (row && row.dataset.sprint === 'sprint-1') {
+        cb.checked = true;
+        savedState['task_' + cb.dataset.target] = true;
+        row.classList.add('done');
+        const card = document.getElementById(cb.dataset.target);
+        if (card) card.classList.add('resolved');
+      }
+    });
+    saveAndRecalculate();
+    showToast('כל משימות Sprint 1 (Quick Wins) סומנו בהצלחה!');
+  });
+
+  // Button: Reset all
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    if (!confirm('האם לאפס את כל הסימונים בדוח?')) return;
+    savedState = {};
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+    document.querySelectorAll('.item-row').forEach(row => row.classList.remove('done'));
+    document.querySelectorAll('.finding').forEach(card => card.classList.remove('resolved'));
+    recalculateStats();
+    showToast('כל הסימונים אופסו');
+  });
+
+  // Table Sorting logic
+  let sortDir = {};
+  function sortTable(colIndex) {
+    const table = document.getElementById('master-table');
+    const tbody = document.getElementById('master-tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    sortDir[colIndex] = !sortDir[colIndex];
+    const isAsc = sortDir[colIndex];
+
+    rows.sort((a, b) => {
+      let valA, valB;
+      if (colIndex === 8) { // Effort
+        valA = parseFloat(a.dataset.effort) || 0;
+        valB = parseFloat(b.dataset.effort) || 0;
+      } else if (colIndex === 9) { // RICE
+        valA = parseFloat(a.dataset.rice) || 0;
+        valB = parseFloat(b.dataset.rice) || 0;
+      } else if (colIndex === 10) { // ICE
+        valA = parseFloat(a.dataset.ice) || 0;
+        valB = parseFloat(b.dataset.ice) || 0;
+      } else {
+        valA = (a.cells[colIndex]?.textContent || '').trim();
+        valB = (b.cells[colIndex]?.textContent || '').trim();
+      }
+
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return isAsc ? valA - valB : valB - valA;
+      }
+      return isAsc ? valA.localeCompare(valB, 'he') : valB.localeCompare(valA, 'he');
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+    showToast(`טבלה מוינה לפי עמודה ${colIndex}`);
+  }
+
+  // Start on load
+  initCheckboxes();
+</script>
+
+</body>
+</html>
