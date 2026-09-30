@@ -2685,5 +2685,237 @@
     "description": "שביל מסומן היורד מרכס חתירה אל המכתש הגדול, עם אנדרטת הפלמ״ח והצנחנים ותצפית פנורמית על כל חולות וקירות המכתש.",
     "id": 922,
     "age_group": "4+"
+  },
+  {
+    "authority_id": "INPA-108",
+    "name": "גן לאומי ירקון - מקורות הירקון ובריכות השכשוך",
+    "name_en": "Yarkon National Park - Yarkon Springs",
+    "org": "רשות הטבע והגנים",
+    "region": "השרון וגוש דן",
+    "region_group": "center",
+    "lat": 32.1098,
+    "lng": 34.9312,
+    "category": "water",
+    "type": [
+      "גן לאומי",
+      "מים",
+      "בריכות שכשוך",
+      "שביל עגלות",
+      "נחל נקי",
+      "נופרים"
+    ],
+    "type_en": [
+      "National Park",
+      "Water",
+      "Wading Pools",
+      "Stroller Trail",
+      "River"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס מבקרים בשבת"
+    ],
+    "description": "החלק הצלול והנקי ביותר של הירקון ליד פתח תקווה וראש העין. כולל 5 בריכות שכשוך טבעיות ובטוחות לילדים, בריכת נופרים מרהיבה, שבילים מוצלים וסלולים לעגלות ומרחבי דשא לפיקניק.",
+    "id": 108
+  },
+  {
+    "authority_id": "RND-109",
+    "name": "פארק וגני רמת הנדיב (זכרון יעקב)",
+    "name_en": "Ramat HaNadiv Memorial Gardens & Park",
+    "org": "קרן אדמונד דה רוטשילד",
+    "region": "חוף הכרמל ורמת מנשה",
+    "region_group": "haifa_carmel",
+    "lat": 32.5539,
+    "lng": 34.9482,
+    "category": "safe_haven",
+    "type": [
+      "שמורת טבע",
+      "פארק וגנים",
+      "שביל מונגש",
+      "מרכז מבקרים",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "Nature Reserve",
+      "Gardens",
+      "Accessible Trail",
+      "Visitor Center",
+      "Safe Haven"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "description": "פארק טבע מוסדר ברמת הנדיב מעל זכרון יעקב. שטח מוגבה ומנוקז, שבילי הליכה סלולים ומוצלים, מרכז מבקרים ממוזג עם נקודת עזרה ראשונה. משמש כמקלט בטוח ומאובטח בעת הצפות ונחלים גועשים בחוף הכרמל (רק 3.8 ק\"מ מנחל תנינים).",
+    "id": 109
+  },
+  {
+    "authority_id": "ITC-110",
+    "name": "עין אביאל - בריכות ומפל נחל תנינים",
+    "name_en": "Ein Aviel - Crocodile Stream Springs",
+    "org": "הוועדה לשבילי ישראל",
+    "region": "חוף הכרמל ובקעת הנדיב",
+    "region_group": "haifa_carmel",
+    "lat": 32.5283,
+    "lng": 34.9664,
+    "category": "water",
+    "type": [
+      "מעיין",
+      "מים",
+      "מפלון",
+      "בריכה טבעית",
+      "סבך קנים"
+    ],
+    "type_en": [
+      "Spring",
+      "Water",
+      "Waterfall",
+      "Natural Pool"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "סכנת עכירות מים",
+      "סבך קנים"
+    ],
+    "description": "בריכות מים צלולות ומפלון נסתר בתוך סבך קנים קסום לאורך נחל תנינים ליד מושב אביאל. חוויית טבילה מרעננת ומסאז' טבעי במים זורמים.",
+    "id": 110
+  },
+  {
+    "authority_id": "ITC-111",
+    "name": "עין נילי (נחל תנינים עליון)",
+    "name_en": "Ein Nili Spring",
+    "org": "הוועדה לשבילי ישראל",
+    "region": "רמות מנשה וחוף הכרמל",
+    "region_group": "haifa_carmel",
+    "lat": 32.5489,
+    "lng": 35.0345,
+    "category": "water",
+    "type": [
+      "מעיין",
+      "מים",
+      "בריכה",
+      "עצי תאנה",
+      "נדנדה במים"
+    ],
+    "type_en": [
+      "Spring",
+      "Water",
+      "Shaded Pool",
+      "Fig Trees"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "עומס בשבת",
+      "שביל עפר"
+    ],
+    "description": "פינת חמד פסטורלית סמוך לגבעת נילי. בריכת מים מוצלת תחת עצי תאנה ואקליפטוס עם נדנדה תלויה מעל המים, גשרון עץ ושולחנות אבן לפיקניק.",
+    "id": 111
+  },
+  {
+    "authority_id": "MUNI-112",
+    "name": "המפל הנסתר בשרונית (הוד השרון / ירקון)",
+    "name_en": "The Hidden Waterfall - Sharonit & Yarkon",
+    "org": "עיריית הוד השרון ורשות נחל הירקון",
+    "region": "השרון הדרומי וגוש דן",
+    "region_group": "center",
+    "lat": 32.1481,
+    "lng": 34.9015,
+    "category": "water",
+    "type": [
+      "טבע עירוני",
+      "מים",
+      "מפלון",
+      "נחל זורם",
+      "צל"
+    ],
+    "type_en": [
+      "Urban Nature",
+      "Water",
+      "Waterfall",
+      "Stream"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס מבקרים בצהריים"
+    ],
+    "description": "פינת טבע קסומה על ערוץ הירקון בין הוד השרון לפתח תקווה. מפלון שוצף עם בריכת שכשוך נעימה, חורשת עצים מוצלת ושבילים נוחים להליכה קצרה.",
+    "id": 112
+  },
+  {
+    "authority_id": "IAA-113",
+    "name": "בית הקשתות (עמק איילון ומבוא חורון)",
+    "name_en": "Beit HaKshatot - Roman Spring",
+    "org": "רשות העתיקות וקק״ל",
+    "region": "השפלה ועמק איילון",
+    "region_group": "jerusalem",
+    "lat": 31.8653,
+    "lng": 35.0211,
+    "category": "water",
+    "type": [
+      "מעיין רומי",
+      "בריכה מקורה",
+      "נקבה",
+      "עתיקות",
+      "מים"
+    ],
+    "type_en": [
+      "Roman Spring",
+      "Covered Pool",
+      "Archaeology",
+      "Water"
+    ],
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "vulnerabilities": [
+      "חשיכה בנקבה (דרוש פנס)",
+      "עונתיות במים"
+    ],
+    "description": "מעיין רומי עתיק ומרשים המכיל בריכה מקורה בקשתות אבן עתיקות, באר עמוקה ונקבת מים תת-קרקעית באורך 5 מטרים לזחילה חווייתית עם פנס.",
+    "id": 113
+  },
+  {
+    "authority_id": "INPA-114",
+    "name": "גן לאומי מגדל צדק ומבצר אנטיפטרוס",
+    "name_en": "Migdal Tzedek National Park",
+    "org": "רשות הטבע והגנים",
+    "region": "מרכז והשרון",
+    "region_group": "center",
+    "lat": 32.0833,
+    "lng": 34.9575,
+    "category": "safe_haven",
+    "type": [
+      "גן לאומי",
+      "מבצר עתיק",
+      "שבילים מונגשים",
+      "תצפית גוש דן",
+      "מקלט בטוח"
+    ],
+    "type_en": [
+      "National Park",
+      "Fortress",
+      "Accessible Trail",
+      "Safe Haven"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "Safe Haven",
+      "מקלט בטוח"
+    ],
+    "description": "מבצר עתיק וגן לאומי מרהיב בראש גבעה החולשת על כל מישור החוף. שבילים סלולים ומונגשים, מבנים מקורים ומתחם מנוקז לחלוטין משיטפונות, 7 ק\"מ מפתח תקווה.",
+    "id": 114
   }
 ]

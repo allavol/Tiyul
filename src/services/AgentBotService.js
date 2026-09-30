@@ -77,30 +77,113 @@ const TYPO_CORRECTIONS = {
 };
 
 // Known Israeli origin cities / centers for distance radius queries
-const KNOWN_ORIGIN_CITIES = [
-  { names: ['תל אביב', 'תל-אביב', 'ת"א', 'ת״א', 'גוש דן', 'המרכז', 'תל אביב יפו'], lat: 32.0853, lng: 34.7818, label: 'תל אביב' },
-  { names: ['ירושלים', 'בירה'], lat: 31.7683, lng: 35.2137, label: 'ירושלים' },
-  { names: ['חיפה', 'הקריות', 'קריות'], lat: 32.7940, lng: 34.9896, label: 'חיפה' },
-  { names: ['באר שבע', 'באר-שבע', 'ב"ש', 'ב״ש', 'הנגב'], lat: 31.2529, lng: 34.7915, label: 'באר שבע' },
-  { names: ['נתניה', 'השרון', 'שרון', 'עמק חפר'], lat: 32.3215, lng: 34.8532, label: 'נתניה' },
-  { names: ['ראשון לציון', 'ראשל"צ', 'ראשל״צ'], lat: 31.9730, lng: 34.7925, label: 'ראשון לציון' },
-  { names: ['פתח תקווה', 'פ"ת', 'פ״ת', 'בקעת אונו'], lat: 32.0840, lng: 34.8878, label: 'פתח תקווה' },
-  { names: ['הרצליה', 'רעננה', 'כפר סבא', 'הוד השרון', 'רמת השרון'], lat: 32.1663, lng: 34.8433, label: 'הרצליה/שרון דרומי' },
-  { names: ['רחובות', 'נס ציונה', 'יבנה'], lat: 31.8928, lng: 34.8113, label: 'רחובות' },
-  { names: ['אשדוד'], lat: 31.8044, lng: 34.6553, label: 'אשדוד' },
-  { names: ['אשקלון'], lat: 31.6688, lng: 34.5743, label: 'אשקלון' },
-  { names: ['מודיעין', 'מודיעין מכבים רעות'], lat: 31.8903, lng: 35.0104, label: 'מודיעין' },
-  { names: ['עפולה', 'עמק יזרעאל', 'יזרעאל', 'בית שאן'], lat: 32.6078, lng: 35.2894, label: 'עפולה/עמקים' },
-  { names: ['טבריה', 'הכנרת', 'כנרת', 'סובב כנרת'], lat: 32.7922, lng: 35.5312, label: 'טבריה/כנרת' },
-  { names: ['נצרת', 'נוף הגליל'], lat: 32.6996, lng: 35.3035, label: 'נצרת' },
-  { names: ['כרמיאל', 'משגב'], lat: 32.9199, lng: 35.2957, label: 'כרמיאל' },
-  { names: ['נהריה', 'עכו', 'גליל מערבי'], lat: 33.0059, lng: 35.0941, label: 'נהריה/עכו' },
-  { names: ['קריית שמונה', 'קרית שמונה', 'גליל עליון', 'אצבע הגליל'], lat: 33.2073, lng: 35.5721, label: 'קריית שמונה' },
-  { names: ['קצרין', 'רמת הגולן', 'הגולן'], lat: 32.9934, lng: 35.6908, label: 'קצרין/גולן' },
-  { names: ['אילת'], lat: 29.5577, lng: 34.9519, label: 'אילת' },
-  { names: ['ערד', 'ים המלח'], lat: 31.2589, lng: 35.2128, label: 'ערד' },
-  { names: ['מצפה רמון', 'רמון'], lat: 30.6100, lng: 34.8015, label: 'מצפה רמון' },
+export const KNOWN_ORIGIN_CITIES = [
+  // Gush Dan & Center
+  { names: ['פתח תקווה', 'פתח תקוה', 'פתח תיקווה', 'פתח תיקוה', 'פ"ת', 'פ״ת', 'בקעת אונו'], lat: 32.0840, lng: 34.8878, label: 'פתח תקווה', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['תל אביב', 'תל-אביב', 'ת"א', 'ת״א', 'גוש דן', 'המרכז', 'תל אביב יפו'], lat: 32.0853, lng: 34.7818, label: 'תל אביב', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['רמת גן', 'גבעתיים', 'בני ברק', 'קריית אונו', 'גני תקווה'], lat: 32.0684, lng: 34.8248, label: 'רמת גן/גוש דן', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['חולון', 'בת ים', 'אזור'], lat: 32.0158, lng: 34.7874, label: 'חולון/בת ים', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['ראשון לציון', 'ראשל"צ', 'ראשל״צ'], lat: 31.9730, lng: 34.7925, label: 'ראשון לציון', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['הרצליה', 'רעננה', 'כפר סבא', 'הוד השרון', 'רמת השרון'], lat: 32.1663, lng: 34.8433, label: 'הרצליה/שרון דרומי', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['ראש העין', 'אפק', 'מגדל צדק'], lat: 32.0956, lng: 34.9566, label: 'ראש העין', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['רחובות', 'נס ציונה', 'יבנה'], lat: 31.8928, lng: 34.8113, label: 'רחובות', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['לוד', 'רמלה', 'שוהם', 'בן שמן'], lat: 31.9514, lng: 34.8881, label: 'לוד/רמלה/שפלה', region: 'center', regionLabel: 'מרכז והשפלה' },
+  { names: ['מודיעין', 'מודיעין מכבים רעות', 'מכבים', 'רעות'], lat: 31.8903, lng: 35.0104, label: 'מודיעין', region: 'jerusalem', regionLabel: 'ירושלים והשפלה' },
+
+  // Sharon & Coastal Plain
+  { names: ['נתניה', 'השרון', 'שרון', 'עמק חפר', 'כפר יונה'], lat: 32.3215, lng: 34.8532, label: 'נתניה', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['חדרה', 'אור עקיבא', 'פרדס חנה', 'כרכור'], lat: 32.4340, lng: 34.9197, label: 'חדרה/פרדס חנה', region: 'center', regionLabel: 'השרון הצפוני' },
+  { names: ['קיסריה'], lat: 32.5000, lng: 34.9000, label: 'קיסריה', region: 'haifa_carmel', regionLabel: 'חוף הכרמל' },
+  { names: ['זכרון יעקב', 'זיכרון יעקב', 'זכרון', 'בנימינה', 'גבעת עדה'], lat: 32.5707, lng: 34.9525, label: 'זכרון יעקב/בנימינה', region: 'haifa_carmel', regionLabel: 'חוף הכרמל ורמת מנשה' },
+
+  // Haifa & North
+  { names: ['חיפה', 'הקריות', 'קריות', 'נשר', 'טירת כרמל'], lat: 32.7940, lng: 34.9896, label: 'חיפה', region: 'north', regionLabel: 'צפון (חיפה והכרמל)' },
+  { names: ['עכו', 'נהריה', 'שלומי', 'גליל מערבי'], lat: 33.0059, lng: 35.0941, label: 'נהריה/עכו', region: 'north', regionLabel: 'צפון (גליל מערבי)' },
+  { names: ['כרמיאל', 'משגב', 'סכנין', 'מעלות'], lat: 32.9199, lng: 35.2957, label: 'כרמיאל', region: 'north', regionLabel: 'צפון (גליל מרכזי)' },
+  { names: ['נצרת', 'נוף הגליל', 'מגדל העמק'], lat: 32.6996, lng: 35.3035, label: 'נצרת', region: 'north', regionLabel: 'צפון (עמקים וגליל תחתון)' },
+  { names: ['עפולה', 'עמק יזרעאל', 'יזרעאל', 'בית שאן'], lat: 32.6078, lng: 35.2894, label: 'עפולה/עמקים', region: 'north', regionLabel: 'צפון (עמק יזרעאל ובית שאן)' },
+  { names: ['טבריה', 'הכנרת', 'כנרת', 'סובב כנרת'], lat: 32.7922, lng: 35.5312, label: 'טבריה/כנרת', region: 'north', regionLabel: 'צפון (טבריה וסובב כנרת)' },
+  { names: ['צפת', 'ראש פינה', 'חצור הגלילית', 'מירון'], lat: 32.9646, lng: 35.4960, label: 'צפת/גליל עליון', region: 'north', regionLabel: 'צפון (גליל עליון)' },
+  { names: ['קריית שמונה', 'קרית שמונה', 'גליל עליון', 'אצבע הגליל', 'מטולה', 'דפנה'], lat: 33.2073, lng: 35.5721, label: 'קריית שמונה', region: 'north', regionLabel: 'צפון (אצבע הגליל)' },
+  { names: ['קצרין', 'רמת הגולן', 'הגולן', 'מג\'דל שמס', 'מגדל שמס'], lat: 32.9934, lng: 35.6908, label: 'קצרין/גולן', region: 'north', regionLabel: 'צפון (רמת הגולן)' },
+
+  // Jerusalem & Judea
+  { names: ['ירושלים', 'בירה', 'מבשרת ציון', 'מעלה אדומים'], lat: 31.7683, lng: 35.2137, label: 'ירושלים', region: 'jerusalem', regionLabel: 'ירושלים והסביבה' },
+  { names: ['בית שמש', 'מטה יהודה', 'שפלת יהודה'], lat: 31.7470, lng: 34.9881, label: 'בית שמש/שפלה', region: 'jerusalem', regionLabel: 'ירושלים ושפלת יהודה' },
+  { names: ['אריאל', 'שומרון'], lat: 32.1044, lng: 35.1744, label: 'אריאל/שומרון', region: 'center', regionLabel: 'מרכז ושומרון' },
+  { names: ['גוש עציון', 'אפרת'], lat: 31.6500, lng: 35.1500, label: 'גוש עציון', region: 'jerusalem', regionLabel: 'ירושלים וגוש עציון' },
+
+  // South & Negev
+  { names: ['אשדוד'], lat: 31.8044, lng: 34.6553, label: 'אשדוד', region: 'center', regionLabel: 'מישור החוף הדרומי' },
+  { names: ['אשקלון'], lat: 31.6688, lng: 34.5743, label: 'אשקלון', region: 'south', regionLabel: 'דרום (מישור החוף הדרומי)' },
+  { names: ['קריית גת', 'קרית גת', 'שדרות', 'נתיבות', 'אופקים', 'עוטף עזה'], lat: 31.6100, lng: 34.7600, label: 'קריית גת/צפון הנגב', region: 'south', regionLabel: 'דרום (צפון הנגב)' },
+  { names: ['באר שבע', 'באר-שבע', 'ב"ש', 'ב״ש', 'הנגב'], lat: 31.2529, lng: 34.7915, label: 'באר שבע', region: 'south', regionLabel: 'דרום ומרכז הנגב' },
+  { names: ['דימונה', 'ירוחם'], lat: 31.0700, lng: 35.0300, label: 'דימונה/ירוחם', region: 'south', regionLabel: 'דרום (מרכז הנגב)' },
+  { names: ['ערד', 'ים המלח'], lat: 31.2589, lng: 35.2128, label: 'ערד', region: 'south', regionLabel: 'דרום (ערד וים המלח)' },
+  { names: ['מצפה רמון', 'רמון'], lat: 30.6100, lng: 34.8015, label: 'מצפה רמון', region: 'south', regionLabel: 'דרום (הר הנגב ומכתש רמון)' },
+  { names: ['אילת'], lat: 29.5577, lng: 34.9519, label: 'אילת', region: 'south', regionLabel: 'דרום (אילת והערבה הדרומית)' },
 ];
+
+const DYNAMIC_CITY_CACHE = new Map();
+
+/**
+ * Resolve city coordinates with $0 open fallback (Nominatim OpenStreetMap)
+ */
+export async function geocodeCity(name) {
+  if (!name || typeof name !== 'string') return null;
+  const clean = name.trim().toLowerCase().replace(/^(ב|מ|ל|מאיזור|מאזור|באזור|באיזור|ליד|קרוב ל)\s*/, '');
+  
+  if (DYNAMIC_CITY_CACHE.has(clean)) {
+    return DYNAMIC_CITY_CACHE.get(clean);
+  }
+  
+  for (const c of KNOWN_ORIGIN_CITIES) {
+    if (c.names.some((n) => clean.includes(n) || n.includes(clean))) {
+      const res = { label: c.label, lat: c.lat, lng: c.lng, region: c.region, regionLabel: c.regionLabel };
+      DYNAMIC_CITY_CACHE.set(clean, res);
+      return res;
+    }
+  }
+
+  // OpenStreetMap Nominatim Free Geocoder fallback ($0 Cost, Open Data)
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=il&accept-language=he&limit=1&q=${encodeURIComponent(clean)}`;
+    const resp = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Tiyul-Spatial-Agent/1.0' },
+    });
+    clearTimeout(timeout);
+    if (resp.ok) {
+      const data = await resp.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const item = data[0];
+        const lat = parseFloat(item.lat);
+        const lng = parseFloat(item.lon);
+        let region = 'center';
+        let regionLabel = 'מרכז והשרון';
+        if (lat >= 32.5) { region = 'north'; regionLabel = 'צפון (גליל וגולן)'; }
+        else if (lat >= 31.7 && lat <= 31.95 && lng >= 34.95) { region = 'jerusalem'; regionLabel = 'ירושלים והשפלה'; }
+        else if (lat < 31.6) { region = 'south'; regionLabel = 'דרום ונגב'; }
+        
+        const res = {
+          label: item.display_name?.split(',')[0]?.trim() || clean,
+          lat,
+          lng,
+          region,
+          regionLabel,
+        };
+        DYNAMIC_CITY_CACHE.set(clean, res);
+        return res;
+      }
+    }
+  } catch (e) {
+    // Non-blocking fallback
+  }
+
+  return null;
+}
 
 // Israeli Days of the Week mapping for dynamic date & forecast indexing
 const HEBREW_DAYS = [
@@ -283,8 +366,9 @@ export class AgentBotService {
       dayIndex: 0,
       region: null,      // 'north' | 'center' | 'jerusalem' | 'south' | 'all' | 'radius'
       regionLabel: null, // 'צפון', 'מרכז ושרון', 'ירושלים', 'דרום', 'עד 40 ק"מ מתל אביב'
-      maxDistanceKm: null, // e.g. 40
+      maxDistanceKm: null, // e.g. 40 or 50
       originName: null,    // e.g. 'תל אביב'
+      originCity: null,    // e.g. 'פתח תקווה'
       originCoords: null,  // [lat, lng]
       feature: null,     // 'water' | 'spring' | 'shade' | 'adventure' | 'stroller' | 'view' | 'any'
       featureLabel: null,// 'הליכה במים', 'מעיין', 'יער מוצל', 'סנפלינג/אתגרי'
@@ -527,19 +611,23 @@ export class AgentBotService {
 
     // 2. Region / Distance extraction
     const distMatch = text.match(/(?:עד|ברדיוס של|בטווח של|במרחק של|מרחק של)?\s*(\d+)\s*(?:ק["״]?מ|קילומטר|קמ|קילומטרים)/);
+
+    // Identify if user specified a known Israeli city/locality
+    let foundCity = null;
+    for (const city of KNOWN_ORIGIN_CITIES) {
+      if (city.names.some((name) => text.includes(name))) {
+        foundCity = city;
+        break;
+      }
+    }
+
     if (distMatch && distMatch[1]) {
       const distNum = parseInt(distMatch[1], 10);
-      let foundCity = null;
-      for (const city of KNOWN_ORIGIN_CITIES) {
-        if (city.names.some((name) => text.includes(name))) {
-          foundCity = city;
-          break;
-        }
-      }
       if (foundCity) {
         updated.region = 'radius';
         updated.regionLabel = `עד ${distNum} ק"מ מ${foundCity.label}`;
         updated.maxDistanceKm = distNum;
+        updated.originCity = foundCity.label;
         updated.originName = foundCity.label;
         updated.originCoords = [foundCity.lat, foundCity.lng];
       } else {
@@ -547,8 +635,34 @@ export class AgentBotService {
         updated.region = 'radius';
         updated.regionLabel = `עד ${distNum} ק"מ מתל אביב (מרכז)`;
         updated.maxDistanceKm = distNum;
+        updated.originCity = 'תל אביב';
         updated.originName = 'תל אביב';
         updated.originCoords = [32.0853, 34.7818];
+      }
+    } else if (foundCity) {
+      // User entered a city without an explicit radius: default to 50 km radius search!
+      updated.originCity = foundCity.label;
+      updated.originName = foundCity.label;
+      updated.originCoords = [foundCity.lat, foundCity.lng];
+
+      // Check if user specified travelling to a different region (e.g. "מפתח תקווה לצפון")
+      if (text.includes('לצפון') || text.includes('לגליל') || text.includes('לגולן')) {
+        updated.region = 'north';
+        updated.regionLabel = 'צפון (גליל וגולן)';
+        updated.maxDistanceKm = null;
+      } else if (text.includes('לדרום') || text.includes('לנגב') || text.includes('למדבר') || text.includes('לים המלח')) {
+        updated.region = 'south';
+        updated.regionLabel = 'דרום, נגב וים המלח';
+        updated.maxDistanceKm = null;
+      } else if (text.includes('לירושלים')) {
+        updated.region = 'jerusalem';
+        updated.regionLabel = 'ירושלים והשפלה';
+        updated.maxDistanceKm = null;
+      } else {
+        // Automatic 50 km radius search around the requested city
+        updated.region = 'radius';
+        updated.regionLabel = `רדיוס 50 ק"מ מ${foundCity.label}`;
+        updated.maxDistanceKm = 50;
       }
     } else {
       if (text.includes('צפון') || text.includes('גליל') || text.includes('גולן') || text.includes('כנרת') || text.includes('כרמל') || text.includes('עמקים') || text.includes('חרמון') || text.includes('חיפה')) {
@@ -1173,18 +1287,11 @@ export class AgentBotService {
       matchRationale: rationale,
     };
 
-    // 5. Contextual options returned after What-If
+    // 5. Contextual options returned after What-If (clean, focused options without redundant secondary What-If)
     const options = [
       { label: '🔄 חזרה לתכנון טיול רגיל', value: 'בוא נחזור לתכנון מסלול רגיל' },
       { label: '🗺️ תכנן טיול באזור אחר', value: 'אני רוצה לבדוק אזור אחר בארץ' },
     ];
-    if (sessionState?.lastProposals?.length > 1) {
-      const nextProposal = sessionState.lastProposals.find((p) => p.id !== affectedSite.id);
-      if (nextProposal) {
-        const nextScenario = getSiteHazardScenario(nextProposal);
-        options.unshift({ label: nextScenario.label, value: nextScenario.prompt });
-      }
-    }
 
     return {
       text: `🚨 הופעל ניתוח תרחיש What-If אוטונומי!\n\nבמידה ומתרחש ${hazard} באזור ${affectedSite.name}:\n\n🧠 החלטת ה-Agent (Re-Planning):\nהסוכן זיהה סיכון חיים/בריאות קריטי, פסל את המשך השהייה באתר וחישב נתיב מילוט מיידי באלגוריתם Haversine אל היעד הבטוח ${nearestHaven.name}.\n\n👇 לחצו על הכרטיסייה למטה לצפייה בנתיב המילוט במפה!`,
@@ -1280,16 +1387,20 @@ export class AgentBotService {
 
     // 1. Filter database by region/radius, age, and stroller
     let candidates = assetsData.filter((site) => {
-      // Radius / Distance filter
-      if (state.region === 'radius' && state.originCoords && state.maxDistanceKm) {
+      // Distance and driving time computation if origin coordinates are known
+      if (state.originCoords) {
         const [oLat, oLng] = state.originCoords;
         const sLat = site.location ? site.location.lat : site.lat;
         const sLng = site.location ? site.location.lng : site.lng;
         const dist = calculateHaversineDistanceKm(oLat, oLng, sLat, sLng);
         site._distKm = dist;
-        if (dist > state.maxDistanceKm) return false;
-      } else if (state.region && state.region !== 'all') {
-        if (state.region === 'north' && site.region_group !== 'north') return false;
+        site._driveMinutes = Math.max(10, Math.round(dist * 1.25));
+
+        if (state.region === 'radius' && state.maxDistanceKm && dist > state.maxDistanceKm) {
+          return false;
+        }
+      } else if (state.region && state.region !== 'all' && state.region !== 'radius') {
+        if (state.region === 'north' && site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
         if (state.region === 'center' && site.region_group !== 'center') return false;
         if (state.region === 'jerusalem' && site.region_group !== 'jerusalem') return false;
         if (state.region === 'south' && site.region_group !== 'south') return false;
@@ -1547,7 +1658,33 @@ export class AgentBotService {
       wheelchairBanner = '\n\n♿ **הערה חשובה:** סיננתי מסלולים סלולים ונגישים לעגלות. עם זאת, **נגישות לכיסא גלגלים עשויה להיות שונה** (שיפוע, רוחב שביל, סוג משטח). מומלץ לבדוק ישירות מול רשות הטבע והגנים.';
     }
 
-    const introText = `מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **Tomorrow.io** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}`;
+    let cityNotice = '';
+    const originCity = state.originCity || state.originName;
+    if (originCity && proposals.length > 0) {
+      const closestSite = proposals[0];
+      const closestDist = closestSite?._distKm || 0;
+      const closestDrive = closestSite?._driveMinutes || Math.max(10, Math.round(closestDist * 1.25));
+
+      const isDirectlyInCity = proposals.some(
+        (p) => (p.name || '').includes(originCity) || (p._distKm !== undefined && p._distKm < 3)
+      );
+
+      if (!isDirectlyInCity) {
+        let featureText = 'מסלולי טבע פתוחים';
+        if (state.feature === 'water' || state.feature === 'spring') {
+          featureText = 'מעיינות או נחלים זורמים';
+        } else if (state.feature === 'shade') {
+          featureText = 'שמורות יער מוצלות';
+        } else if (state.feature === 'stroller') {
+          featureText = 'שמורות טבע סלולות';
+        }
+
+        const radiusStr = state.maxDistanceKm ? `ברדיוס של עד ${state.maxDistanceKm} ק"מ` : 'בקרבת מקום';
+        cityNotice = `אמנם אין ${featureText} ב${originCity} עצמה, אך איתרתי עבורכם יעדים מצוינים ${radiusStr} (החל מכ-${closestDrive} דקות נסיעה):\n\n`;
+      }
+    }
+
+    const introText = `${cityNotice}מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **Tomorrow.io** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}`;
 
     const llmStatus = await this.callOllamaOrGroqLLM(rawMessage, state);
 
@@ -1582,8 +1719,16 @@ export class AgentBotService {
    */
   static buildRationale(site, state, weather) {
     const parts = [];
-    if (site._distKm !== undefined && state.originName) {
-      parts.push(`🚗 במרחק כ-${site._distKm} ק"מ מ${state.originName}`);
+    const city = state.originCity || state.originName;
+    if (site._distKm !== undefined && city) {
+      const driveMins = site._driveMinutes || Math.max(10, Math.round(site._distKm * 1.25));
+      if (driveMins >= 60) {
+        const hours = Math.floor(driveMins / 60);
+        const mins = driveMins % 60;
+        parts.push(`🚗 כ-${hours} שע' ו-${mins} דק' נסיעה מ${city} (${site._distKm} ק"מ)`);
+      } else {
+        parts.push(`🚗 כ-${driveMins} דק' נסיעה מ${city} (${site._distKm} ק"מ)`);
+      }
     }
 
     if (site.stroller_accessible || site.min_age === 0) {
