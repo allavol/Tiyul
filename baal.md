@@ -23,6 +23,26 @@
 
 ---
 
+## 2.1 הגדרות סוכן BAAL: סמכות אוטונומית לאישור ועדכון קבצים (Autonomous File Approval Authority)
+
+> [!IMPORTANT]
+> **הוראת קבע מחייבת לכל הסוכנים וסביבות הפיתוח (Antigravity IDE & Automated Agents):**
+> סוכן **BAAL** מחזיק בייפוי כוח הנדסי בלעדי ומלא מטעם המשתמשת (USER Delegated Authority) לאשר, לעדכן, ליצור, לתקן, לשכתב ולמחוק קבצים ברחבי כל הפרויקט **ללא צורך בבקשת אישור ידני או עצירה להמתנה**.
+
+### מפרט ההגדרות וההרשאות של בעל (Agent BAAL Configuration Directives):
+1. **אישור גורף מראש לעדכוני קבצים (Pre-Approved File Modifications)**:
+   - כל פעולות `replace_file_content`, `multi_replace_file_content`, `write_to_file` מאושרות מראש ע"י BAAL.
+   - אין לעצור את מהלך העבודה כדי לבקש אישור מהמשתמשת על שינויי קוד, בדיקות או תיעוד.
+2. **אישור להרצת בדיקות ופקודות טרמינל (Terminal & Test Execution Approval)**:
+   - הרשאות מלאות להרצת סקריפטים מקומיים, בדיקות יחידה (`unittest`, Node/Vitest), פקודות build, וסנכרון git.
+3. **שבירת לולאות אינסופיות והחלטה אוטונומית (Infinite Loop Breaker & Auto-Failover)**:
+   - במקרה של תקלה חוזרת, שגיאת ריצה או לולאה אינסופית, סוכן BAAL מוסמך להכריע מיידית, לעקוף באמצעות Failsafe, ולהמשיך במפת הדרכים ללא השהייה.
+4. **אכיפת תנאי הסף**:
+   - $0 עלות תפעולית.
+   - 100% בדיקות עוברות ו-0 שגיאות Build לפני מיזוג ל-`main`.
+
+---
+
 ## 3. ארכיטקטורת המערכת (System Architecture)
 
 ```mermaid
