@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Compass, Sparkles, Map, Mountain, Settings, Search, Sun, Moon, ShieldAlert } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
 import TacticalSidebar from './components/TacticalSidebar';
@@ -36,8 +36,29 @@ export default function App() {
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
   const [chatBotQueryTrigger, setChatBotQueryTrigger] = useState(null);
   const [activeRailTab, setActiveRailTab] = useState('trails'); // 'trails' | 'map' | 'settings'
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLightMode, setIsLightMode] = useState(true);
+
+  // Finding H5: Full keyboard navigation (Escape closes topmost modal/drawer)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isAgentModalOpen) {
+          setIsAgentModalOpen(false);
+        } else if (isChatBotOpen) {
+          setIsChatBotOpen(false);
+        } else if (isSidebarOpen) {
+          setIsSidebarOpen(false);
+        } else if (selectedAssetId) {
+          setSelectedAssetId(null);
+        } else if (showNationalRadar) {
+          setShowNationalRadar(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAgentModalOpen, isChatBotOpen, isSidebarOpen, selectedAssetId, showNationalRadar]);
 
   // Trigger conversational agent briefing for a specific site
   const handleAskAgentAboutSite = (asset) => {
@@ -259,11 +280,27 @@ export default function App() {
 
         {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
         <div className="absolute bottom-4 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
+          {/* Catalog Drawer Trigger (Finding H2) */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            title="סייר בקטלוג האתרים והשמורות"
+            aria-label="פתח קטלוג אתרים ושמורות"
+            className={`h-[52px] px-4 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
+              isLightMode
+                ? 'text-teal-800 border-teal-300 bg-white/90 hover:bg-teal-50/90 shadow-teal-900/10'
+                : 'text-emerald-400 border-emerald-500/40 bg-brand-deep/80 hover:bg-white/10 hover:border-emerald-400'
+            }`}
+          >
+            <Mountain className="w-5 h-5 text-emerald-400" />
+            <span className="hidden sm:inline">קטלוג אתרים</span>
+          </button>
+
           {/* Main Chatbot Trigger */}
           <button
             onClick={() => setIsChatBotOpen(true)}
             title="פתח את סוכן הטיולים החכם"
-            className={`px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-sm sm:text-base border backdrop-blur-2xl transition-all group active:scale-95 ${
+            aria-label="פתח סוכן טיולים חכם"
+            className={`px-5 py-3.5 sm:px-6 sm:py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-black text-sm sm:text-base border backdrop-blur-2xl transition-all group active:scale-95 ${
               isLightMode
                 ? 'bg-white text-teal-900 border-teal-200/60 shadow-teal-900/5 hover:bg-teal-50/50'
                 : 'bg-gradient-to-r from-teal-600 via-accent-dim to-teal-700 text-white border-accent/50 hover:from-teal-500 hover:to-accent'
@@ -281,6 +318,7 @@ export default function App() {
           <button
             onClick={() => setIsAgentModalOpen(true)}
             title="חמ״ל מבצעי ותרחישי חירום (C4I Tactical Mission Control)"
+            aria-label="חמ״ל מבצעי ותרחישי חירום"
             className={`h-[52px] px-4 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
               isLightMode
                 ? 'text-teal-800 border-teal-300 bg-white/80 hover:bg-teal-50/80 shadow-teal-900/10'
@@ -298,6 +336,7 @@ export default function App() {
           <button
             onClick={() => setIsLightMode(!isLightMode)}
             title="החלף מצב תצוגה"
+            aria-label="החלף מצב תצוגה כהה/בהיר"
             className={`h-[52px] w-[52px] rounded-2xl glass-panel flex items-center justify-center border shadow-2xl transition active:scale-95 ${
               isLightMode
                 ? 'border-teal-200/60 hover:bg-teal-50/50 shadow-teal-900/5'
@@ -308,6 +347,53 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      {/* Slide-out Catalog Drawer (Finding H2 & H5) */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-[1100] flex justify-start bg-black/40 backdrop-blur-sm transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="קטלוג אתרים ומסלולים"
+        >
+          <div 
+            className="w-full sm:w-[420px] max-w-full h-full bg-[#1c1c21] shadow-2xl border-r border-white/10 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TacticalSidebar
+              assets={filteredAssets}
+              selectedAssetId={selectedAssetId}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              selectedAgeFilter={selectedAgeFilter}
+              onAgeFilterChange={setSelectedAgeFilter}
+              onSelectAsset={(id) => {
+                setSelectedAssetId(id);
+                setShowNationalRadar(false);
+                if (window.innerWidth < 640) {
+                  setIsSidebarOpen(false);
+                }
+              }}
+              isProcessing={isProcessing}
+              agentStatus={agentStatus}
+              selectedDayIndex={selectedDayIndex}
+              onSelectDayIndex={setSelectedDayIndex}
+              onOpenAgentModal={() => {
+                setIsSidebarOpen(false);
+                setIsAgentModalOpen(true);
+              }}
+              onOpenChatBot={() => {
+                setIsSidebarOpen(false);
+                setIsChatBotOpen(true);
+              }}
+              onCloseSidebar={() => setIsSidebarOpen(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Popup 1: Agent Intelligence & Operations Modal */}
       <AgentOperationsModal

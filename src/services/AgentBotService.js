@@ -121,6 +121,9 @@ export class AgentBotService {
 
   /**
    * Process a user turn in conversation (strictly strips any markdown bold/italic asterisks from user-facing text)
+   * @param {string} message - Raw user input text in Hebrew
+   * @param {Object} [sessionState=null] - Persistent session state (or null to initialize)
+   * @returns {Promise<{text: string, state: Object, options: Array<{label: string, value: string}>, proposals: Array<Object>, toolActivity: Object | null}>}
    */
   static async processUserMessage(message, sessionState = null) {
     const res = await this._processUserMessageInternal(message, sessionState);

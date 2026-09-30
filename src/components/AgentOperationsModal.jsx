@@ -55,6 +55,9 @@ export default function AgentOperationsModal({
       className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in font-body"
     >
       <div 
+        role="dialog"
+        aria-modal="true"
+        aria-label="חמ״ל מבצעי ותרחישי חירום"
         className="w-full max-w-xl glass-panel rounded-3xl p-6 shadow-2xl text-zinc-100 relative overflow-hidden space-y-5 max-h-[90vh] overflow-y-auto no-scrollbar"
         dir="rtl"
         style={{ borderColor: 'var(--border-accent)' }}

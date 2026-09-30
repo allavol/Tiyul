@@ -10,6 +10,8 @@ import { calculateHaversineDistanceKm } from '../../utils/geoUtils.js';
 
 /**
  * Generate a contextual What-If crisis scenario tailored to a specific site
+ * @param {Object} [site] - Target hiking site asset
+ * @returns {{hazard: string, hazardType: string, label: string, prompt: string}}
  */
 export function getSiteHazardScenario(site) {
   if (!site) {
@@ -123,6 +125,11 @@ export function getSiteHazardScenario(site) {
 
 /**
  * Handle interactive What-If scenario simulation tailored to the selected or requested site
+ * @param {string} message - User What-If input trigger
+ * @param {Object} sessionState - Current session state
+ * @param {Array<Object>} assetsData - Master hiking assets catalog
+ * @param {Object} fallbackState - Fresh fallback state if session is uninitialized
+ * @returns {{text: string, state: Object, options: Array<{label: string, value: string}>, proposals: Array<Object>, toolActivity: Object}}
  */
 export function handleWhatIfScenario(message, sessionState, assetsData, fallbackState) {
   const text = message.toLowerCase();

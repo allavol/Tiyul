@@ -62,6 +62,8 @@ export const DYNAMIC_CITY_CACHE = new Map();
 
 /**
  * Resolve city coordinates with $0 open fallback (Nominatim OpenStreetMap)
+ * @param {string} name - City or location name in Hebrew
+ * @returns {Promise<{label: string, lat: number, lng: number, region: string, regionLabel: string} | null>}
  */
 export async function geocodeCity(name) {
   if (!name || typeof name !== 'string') return null;
@@ -121,6 +123,9 @@ export async function geocodeCity(name) {
 
 /**
  * Filter candidates by geographic boundaries or distance radius
+ * @param {Array<Object>} candidates - Candidate hiking site assets
+ * @param {Object} state - Current conversational session state
+ * @returns {Array<Object>} Filtered candidate assets
  */
 export function filterCandidatesByGeo(candidates, state) {
   return candidates.filter((site) => {

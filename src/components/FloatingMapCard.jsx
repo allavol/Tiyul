@@ -16,6 +16,7 @@ import {
 import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar, getSafeAlternatives } from '../utils/weatherUtils';
 import { WeatherService } from '../services/WeatherService';
 import { getDriveTimeFromTelAviv } from '../services/osrmService';
+import { getSiteImageUrl } from '../utils/siteImages';
 import assetsData from '../../assets_db.json';
 
 /**
@@ -246,7 +247,32 @@ export default function FloatingMapCard({
   return (
     <div className="fixed top-24 left-3 right-3 sm:absolute sm:top-24 sm:left-5 sm:right-auto sm:w-[370px] z-[1300] glass-panel p-0 rounded-3xl shadow-2xl text-zinc-100 animate-floating-card font-body select-none pointer-events-auto max-h-[85vh] overflow-y-auto no-scrollbar" style={{ borderColor: 'var(--border-accent)' }}>
 
-      {/* ── Header: Name + Region + Close ────────────────────── */}
+      {/* ── Visual Banner (Wikimedia / Open Nature Photo - Finding L2) ───── */}
+      <div className="relative w-full h-36 overflow-hidden rounded-t-3xl bg-zinc-900">
+        <img
+          src={getSiteImageUrl(asset)}
+          alt={asset.name}
+          className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-deep via-brand-deep/20 to-transparent" />
+        <button
+          onClick={onClose}
+          className="absolute top-3 left-3 p-1.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition z-10"
+        >
+          <X size={16} />
+        </button>
+        <div className="absolute bottom-2 right-3 left-3 flex items-center justify-between">
+          <span className="text-[10px] font-mono font-bold text-zinc-300 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
+            {asset.authority_id || 'VERIFIED'}
+          </span>
+          <span className="text-[10px] font-bold text-accent bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-accent/30">
+            {asset.region}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Header: Name + Region + Drive Time ────────────────────── */}
       <div className="p-4 pb-3 flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
           <div className="data-badge teal flex-shrink-0">
@@ -258,10 +284,6 @@ export default function FloatingMapCard({
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] text-accent font-bold uppercase tracking-wider">{asset.region}</span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-[10px] font-mono font-bold text-accent/70 bg-accent/[0.08] px-1.5 py-0.5 rounded border border-accent/20">
-                {asset.authority_id || 'VERIFIED'}
-              </span>
               {driveTime && (
                 <>
                   <span className="text-zinc-600">•</span>
@@ -273,13 +295,6 @@ export default function FloatingMapCard({
             </div>
           </div>
         </div>
-
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-200 transition flex-shrink-0"
-        >
-          <X size={16} />
-        </button>
       </div>
 
       {/* ── Water Advisory Banner (if exists) ─────────────────── */}

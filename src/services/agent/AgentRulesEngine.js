@@ -9,6 +9,10 @@
 
 /**
  * Rank candidates by feature preference, proximity, age suitability, and keyword boosts
+ * @param {Array<Object>} candidates - List of candidate hiking site assets
+ * @param {Object} state - Current conversational session state
+ * @param {string} [rawText=''] - Raw user message text
+ * @returns {Array<Object>} Sorted list of ranked candidates
  */
 export function rankCandidates(candidates, state, rawText = '') {
   const targetAge = Number(state.minAge) || 4;
@@ -100,6 +104,11 @@ export function rankCandidates(candidates, state, rawText = '') {
 
 /**
  * Select diverse top candidates preventing repetitive single-cluster recommendations
+ * @param {Array<Object>} candidates - Ranked candidate sites
+ * @param {Object} state - Current conversational session state
+ * @param {string} [rawText=''] - Raw user message text
+ * @param {number} [limit=3] - Maximum number of diverse proposals to return
+ * @returns {Array<Object>} Diverse selection of top candidate sites
  */
 export function selectDiverseTopCandidates(candidates, state, rawText = '', limit = 3) {
   const activeSubRegion = state.subRegionKeyword || (
@@ -155,6 +164,10 @@ export function selectDiverseTopCandidates(candidates, state, rawText = '', limi
 
 /**
  * Generate gentle, polite clarification prompt with quick-reply buttons
+ * @param {string} targetField - Target missing parameter ('region' | 'timing' | 'minAge' | 'feature')
+ * @param {Object} state - Current conversational session state
+ * @param {Array<string>} allMissing - All missing mandatory parameters
+ * @returns {{text: string, state: Object, options: Array<{label: string, value: string, field: string}>, proposals: Array, toolActivity: null}}
  */
 export function generateClarificationResponse(targetField, state, allMissing) {
   let text = '';
@@ -229,6 +242,10 @@ export function generateClarificationResponse(targetField, state, allMissing) {
 
 /**
  * Build explainable rationale (XAI) for site cards
+ * @param {Object} site - Candidate site asset
+ * @param {Object} state - Current conversational session state
+ * @param {Object} [weather] - Weather telemetry object
+ * @returns {string} Human-readable Hebrew explainable rationale string
  */
 export function buildRationale(site, state, weather) {
   const parts = [];
