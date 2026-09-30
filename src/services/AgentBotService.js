@@ -141,9 +141,9 @@ export class AgentBotService {
         text: guardrail.refusal,
         state: sessionState || this.getInitialState(),
         options: [
-          { label: '🌲 טיול מוצל בצפון', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
-          { label: '💧 מסלול מים במרכז', value: 'מחפש מסלול מים במרכז להיום' },
-          { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש לעגלות בסוף השבוע' },
+          { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
+          { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
+          { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש וקל לעגלות' },
         ],
         proposals: [],
         toolActivity: null,

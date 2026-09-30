@@ -99,8 +99,8 @@ export default function AgentChatBot({
       options: [
         { label: '🎲 הפתע אותי!', value: 'הפתע אותי עם מסלול טיול מומלץ ומותאם להיום' },
         { label: '🏞️ טיול מים בצפון למחר (גיל 4+)', value: 'אני רוצה לטייל מחר בצפון עם ילדים קטנים בני 4, מחפשים מסלול מים' },
-        { label: '👶 טיול עגלות מוצל בשרון (0+)', value: 'מחפשים מסלול נגיש לעגלות מוצל בשרון לסוף השבוע לתינוק 0+' },
-        { label: '🏰 טיול נוף ומבצרים בירושלים (6+)', value: 'מחפשים טיול נוף ועתיקות באזור ירושלים בסוף השבוע לילד בן 6' },
+        { label: '👶 טיול עגלות מוצל בשרון (0+)', value: 'מחפשים מסלול נגיש לעגלות מוצל בשרון לתינוק 0+' },
+        { label: '🏰 טיול נוף ומבצרים בירושלים (6+)', value: 'מחפשים טיול נוף ועתיקות בירושלים לילד בן 6' },
       ],
       proposals: [],
       toolActivity: null,
@@ -112,7 +112,13 @@ export default function AgentChatBot({
       const saved = localStorage.getItem(CHAT_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Keep welcome options in sync with latest definitions
+          if (parsed[0]?.id === 'welcome') {
+            parsed[0].options = defaultWelcomeMessages[0].options;
+          }
+          return parsed;
+        }
       }
     } catch (e) {}
     return defaultWelcomeMessages;
