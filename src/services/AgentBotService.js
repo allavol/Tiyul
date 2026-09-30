@@ -410,10 +410,24 @@ export class AgentBotService {
       ? structuredClone(assetsData)
       : JSON.parse(JSON.stringify(assetsData));
 
-    // 1. Filter candidates by geography / distance, age, and stroller
+    // 1. Filter candidates by geography / distance, age, stroller, and water exclusion
     let candidates = filterCandidatesByGeo(clonedAssets, state).filter((site) => {
       if (site.min_age > targetAge) return false;
       if (targetAge === 0 && !site.stroller_accessible && site.min_age > 0) return false;
+      if (state.excludeWater || state.feature === 'dry') {
+        const types = (site.type || []).join(' ') + ' ' + (site.name || '');
+        if (
+          types.includes('מים') ||
+          types.includes('שכשוך') ||
+          types.includes('מעיין') ||
+          types.includes('בריכ') ||
+          site.name.includes('עין ') ||
+          site.name.includes('מעיין') ||
+          site.name.includes('נחל')
+        ) {
+          return false;
+        }
+      }
       return true;
     });
 

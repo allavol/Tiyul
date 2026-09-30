@@ -626,24 +626,52 @@ export function extractParameters(message, currentState) {
     updated.maxDistanceKm = 50;
   }
 
-  // 3. Feature extraction
+  // 3. Feature extraction with negation awareness
+  const isNoWater = (
+    text.includes('בלי מים') ||
+    text.includes('ללא מים') ||
+    text.includes('לא מים') ||
+    text.includes('שלא יהיה מים') ||
+    text.includes('ללא הליכה במים') ||
+    text.includes('בלי להירטב') ||
+    text.includes('בלי להרטב') ||
+    text.includes('לא להירטב') ||
+    text.includes('לא להרטב') ||
+    text.includes('ללא שכשוך') ||
+    text.includes('בלי שכשוך') ||
+    text.includes('בלי מעיין') ||
+    text.includes('ללא מעיין') ||
+    text.includes('בלי מעיינות') ||
+    text.includes('ללא מעיינות') ||
+    text.includes('מסלול יבש') ||
+    text.includes('טיול יבש') ||
+    text.includes('רק יבש') ||
+    text.includes('יבש בלבד')
+  );
+
+  if (isNoWater) {
+    updated.excludeWater = true;
+  }
+
   if (
-    text.includes('הליכה במים') || text.includes('הלחכה במים') || text.includes('בתוך המים') ||
-    text.includes('מסלול מים') || text.includes('מים') || text.includes('רטוב') || text.includes('נחל זורם') ||
-    text.includes('מג\'רסה') || text.includes('מג׳רסה') || text.includes('מגרסה') ||
-    text.includes('דליות') || text.includes('זאכי') || text.includes('שניר') || text.includes('תל דן')
+    !isNoWater && (
+      text.includes('הליכה במים') || text.includes('הלחכה במים') || text.includes('בתוך המים') ||
+      text.includes('מסלול מים') || text.includes('מים') || text.includes('רטוב') || text.includes('נחל זורם') ||
+      text.includes('מג\'רסה') || text.includes('מג׳רסה') || text.includes('מגרסה') ||
+      text.includes('דליות') || text.includes('זאכי') || text.includes('שניר') || text.includes('תל דן')
+    )
   ) {
     updated.feature = 'water';
     updated.featureLabel = 'הליכה בתוך המים';
-  } else if (text.includes('מעיין') || text.includes('בריכה') || text.includes('שכשוך') || text.includes('טבילה')) {
+  } else if (!isNoWater && (text.includes('מעיין') || text.includes('בריכה') || text.includes('שכשוך') || text.includes('טבילה'))) {
     updated.feature = 'spring';
     updated.featureLabel = 'מעיין / בריכת שכשוך';
   } else if (text.includes('סנפלינג') || text.includes('אתגרי') || text.includes('סולמות') || text.includes('יתדות') || text.includes('קניון אתגרי') || text.includes('מצוק')) {
     updated.feature = 'adventure';
-    updated.featureLabel = 'סנפלינג / מסלול אתגרי';
+    updated.featureLabel = isNoWater ? 'מסלול אתגרי (ללא מים)' : 'סנפלינג / מסלול אתגרי';
   } else if (text.includes('מוצל') || text.includes('צל') || text.includes('יער') || text.includes('חורש') || text.includes('עצים')) {
     updated.feature = 'shade';
-    updated.featureLabel = 'יער וחורש מוצל';
+    updated.featureLabel = isNoWater ? 'יער וחורש מוצל (ללא מים)' : 'יער וחורש מוצל';
   } else if (text.includes('כיסא גלגלים') || text.includes('כסא גלגלים') || text.includes('קשיש') || text.includes('קשישים') || text.includes('הליכון') || text.includes('מוגבלות') || text.includes('מוגבל בהליכה')) {
     updated.feature = 'stroller';
     updated.featureLabel = 'שביל סלול / נגיש (כיסא גלגלים)';
@@ -656,7 +684,10 @@ export function extractParameters(message, currentState) {
     updated.featureLabel = 'שביל סלול / נגיש לעגלות';
   } else if (text.includes('נוף') || text.includes('תצפית') || text.includes('פריחה') || text.includes('מבצר') || text.includes('עתיקות')) {
     updated.feature = 'view';
-    updated.featureLabel = 'תצפיות ונוף';
+    updated.featureLabel = isNoWater ? 'תצפיות ונוף (ללא מים)' : 'תצפיות ונוף';
+  } else if (isNoWater) {
+    updated.feature = 'dry';
+    updated.featureLabel = 'מסלול יבש (ללא מים)';
   }
 
   // 4. Youngest age extraction

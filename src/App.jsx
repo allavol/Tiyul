@@ -351,7 +351,7 @@ export default function App() {
       {/* Slide-out Catalog Drawer (Finding H2 & H5) */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-[1100] flex justify-start bg-black/40 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-[1100] flex justify-start bg-black/40 sm:bg-black/10 backdrop-blur-sm sm:backdrop-blur-none transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
           role="dialog"
           aria-modal="true"
@@ -377,9 +377,7 @@ export default function App() {
               onSelectAsset={(id) => {
                 setSelectedAssetId(id);
                 setShowNationalRadar(false);
-                if (window.innerWidth < 640) {
-                  setIsSidebarOpen(false);
-                }
+                setIsSidebarOpen(false);
               }}
               isProcessing={isProcessing}
               agentStatus={agentStatus}

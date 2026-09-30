@@ -409,18 +409,19 @@ export default function AgentChatBot({
                     {msg.proposals.map((prop) => {
                       const ageBadge = getAgeBadge(prop.min_age);
                       const fullAsset = assets.find((a) => a.id === prop.id) || prop;
-                      const isExpanded = !!expandedCards[prop.id];
+                      const cardKey = `${msg.id || 'msg'}-${prop.id}`;
+                      const isExpanded = !!expandedCards[cardKey];
 
                       return (
                         <div
-                          key={prop.id}
+                          key={cardKey}
                           className="w-full editorial-card p-3 rounded-2xl border transition-all duration-200 group"
                           style={{ borderColor: 'var(--border-accent)' }}
                         >
                           {/* Card Header (Always visible - compact & clickable) */}
                           <div className="flex items-center justify-between gap-2">
                             <div 
-                              onClick={() => toggleCardExpansion(prop.id)}
+                              onClick={() => toggleCardExpansion(cardKey)}
                               className="min-w-0 flex-1 cursor-pointer"
                             >
                               <div className="flex items-center gap-1.5 flex-wrap">
@@ -451,7 +452,7 @@ export default function AgentChatBot({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  toggleCardExpansion(prop.id);
+                                  toggleCardExpansion(cardKey);
                                 }}
                                 className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-zinc-300 hover:text-white transition flex items-center justify-center text-xs"
                                 title={isExpanded ? 'סגור פרטים' : 'פתח פרטים'}
@@ -483,7 +484,7 @@ export default function AgentChatBot({
                             </button>
 
                             <button
-                              onClick={() => toggleCardExpansion(prop.id)}
+                              onClick={() => toggleCardExpansion(cardKey)}
                               className="py-1.5 px-2.5 bg-brand-deep/80 hover:bg-brand-deep text-zinc-300 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition"
                             >
                               {isExpanded ? (
