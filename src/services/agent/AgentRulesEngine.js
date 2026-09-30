@@ -95,8 +95,8 @@ export function rankCandidates(candidates, state, rawText = '') {
       if (bTypes.includes('יער') || bTypes.includes('חניון') || bTypes.includes('פארק') || bTypes.includes('חורש')) scoreB += 15;
     }
     if (state.concept === 'cool_haven') {
-      if (aTypes.includes('מערה') || aTypes.includes('חורש') || aTypes.includes('אלונים') || aTypes.includes('מוצל')) scoreA += 15;
-      if (bTypes.includes('מערה') || bTypes.includes('חורש') || bTypes.includes('אלונים') || bTypes.includes('מוצל')) scoreB += 15;
+      if (aTypes.includes('מער') || aTypes.includes('גוברין') || aTypes.includes('חורש') || aTypes.includes('אלונים') || aTypes.includes('מוצל')) scoreA += 25;
+      if (bTypes.includes('מער') || bTypes.includes('גוברין') || bTypes.includes('חורש') || bTypes.includes('אלונים') || bTypes.includes('מוצל')) scoreB += 25;
     }
     if (state.concept === 'wildlife') {
       if (aTypes.includes('צפרות') || aTypes.includes('אגם') || aTypes.includes('עופות') || a.name.includes('צבאים') || a.name.includes('גמלא') || a.name.includes('ציפורי ירושלים')) scoreA += 20;

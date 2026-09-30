@@ -549,6 +549,94 @@ await runTest('Edge Case 31: Out-of-Scope Political Inquiry Defense', async () =
   assert.ok(res.text.includes('סוכן הטיולים') || res.text.includes('לאן נטייל') || res.text.includes('לטייל'), 'Should redirect to hiking in Israel');
 });
 
+// ── Test 32: Water Negation & Zero-Water Constraint ("בלי מים") ───────
+await runTest('Edge Case 32: Water Negation & Zero-Water Constraint ("מחר בצפון ילד בן 5 בלי מים")', async () => {
+  const res = await AgentBotService.processUserMessage('מחר בצפון ילד בן 5 בלי מים');
+  assert.strictEqual(res.state.excludeWater, true, 'excludeWater state flag must be true');
+  assert.strictEqual(res.state.feature, 'dry', 'Feature should be dry');
+  assert.strictEqual(res.state.region, 'north', 'Region should be north');
+  assert.strictEqual(res.state.exactAge, 5, 'exactAge should be 5');
+  assert.strictEqual(res.state.minAge, 4, 'minAge tier should be 4 (matches 4+ category)');
+  assert.ok(res.proposals.length > 0, 'Should return dry/terrestrial proposals');
+
+  // Verify STRICT exclusion of any water, spring or stream site
+  for (const prop of res.proposals) {
+    const isWaterSite = prop.features?.water || prop.features?.spring || 
+                        prop.name.includes('תנינים') || prop.name.includes('שוקק') || 
+                        prop.name.includes('מודע') || prop.name.includes('דן');
+    assert.strictEqual(isWaterSite, false, `Site ${prop.name} is a water site and must NOT be returned for 'בלי מים' query`);
+  }
+});
+
+// ── Test 33: Outdoor Picnicking & Coffee Kit ("פק\"ל קפה ומחצלת") ──────
+await runTest('Edge Case 33: Outdoor Picnicking & Coffee Kit ("פק\\"ל קפה ומחצלת בשבת בצפון לילד בן 5")', async () => {
+  const res = await AgentBotService.processUserMessage('פק"ל קפה ומחצלת בשבת בצפון לילד בן 5');
+  assert.strictEqual(res.state.concept, 'picnic', 'Concept should be picnic');
+  assert.strictEqual(res.state.feature, 'shade', 'Feature should be shade');
+  assert.ok(res.proposals.length > 0, 'Should return picnic-friendly park proposals');
+  // Top proposals should favor shaded picnic forests (Park Goren, Birya, etc.)
+  const hasPicnicPark = res.proposals.some(p => p.name.includes('גורן') || p.name.includes('ביריה') || p.features?.shade);
+  assert.ok(hasPicnicPark, 'Proposals must include shaded picnic forests');
+});
+
+// ── Test 34: Extreme Heat & Cool Haven ("חם אימים שלא נתבשל") ────────
+await runTest('Edge Case 34: Extreme Heat & Cool Haven ("חם בחוץ אימים שלא נתבשל מערה קרירה בירושלים להיום לילד בן 6")', async () => {
+  const res = await AgentBotService.processUserMessage('חם בחוץ אימים שלא נתבשל מערה קרירה בירושלים להיום לילד בן 6');
+  assert.strictEqual(res.state.concept, 'cool_haven', 'Concept should be cool_haven');
+  assert.strictEqual(res.state.feature, 'shade', 'Feature should be shade');
+  assert.ok(res.proposals.length > 0, 'Should return proposals');
+  // Beit Guvrin caves are the ultimate cool haven in the Jerusalem/Shephelah area
+  const hasBeitGuvrin = res.proposals.some(p => p.id === 105 || p.name.includes('בית גוברין'));
+  assert.ok(hasBeitGuvrin, 'Beit Guvrin cave haven must be proposed for cool shelter');
+});
+
+// ── Test 35: High Intensity & Extreme Hikes ("לשרוף שרירים") ──────────
+await runTest('Edge Case 35: High Intensity & Adventure ("בא לי לשרוף שרירים בהרים להיום")', async () => {
+  const res = await AgentBotService.processUserMessage('בא לי לשרוף שרירים בהרים להיום');
+  assert.strictEqual(res.state.feature, 'adventure', 'Feature must be adventure');
+  assert.ok(res.state.minAge >= 10, 'minAge must be at least 10 for burning muscles');
+});
+
+// ── Test 36: Multi-Generational Senior Walk ("סבא וסבתא בלי מדרגות") ──
+await runTest('Edge Case 36: Multi-Generational Senior Walk ("סבא וסבתא בלי מדרגות במרכז להיום")', async () => {
+  const res = await AgentBotService.processUserMessage('טיול עם סבא וסבתא בלי מדרגות במרכז להיום');
+  assert.strictEqual(res.state.feature, 'stroller', 'Feature must be stroller / accessible');
+  assert.strictEqual(res.state.minAge, 0, 'minAge must be 0 (gentle flat walking)');
+  assert.strictEqual(res.state.wheelchairNote, true, 'wheelchairNote flag must be true');
+});
+
+// ── Test 37: Sunset & Panoramic Viewpoints ("לתפוס שקיעה") ─────────────
+await runTest('Edge Case 37: Sunset & Panoramic Viewpoints ("לתפוס שקיעה רומנטית בצפון היום")', async () => {
+  const res = await AgentBotService.processUserMessage('לתפוס שקיעה רומנטית בצפון היום');
+  assert.strictEqual(res.state.concept, 'sunset', 'Concept must be sunset');
+  assert.strictEqual(res.state.feature, 'view', 'Feature must be view');
+});
+
+// ── Test 38: Wildlife & Birdwatching ("לראות חיות בר וציפורים") ───────
+await runTest('Edge Case 38: Wildlife & Birdwatching ("לראות חיות בר וציפורים בירושלים היום לילד בן 5")', async () => {
+  const res = await AgentBotService.processUserMessage('לראות חיות בר וציפורים בירושלים היום לילד בן 5');
+  assert.strictEqual(res.state.concept, 'wildlife', 'Concept must be wildlife');
+  assert.strictEqual(res.state.feature, 'view', 'Feature must be view');
+  const hasWildlifeSite = res.proposals.some(p => p.id === 212 || p.name.includes('צפרות') || p.name.includes('צבאים'));
+  assert.ok(hasWildlifeSite, 'Should recommend Jerusalem bird observatory / deer valley');
+});
+
+// ── Test 39: History, Heritage & Castles ("עתיקות ומבצר עתיק") ─────────
+await runTest('Edge Case 39: History, Heritage & Castles ("עתיקות ומבצר עתיק בצפון בשבת לילד בן 8")', async () => {
+  const res = await AgentBotService.processUserMessage('עתיקות ומבצר עתיק בצפון בשבת לילד בן 8');
+  assert.strictEqual(res.state.concept, 'history', 'Concept must be history');
+  assert.strictEqual(res.state.feature, 'view', 'Feature must be view');
+  assert.ok(res.proposals.length > 0, 'Should return historical proposals');
+});
+
+// ── Test 40: Solitude & Quiet Nature ("פינה שקטה בלי המונים") ─────────
+await runTest('Edge Case 40: Solitude & Quiet Nature ("פינה שקטה בלי המונים במרכז להיום לילד בן 7")', async () => {
+  const res = await AgentBotService.processUserMessage('פינה שקטה בלי המונים במרכז להיום לילד בן 7');
+  assert.strictEqual(res.state.concept, 'quiet', 'Concept must be quiet');
+  assert.strictEqual(res.state.feature, 'view', 'Feature must be view');
+  assert.ok(res.proposals.length > 0, 'Should return quiet nature proposals');
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);

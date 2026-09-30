@@ -97,6 +97,65 @@ describe('AgentNLUParser Unit Tests', () => {
     expect(parsed.feature).toBe('water');
     expect(parsed.minAge).toBe(4);
   });
+
+  it('correctly detects water negation and dry intent', () => {
+    const noWaterPhrases = [
+      'מחר בצפון ילד בן 5 בלי מים',
+      'טיול ללא מים במרכז',
+      'מסלול יבש באדמה',
+      'רוצים לטייל שלא נרטב',
+      'שביל יבש ביבשה ללא שכשוך',
+      'טיול באדמה בלי מעיינות'
+    ];
+    for (const phrase of noWaterPhrases) {
+      const parsed = extractParameters(phrase, {});
+      expect(parsed.excludeWater).toBe(true);
+      expect(parsed.feature).toBe('dry');
+    }
+  });
+
+  it('correctly maps Israeli colloquial slang and metaphors to semantic concepts', () => {
+    // 1. Picnic & Coffee
+    const picnic = extractParameters('מקום מושלם לפק"ל קפה ומחצלת', {});
+    expect(picnic.concept).toBe('picnic');
+    expect(picnic.feature).toBe('shade');
+
+    // 2. Cool Haven & Heat
+    const cool = extractParameters('חם אימים בחוץ שלא נתבשל מחפשים מערה קרירה', {});
+    expect(cool.concept).toBe('cool_haven');
+    expect(cool.feature).toBe('shade');
+
+    // 3. High-Intensity & Adventure
+    const intense = extractParameters('בא לי לשרוף שרירים וטרק קשוח', {});
+    expect(intense.feature).toBe('adventure');
+    expect(intense.minAge).toBeGreaterThanOrEqual(10);
+
+    // 4. Seniors & Gentle walk
+    const senior = extractParameters('טיול עם סבא וסבתא בלי מדרגות', {});
+    expect(senior.feature).toBe('stroller');
+    expect(senior.minAge).toBe(0);
+    expect(senior.wheelchairNote).toBe(true);
+
+    // 5. Wildlife
+    const wildlife = extractParameters('רוצים לראות חיות בר וצפרות', {});
+    expect(wildlife.concept).toBe('wildlife');
+
+    // 6. Blooming
+    const blooming = extractParameters('איפה ירוק עכשיו ומרבדי כלניות', {});
+    expect(blooming.concept).toBe('blooming');
+
+    // 7. Sunset
+    const sunset = extractParameters('לתפוס שקיעה רומנטית מול הים', {});
+    expect(sunset.concept).toBe('sunset');
+
+    // 8. History & Heritage
+    const history = extractParameters('סיפורי עתיקות ומבצר עתיק', {});
+    expect(history.concept).toBe('history');
+
+    // 9. Quiet & Solitude
+    const quiet = extractParameters('פינה שקטה בלי הרבה אנשים ובלי המונים', {});
+    expect(quiet.concept).toBe('quiet');
+  });
 });
 
 describe('AgentCrisisEngine Unit Tests', () => {

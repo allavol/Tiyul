@@ -773,13 +773,11 @@ export function extractParameters(message, currentState) {
     updated.featureLabel = 'שביל סלול / נגיש ונוח להליכה';
     updated.minAge = 0;
     updated.minAgeLabel = 'שבילים סלולים ונוחים';
-    if (text.includes('קשיש') || text.includes('קשישים') || text.includes('הליכון') || text.includes('כיסא גלגלים') || text.includes('כסא גלגלים')) {
-      updated.wheelchairNote = true;
-    }
+    updated.wheelchairNote = true;
   } else if (isIntenseHikeIntent) {
     updated.feature = 'adventure';
     updated.featureLabel = 'מסלול אתגרי למיטיבי לכת';
-    if (updated.minAge === null || updated.minAge < 10) {
+    if (updated.minAge == null || updated.minAge < 10) {
       updated.minAge = 10;
       updated.minAgeLabel = '10+ (נוער ומבוגרים)';
     }

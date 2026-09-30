@@ -134,7 +134,7 @@ export function filterCandidatesByGeo(candidates, state) {
     if (state.region && state.region !== 'all' && state.region !== 'radius') {
       if (state.region === 'north' && site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
       if (state.region === 'center' && site.region_group !== 'center') return false;
-      if (state.region === 'jerusalem' && site.region_group !== 'jerusalem') return false;
+      if (state.region === 'jerusalem' && site.region_group !== 'jerusalem' && site.region !== 'שפלת יהודה') return false;
       if (state.region === 'south' && site.region_group !== 'south') return false;
     }
 
