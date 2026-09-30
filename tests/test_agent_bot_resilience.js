@@ -484,24 +484,40 @@ await runTest('Edge Case 27: Contextual What-If tailored to selected sites', asy
   assert.ok(floodRes.text.includes('עין גדי'), 'Response should mention Ein Gedi');
   assert.ok(floodRes.proposals.length > 0, 'Should return Safe Haven proposal');
   assert.ok([105, 211].includes(floodRes.proposals[0].id), `Should route Ein Gedi flood to Safe Haven 105 or 211 (got ${floodRes.proposals[0].id})`);
+
+  // 4. Verify What-If for Nahal Taninim routes to nearby Ramat HaNadiv (3.9 km) and NOT Zippori (42 km)
+  const taninimRes = await AgentBotService.processUserMessage('מה אם יש שיטפון פתאומי בשמורת טבע נחל תנינים?');
+  assert.ok(taninimRes.text.includes('תנינים'), 'Response should mention Taninim');
+  assert.ok(taninimRes.proposals.length > 0, 'Should return Safe Haven proposal');
+  assert.strictEqual(taninimRes.proposals[0].id, 109, `Should route Taninim to Ramat HaNadiv (id 109), got ${taninimRes.proposals[0].id} (${taninimRes.proposals[0].name})`);
+  assert.ok(taninimRes.proposals[0].name.includes('רמת הנדיב'), 'Proposal name must be Ramat HaNadiv');
+  assert.ok(taninimRes.options.every(o => !o.label.includes('What-If')), 'After What-If occurs, options must not contain redundant secondary What-If');
 });
 
 // ── Test 28: Grounding & Non-Existent Local Springs (Petah Tikva Test) ─
-await runTest('Edge Case 28: Petah Tikva springs inquiry (Zero Hallucination & Step Flow)', async () => {
+await runTest('Edge Case 28: Petah Tikva springs inquiry (50km Default Radius & Proximity Notice)', async () => {
   // Step 1: User asks for springs in Petah Tikva for 4yo child without specifying timing
   const step1 = await AgentBotService.processUserMessage('רוצה מסלול הליכה בתוך מעיינות ונחלים זורמים בפתח תקווה עם צל ומפלים לילד בן 4');
   assert.strictEqual(step1.state.minAge, 4, 'Should extract age 4');
   assert.strictEqual(step1.state.feature, 'water', 'Should extract water feature');
+  assert.strictEqual(step1.state.originCity, 'פתח תקווה', 'Should extract originCity as Petah Tikva');
+  assert.strictEqual(step1.state.maxDistanceKm, 50, 'Default radius should automatically be 50 km for city input');
   assert.strictEqual(step1.proposals.length, 0, 'Should not propose sites before timing is resolved');
   assert.ok(step1.text.includes('מתי'), 'Should ask when the user plans to hike');
 
   // Step 2: User answers 'היום'
   const step2 = await AgentBotService.processUserMessage('היום', step1.state);
   assert.ok(step2.proposals.length > 0, 'Should produce recommendations');
-  // Verify all proposals are authentic verified sites and match age <= 4
+  // Verify polite city absence disclaimer and drive time in response text
+  assert.ok(step2.text.includes('אמנם אין מעיינות או נחלים זורמים בפתח תקווה עצמה'), `Response must acknowledge no in-city springs in Petah Tikva, got: ${step2.text}`);
+  assert.ok(step2.text.includes('ברדיוס של עד 50 ק"מ'), `Response must state 50 km radius search, got: ${step2.text}`);
+  assert.ok(step2.text.includes('דקות נסיעה'), `Response must provide estimated drive time, got: ${step2.text}`);
+
+  // Verify all proposals are authentic verified sites within 50 km and match age <= 4
   for (const prop of step2.proposals) {
     assert.ok(prop.min_age <= 4, `Site ${prop.name} min_age ${prop.min_age} must be <= 4`);
     assert.strictEqual(prop.name.includes('פתח תקווה'), false, 'Must not hallucinate a fake spring in Petah Tikva');
+    assert.ok(prop.matchRationale.includes('דק\' נסיעה מפתח תקווה') || prop.matchRationale.includes('שע\''), 'Rationale must include drive time from Petah Tikva');
   }
 });
 

@@ -416,19 +416,6 @@ export default function AgentChatBot({
                             </a>
                           </div>
 
-                          {/* Site-Specific What-If Crisis Simulation Button */}
-                          <button
-                            onClick={() => {
-                              const siteScenario = AgentBotService.getSiteHazardScenario(prop);
-                              handleSendMessage(siteScenario.prompt);
-                            }}
-                            className="w-full py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 border border-red-500/20 active:scale-[0.98] font-bold text-[10.5px] rounded-lg flex items-center justify-center gap-1.5 transition shadow-sm"
-                            title={`הפעל תרחיש חירום What-If ספציפי עבור ${prop.name}`}
-                          >
-                            <AlertTriangle className="w-3 h-3 text-red-400 flex-shrink-0" />
-                            <span>תרחיש חירום What-If באתר זה 🚨</span>
-                          </button>
-
                           {/* Secondary Actions: Share / Copy & Coordinates */}
                           <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 pt-0.5">
                             <button
