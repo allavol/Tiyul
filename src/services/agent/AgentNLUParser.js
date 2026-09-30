@@ -626,27 +626,59 @@ export function extractParameters(message, currentState) {
     updated.maxDistanceKm = 50;
   }
 
-  // 3. Feature extraction with negation awareness
+  // 3. Feature extraction with negation and dry/land awareness
   const isNoWater = (
     text.includes('בלי מים') ||
     text.includes('ללא מים') ||
     text.includes('לא מים') ||
+    text.includes('רק לא מים') ||
+    text.includes('לא רוצים מים') ||
+    text.includes('לא מעוניינים במים') ||
+    text.includes('אין צורך במים') ||
+    text.includes('אין מים') ||
     text.includes('שלא יהיה מים') ||
+    text.includes('שלא יהיו מים') ||
     text.includes('ללא הליכה במים') ||
+    text.includes('בלי הליכה במים') ||
     text.includes('בלי להירטב') ||
     text.includes('בלי להרטב') ||
     text.includes('לא להירטב') ||
     text.includes('לא להרטב') ||
+    text.includes('שלא נרטב') ||
+    text.includes('שלא נרטבים') ||
     text.includes('ללא שכשוך') ||
     text.includes('בלי שכשוך') ||
+    text.includes('ללא טבילה') ||
+    text.includes('בלי טבילה') ||
     text.includes('בלי מעיין') ||
     text.includes('ללא מעיין') ||
     text.includes('בלי מעיינות') ||
     text.includes('ללא מעיינות') ||
+    text.includes('בלי נחלים') ||
+    text.includes('ללא נחלים') ||
+    text.includes('בלי בריכות') ||
+    text.includes('ללא בריכות') ||
     text.includes('מסלול יבש') ||
     text.includes('טיול יבש') ||
     text.includes('רק יבש') ||
-    text.includes('יבש בלבד')
+    text.includes('יבש בלבד') ||
+    text.includes('מסלולים יבשים') ||
+    text.includes('הליכה יבשה') ||
+    text.includes('שביל יבש') ||
+    text.includes('שבילים יבשים') ||
+    text.includes('באדמה') ||
+    text.includes('על הקרקע') ||
+    text.includes('על האדמה') ||
+    text.includes('שביל אדמה') ||
+    text.includes('שבילי אדמה') ||
+    text.includes('מסלול באדמה') ||
+    text.includes('טיול באדמה') ||
+    text.includes('ביבשה') ||
+    text.includes('הליכה ביבשה') ||
+    /(?:^|[^\u0590-\u05fe])יבש(?=[^\u0590-\u05fe]|$)/.test(text) ||
+    /(?:^|[^\u0590-\u05fe])יבשים(?=[^\u0590-\u05fe]|$)/.test(text) ||
+    /(?:^|[^\u0590-\u05fe])יבשה(?=[^\u0590-\u05fe]|$)/.test(text) ||
+    /(?:^|[^\u0590-\u05fe])באדמה(?=[^\u0590-\u05fe]|$)/.test(text)
   );
 
   if (isNoWater) {
