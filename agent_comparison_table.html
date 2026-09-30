@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>השוואה ארכיטקטונית: מנוע חיפוש vs צ'אטבוט vs סוכן אוטונומי</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-emerald: #10b981;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.14) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(30, 58, 138, 0.18) 0px, transparent 50%);
+      background-attachment: fixed;
+      font-family: 'Heebo', sans-serif;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    /* Header styling */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #34d399;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+
+    .badge-pill .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #34d399;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #34d399;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .title {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ffffff 0%, #d1d5db 50%, #9ca3af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto;
+      font-weight: 400;
+    }
+
+    /* Comparison Table Container */
+    .table-wrapper {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+    }
+
+    /* Table Headers */
+    thead th {
+      padding: 24px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .th-feature {
+      width: 22%;
+      color: var(--text-dim);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .th-legacy {
+      width: 25%;
+      color: #9ca3af;
+      background: rgba(255, 255, 255, 0.015);
+      border-right: 1px solid var(--card-border);
+    }
+
+    .th-chatbot {
+      width: 25%;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.02);
+      border-right: 1px solid var(--card-border);
+    }
+
+    .th-agent {
+      width: 28%;
+      color: #ffffff;
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.08) 100%);
+      border-right: 1px solid rgba(16, 185, 129, 0.35);
+      position: relative;
+    }
+
+    .th-agent::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10b981, #06b6d4);
+    }
+
+    .header-card-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-tag {
+      font-size: 11px;
+      font-weight: 500;
+      opacity: 0.75;
+    }
+
+    .tag-featured {
+      display: inline-block;
+      align-self: flex-start;
+      margin-top: 4px;
+      padding: 3px 10px;
+      background: linear-gradient(90deg, #10b981, #059669);
+      color: #ffffff;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Table Rows */
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background-color 0.2s ease;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody td {
+      padding: 18px 20px;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    /* Dimension title column */
+    .td-feature {
+      font-weight: 700;
+      color: #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feature-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    /* Legacy Search Column */
+    .td-legacy {
+      color: #9ca3af;
+      border-right: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    /* Standard Chatbot Column */
+    .td-chatbot {
+      color: #cbd5e1;
+      border-right: 1px solid var(--card-border);
+      background: rgba(59, 130, 246, 0.015);
+    }
+
+    /* GeoGuard Autonomous Agent Column */
+    .td-agent {
+      color: #ffffff;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.04);
+      border-right: 1px solid rgba(16, 185, 129, 0.25);
+      position: relative;
+    }
+
+    .agent-cell-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .check-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #34d399;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .cross-icon {
+      color: #f43f5e;
+      font-weight: bold;
+      margin-left: 6px;
+    }
+
+    .neutral-icon {
+      color: #f59e0b;
+      font-weight: bold;
+      margin-left: 6px;
+    }
+
+    /* Footer Banner */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 18px 24px;
+      background: rgba(10, 15, 29, 0.9);
+      border-top: 1px solid var(--card-border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      color: #38bdf8;
+      font-size: 12px;
+    }
+
+    .btn-print {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Heebo', sans-serif;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-print:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+      }
+      .table-wrapper {
+        border: 1px solid #cccccc !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+      }
+      .btn-print {
+        display: none !important;
+      }
+      .title {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Header -->
+    <div class="header">
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        <span>NEURO-SYMBOLIC AGENTIC ARCHITECTURE</span>
+      </div>
+      <h1 class="title">מדוע המערכת סוכנית? השוואה ארכיטקטונית מנצחת</h1>
+      <p class="subtitle">השוואה מקיפה בין מנועי חיפוש מסורתיים, צ'אטבוטים גנרטיביים מנותקים, לבין סוכן קבלת ההחלטות האוטונומי של הפרויקט</p>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="th-feature">ממד ארכיטקטוני</th>
+            <th class="th-legacy">
+              <div class="header-card-inner">
+                <span class="header-title">🔍 מנוע חיפוש רגיל</span>
+                <span class="header-tag">SQL / Scripted Filters</span>
+              </div>
+            </th>
+            <th class="th-chatbot">
+              <div class="header-card-inner">
+                <span class="header-title">💬 צ'אטבוט גנרטיבי</span>
+                <span class="header-tag">Standard LLM / ChatGPT</span>
+              </div>
+            </th>
+            <th class="th-agent">
+              <div class="header-card-inner">
+                <span class="header-title">🧭 הסוכן האוטונומי (שלנו)</span>
+                <span class="header-tag">Autonomous Neuro-Symbolic Agent</span>
+                <span class="tag-featured">המערכת שפותחה בפרויקט ★</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Row 1 -->
+          <tr>
+            <td>
+              <div class="td-feature">
+                <div class="feature-icon-box">💬</div>
+                <span>ממשק ואינטראקציה</span>
+              </div>
+            </td>
+            <td class="td-legacy">
+              <span class="cross-icon">✕</span> טפסים, דרופדאונים וכפתורים קשיחים
+            </td>
+            <td class="td-chatbot">
+              <span class="neutral-icon">~</span> שיחה חופשית, אך פסיבית וחד-כיוונית
+            </td>
+            <td class="td-agent">
+              <div class="agent-cell-content">
+                <span class="check-icon">✓</span>
+                <span><strong>דיאלוג שיחתי גמיש מונחה-מטרה</strong> (Goal-Driven State Machine בעברית)</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2 -->
+          <tr>
+            <td>
+              <div class="td-feature">
+                <div class="feature-icon-box">🎯</div>
+                <span>איסוף מידע ותשאול</span>
+              </div>
+            </td>
+            <td class="td-legacy">
+              <span class="cross-icon">✕</span> פסיבי (ממתין להזנת כל השדות בטופס)
+            </td>
+            <td class="td-chatbot">
+              <span class="cross-icon">✕</span> מנחש או משלים על דעת עצמו
+            </td>
+            <td class="td-agent">
+              <div class="agent-cell-content">
+                <span class="check-icon">✓</span>
+                <span><strong>פרואקטיבי:</strong> מזהה בדיוק מה חסר ויוזם שאלות הבהרה ממוקדות</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3 -->
+          <tr>
+            <td>
+              <div class="td-feature">
+                <div class="feature-icon-box">📡</div>
+                <span>חישה מול העולם (Perception)</span>
+              </div>
+            </td>
+            <td class="td-legacy">
+              <span class="cross-icon">✕</span> נתונים סטטיים מראש בבסיס הנתונים
+            </td>
+            <td class="td-chatbot">
+              <span class="cross-icon">✕</span> מנותק מהמציאות (ידע קפוא מאימון ישן)
+            </td>
+            <td class="td-agent">
+              <div class="agent-cell-content">
+                <span class="check-icon">✓</span>
+                <span><strong>חישה סביבתית חיה:</strong> Tomorrow.io, רשות המים, התרעות שיטפון וזיהום</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4 -->
+          <tr>
+            <td>
+              <div class="td-feature">
+                <div class="feature-icon-box">🛡️</div>
+                <span>בטיחות ומניעת הזיות</span>
+              </div>
+            </td>
+            <td class="td-legacy">
+              <span class="neutral-icon">~</span> עיוור לתנאי שטח דינמיים ועומסי חום
+            </td>
+            <td class="td-chatbot">
+              <span class="cross-icon">✕</span> <strong>סכנת הזיות (Hallucinations):</strong> עלול לשלוח לשיטפון
+            </td>
+            <td class="td-agent">
+              <div class="agent-cell-content">
+                <span class="check-icon">✓</span>
+                <span><strong>Zero-Hallucination:</strong> שקלול מתמטי קשיח ומטריצת סיכונים פיזיקלית</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5 -->
+          <tr>
+            <td>
+              <div class="td-feature">
+                <div class="feature-icon-box">⚡</div>
+                <span>תגובה למשבר (What-If)</span>
+              </div>
+            </td>
+            <td class="td-legacy">
+              <span class="cross-icon">✕</span> לא קיים
+            </td>
+            <td class="td-chatbot">
+              <span class="cross-icon">✕</span> עצות טקסטואליות תיאורטיות ללא פעולה
+            </td>
+            <td class="td-agent">
+              <div class="agent-cell-content">
+                <span class="check-icon">✓</span>
+                <span><strong>Autonomous Re-Planning:</strong> פסילת אתר, מציאת Safe Haven וחישוב נתיב מילוט</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6 -->
+          <tr>
+            <td>
+              <div class="td-feature">
+                <div class="feature-icon-box">🎛️</div>
+                <span>הפעלת כלים (Tool Calling)</span>
+              </div>
+            </td>
+            <td class="td-legacy">
+              <span class="cross-icon">✕</span> אין הפעלת כלים
+            </td>
+            <td class="td-chatbot">
+              <span class="cross-icon">✕</span> יצירת טקסט בלבד
+            </td>
+            <td class="td-agent">
+              <div class="agent-cell-content">
+                <span class="check-icon">✓</span>
+                <span><strong>כלים אוטונומיים:</strong> Haversine, GIS Leaflet, Tomorrow.io, Waze ישיר</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 7 -->
+          <tr>
+            <td>
+              <div class="td-feature">
+                <div class="feature-icon-box">💡</div>
+                <span>הסברתיות (Explainable AI)</span>
+              </div>
+            </td>
+            <td class="td-legacy">
+              <span class="cross-icon">✕</span> רשימת פריטים גולמית
+            </td>
+            <td class="td-chatbot">
+              <span class="neutral-icon">~</span> קופסה שחורה ללא שקיפות לוגית
+            </td>
+            <td class="td-agent">
+              <div class="agent-cell-content">
+                <span class="check-icon">✓</span>
+                <span><strong>XAI Rationale:</strong> נימוק מלא בשפה טבעית לכל החלטת ניתוב והמלצה</span>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <!-- Table Footer Summary -->
+      <div class="table-footer">
+        <div class="footer-left">
+          <span class="footer-badge">NEURO-SYMBOLIC HYBRID</span>
+          <span>ארכיטקטורה המשלבת הבנת שפה טבעית עם כלים מתמטיים דטרמיניסטיים לבטיחות מקסימלית</span>
+        </div>
+        <button class="btn-print" onclick="window.print()">
+          <span>🖨️ הדפס / שמור כ-PDF למצגת</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

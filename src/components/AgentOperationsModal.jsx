@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   ShieldCheck, 
   Cpu, 
@@ -27,12 +27,33 @@ export default function AgentOperationsModal({
   isProcessing = false,
   agentLastDecision = ''
 }) {
+  // Close on Escape key press
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        onClose?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const isAlertState = agentStatus === 'ALERT_REROUTED';
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in font-body">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose?.();
+        }
+      }}
+      className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in font-body"
+    >
       <div 
         className="w-full max-w-xl glass-panel rounded-3xl p-6 shadow-2xl text-zinc-100 relative overflow-hidden space-y-5 max-h-[90vh] overflow-y-auto no-scrollbar"
         dir="rtl"
@@ -65,9 +86,11 @@ export default function AgentOperationsModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-100 transition"
+            title="סגור (Esc)"
+            aria-label="סגור חלון"
+            className="w-9 h-9 rounded-xl bg-white/[0.08] hover:bg-white/[0.18] text-zinc-300 hover:text-white border border-white/[0.1] hover:border-accent/40 flex items-center justify-center transition active:scale-95 shadow-md flex-shrink-0"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
