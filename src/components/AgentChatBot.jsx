@@ -21,7 +21,9 @@ import {
   Maximize2,
   Navigation,
   Copy,
-  Check
+  Check,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { AgentBotService } from '../services/AgentBotService';
 import { getCategoryIconChar, getAgeBadge } from '../utils/weatherUtils';
@@ -139,7 +141,15 @@ export default function AgentChatBot({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [expandedCards, setExpandedCards] = useState({});
   const messagesEndRef = useRef(null);
+
+  const toggleCardExpansion = (cardId) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
+  };
 
   // Sync messages to localStorage
   useEffect(() => {
@@ -393,74 +403,70 @@ export default function AgentChatBot({
                   )}
                 </div>
 
-                {/* Rich Graphical Proposals */}
+                {/* Rich Graphical Proposals (Collapsible UN-COLLAPSE MODE) */}
                 {msg.proposals && msg.proposals.length > 0 && (
-                  <div className="w-full space-y-2.5 my-1">
+                  <div className="w-full space-y-2 my-1.5">
                     {msg.proposals.map((prop) => {
                       const ageBadge = getAgeBadge(prop.min_age);
                       const fullAsset = assets.find((a) => a.id === prop.id) || prop;
+                      const isExpanded = !!expandedCards[prop.id];
 
                       return (
                         <div
                           key={prop.id}
-                          className="w-full editorial-card p-3.5 space-y-2.5 group"
+                          className="w-full editorial-card p-3 rounded-2xl border transition-all duration-200 group"
                           style={{ borderColor: 'var(--border-accent)' }}
                         >
-                          {/* Card Header */}
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
+                          {/* Card Header (Always visible - compact & clickable) */}
+                          <div className="flex items-center justify-between gap-2">
+                            <div 
+                              onClick={() => toggleCardExpansion(prop.id)}
+                              className="min-w-0 flex-1 cursor-pointer"
+                            >
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-base">{getCategoryIconChar(prop)}</span>
-                                <h4 className="text-base font-black text-white group-hover:text-accent transition-colors font-display">
+                                <span className="text-base flex-shrink-0">{getCategoryIconChar(prop)}</span>
+                                <h4 className="text-sm font-bold text-white group-hover:text-accent transition-colors font-display truncate">
                                   {prop.name}
                                 </h4>
                               </div>
-                              <div className="flex items-center gap-1.5 text-xs mt-0.5">
-                                <span className="text-accent/70 font-semibold uppercase tracking-wider">{prop.region}</span>
+                              <div className="flex items-center gap-1.5 text-[11px] mt-0.5 text-zinc-400">
+                                <span className="text-accent/80 font-semibold">{prop.region}</span>
                                 <span className="text-zinc-600">•</span>
-                                <span className="font-mono text-accent/60 font-bold">
+                                <span className="font-mono text-zinc-400 text-[10px]">
                                   {prop.authority_id}
                                 </span>
+                                {prop.weather?.temp && (
+                                  <>
+                                    <span className="text-zinc-600">•</span>
+                                    <span className="text-amber-300 font-bold text-[11px]">{prop.weather.temp}</span>
+                                  </>
+                                )}
                               </div>
                             </div>
 
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${ageBadge.color}`}>
-                              {ageBadge.icon} {ageBadge.label}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${ageBadge.color}`}>
+                                {ageBadge.icon} {ageBadge.label}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleCardExpansion(prop.id);
+                                }}
+                                className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-zinc-300 hover:text-white transition flex items-center justify-center text-xs"
+                                title={isExpanded ? 'סגור פרטים' : 'פתח פרטים'}
+                              >
+                                {isExpanded ? (
+                                  <ChevronUp className="w-4 h-4 text-accent" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-accent" />
+                                )}
+                              </button>
+                            </div>
                           </div>
 
-                          {/* Weather & Climate Pill */}
-                          <div className="grid grid-cols-2 gap-1.5 text-xs bg-brand-deep/60 p-2 rounded-xl border border-white/[0.04]">
-                            <div className="flex items-center gap-1.5 text-amber-300">
-                              <Sun className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="font-bold">{prop.weather.temp}</span>
-                              <span className="text-[10px] text-zinc-500 truncate">
-                                ({prop.weather.conditions})
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-accent">
-                              <Droplets className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="text-xs text-zinc-400 truncate">
-                                {prop.weather.heatLoad}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* XAI Explainability Rationale */}
-                          <p className="text-xs text-zinc-300 bg-accent/[0.05] border border-accent/10 p-2 rounded-xl leading-snug">
-                            💡 {prop.matchRationale}
-                          </p>
-
-                          {/* Water Advisory if any */}
-                          {prop.waterAdvisory && (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
-                              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span>{prop.waterAdvisory.title}</span>
-                            </div>
-                          )}
-
-                          {/* Action Buttons: Fly to Map & Direct Waze */}
-                          <div className="grid grid-cols-2 gap-1.5">
+                          {/* Quick Actions (Always visible) */}
+                          <div className="flex items-center gap-2 pt-2">
                             <button
                               onClick={() => {
                                 if (onSelectSite) {
@@ -470,46 +476,99 @@ export default function AgentChatBot({
                                   setIsMinimized(true);
                                 }
                               }}
-                              className="py-1.5 px-2 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 shadow-sm transition"
+                              className="flex-1 py-1.5 px-2.5 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition"
                             >
-                              <MapPin className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">הצג מסלול ונתונים במפה 🗺️</span>
+                              <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                              <span>הצג במפה 🗺️</span>
                             </button>
 
-                            <a
-                              href={`https://waze.com/ul?ll=${prop.lat},${prop.lng}&navigate=yes`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="py-1.5 px-2 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center"
-                            >
-                              <Navigation className="w-3 h-3 text-blue-400 flex-shrink-0" />
-                              <span className="truncate">נווט ב-Waze</span>
-                            </a>
-                          </div>
-
-                          {/* Secondary Actions: Share / Copy & Coordinates */}
-                          <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 pt-0.5">
                             <button
-                              onClick={() => handleCopyProposal(prop)}
-                              className="flex items-center gap-1 text-zinc-400 hover:text-accent transition py-0.5 font-medium"
-                              title="העתק פרטי מסלול לווטסאפ"
+                              onClick={() => toggleCardExpansion(prop.id)}
+                              className="py-1.5 px-2.5 bg-brand-deep/80 hover:bg-brand-deep text-zinc-300 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition"
                             >
-                              {copiedId === prop.id ? (
+                              {isExpanded ? (
                                 <>
-                                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                  <span className="text-emerald-400 font-semibold">הועתק ללוח!</span>
+                                  <ChevronUp className="w-3 h-3 text-accent" />
+                                  <span>סגור פרטים</span>
                                 </>
                               ) : (
                                 <>
-                                  <Copy className="w-3.5 h-3.5" />
-                                  <span>העתק המלצה</span>
+                                  <ChevronDown className="w-3 h-3 text-accent" />
+                                  <span>פרטים נוספים</span>
                                 </>
                               )}
                             </button>
-                            <span className="text-[10px] text-zinc-500 font-mono">
-                              📍 {prop.lat.toFixed(3)}, {prop.lng.toFixed(3)}
-                            </span>
                           </div>
+
+                          {/* Expandable Details Container */}
+                          {isExpanded && (
+                            <div className="pt-2.5 mt-2 space-y-2 border-t border-white/[0.06] animate-in fade-in duration-200">
+                              {/* Weather & Climate Pill */}
+                              <div className="grid grid-cols-2 gap-1.5 text-xs bg-brand-deep/60 p-2 rounded-xl border border-white/[0.04]">
+                                <div className="flex items-center gap-1.5 text-amber-300">
+                                  <Sun className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span className="font-bold">{prop.weather.temp}</span>
+                                  <span className="text-[10px] text-zinc-500 truncate">
+                                    ({prop.weather.conditions})
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-accent">
+                                  <Droplets className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span className="text-xs text-zinc-400 truncate">
+                                    {prop.weather.heatLoad}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* XAI Explainability Rationale */}
+                              <p className="text-xs text-zinc-300 bg-accent/[0.05] border border-accent/10 p-2 rounded-xl leading-snug">
+                                💡 {prop.matchRationale}
+                              </p>
+
+                              {/* Water Advisory if any */}
+                              {prop.waterAdvisory && (
+                                <div className="flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
+                                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span>{prop.waterAdvisory.title}</span>
+                                </div>
+                              )}
+
+                              {/* Navigation & Copy Actions */}
+                              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                                <a
+                                  href={`https://waze.com/ul?ll=${prop.lat},${prop.lng}&navigate=yes`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="py-1.5 px-2 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center"
+                                >
+                                  <Navigation className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                                  <span className="truncate">נווט ב-Waze</span>
+                                </a>
+
+                                <button
+                                  onClick={() => handleCopyProposal(prop)}
+                                  className="py-1.5 px-2 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center"
+                                >
+                                  {copiedId === prop.id ? (
+                                    <>
+                                      <Check className="w-3 h-3 text-emerald-400" />
+                                      <span className="text-emerald-400 truncate">הועתק ללוח!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3 h-3 text-accent" />
+                                      <span className="truncate">העתק פרטים</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+
+                              {/* Coordinates */}
+                              <div className="flex items-center justify-end text-[10px] text-zinc-500 font-mono px-1">
+                                📍 {prop.lat.toFixed(3)}, {prop.lng.toFixed(3)}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

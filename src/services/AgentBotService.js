@@ -535,7 +535,7 @@ export class AgentBotService {
 
     let cityNotice = '';
     const originCity = state.originCity || state.originName;
-    if (originCity && proposals.length > 0) {
+    if (state.region === 'radius' && originCity && proposals.length > 0) {
       const closestSite = proposals[0];
       const closestDist = closestSite?._distKm || 0;
       const closestDrive = closestSite?._driveMinutes || Math.max(10, Math.round(closestDist * 1.25));

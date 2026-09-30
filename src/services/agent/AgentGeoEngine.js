@@ -130,6 +130,15 @@ export async function geocodeCity(name) {
  */
 export function filterCandidatesByGeo(candidates, state) {
   return candidates.filter((site) => {
+    // 1. Strict regional boundary check
+    if (state.region && state.region !== 'all' && state.region !== 'radius') {
+      if (state.region === 'north' && site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
+      if (state.region === 'center' && site.region_group !== 'center') return false;
+      if (state.region === 'jerusalem' && site.region_group !== 'jerusalem') return false;
+      if (state.region === 'south' && site.region_group !== 'south') return false;
+    }
+
+    // 2. Distance radius calculation and filter
     if (state.originCoords) {
       const [oLat, oLng] = state.originCoords;
       const sLat = site.location ? site.location.lat : site.lat;
@@ -141,11 +150,6 @@ export function filterCandidatesByGeo(candidates, state) {
       if (state.region === 'radius' && state.maxDistanceKm && dist > state.maxDistanceKm) {
         return false;
       }
-    } else if (state.region && state.region !== 'all' && state.region !== 'radius') {
-      if (state.region === 'north' && site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
-      if (state.region === 'center' && site.region_group !== 'center') return false;
-      if (state.region === 'jerusalem' && site.region_group !== 'jerusalem') return false;
-      if (state.region === 'south' && site.region_group !== 'south') return false;
     }
     return true;
   });

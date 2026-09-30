@@ -573,6 +573,10 @@ export function extractParameters(message, currentState) {
       updated.originCity = foundCity.label;
       updated.originName = foundCity.label;
       updated.originCoords = [foundCity.lat, foundCity.lng];
+    } else {
+      updated.originCity = null;
+      updated.originName = null;
+      updated.originCoords = null;
     }
   } else if (isNorthRegion) {
     updated.region = 'north';
@@ -582,6 +586,10 @@ export function extractParameters(message, currentState) {
       updated.originCity = foundCity.label;
       updated.originName = foundCity.label;
       updated.originCoords = [foundCity.lat, foundCity.lng];
+    } else {
+      updated.originCity = null;
+      updated.originName = null;
+      updated.originCoords = null;
     }
   } else if (isCenterRegion) {
     updated.region = 'center';
@@ -591,6 +599,10 @@ export function extractParameters(message, currentState) {
       updated.originCity = foundCity.label;
       updated.originName = foundCity.label;
       updated.originCoords = [foundCity.lat, foundCity.lng];
+    } else {
+      updated.originCity = null;
+      updated.originName = null;
+      updated.originCoords = null;
     }
   } else if (isSouthRegion) {
     updated.region = 'south';
@@ -600,6 +612,10 @@ export function extractParameters(message, currentState) {
       updated.originCity = foundCity.label;
       updated.originName = foundCity.label;
       updated.originCoords = [foundCity.lat, foundCity.lng];
+    } else {
+      updated.originCity = null;
+      updated.originName = null;
+      updated.originCoords = null;
     }
   } else if (foundCity) {
     updated.originCity = foundCity.label;
