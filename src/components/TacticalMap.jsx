@@ -56,6 +56,9 @@ export default function TacticalMap({
     });
   }, [assets, activeFilter, recommendedAssetIds]);
 
+  const [isFallbackTiles, setIsFallbackTiles] = useState(false);
+  const fallbackTriggeredRef = useRef(false);
+
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -69,12 +72,35 @@ export default function TacticalMap({
     });
 
     // Map Basemap with Hebrew labels and zero watermarks
-    tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=he', {
+    const primaryTileLayer = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=he', {
       attribution: '&copy; Google Maps',
       subdomains: ['0', '1', '2', '3'],
       maxZoom: 20,
       className: isLightMode ? '' : 'dark-map-tiles',
-    }).addTo(map);
+    });
+
+    // Finding H10: Tile error detection & automatic failover to CartoDB tiles
+    let consecutiveTileErrors = 0;
+    primaryTileLayer.on('tileerror', () => {
+      consecutiveTileErrors++;
+      if (consecutiveTileErrors >= 3 && !fallbackTriggeredRef.current) {
+        fallbackTriggeredRef.current = true;
+        setIsFallbackTiles(true);
+        console.warn('Primary Google tiles unavailable. Switching to CartoDB Dark Matter fallback tiles ($0 Cost).');
+        primaryTileLayer.setUrl(
+          isLightMode
+            ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        );
+      }
+    });
+
+    primaryTileLayer.on('tileload', () => {
+      consecutiveTileErrors = 0;
+    });
+
+    primaryTileLayer.addTo(map);
+    tileLayerRef.current = primaryTileLayer;
 
     // Zoom control at bottom-left
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
@@ -267,6 +293,14 @@ export default function TacticalMap({
     <div className="w-full h-full relative">
       {/* Map Container */}
       <div ref={mapContainerRef} className="w-full h-full" />
+
+      {/* Fallback tiles indicator banner (Finding H10) */}
+      {isFallbackTiles && (
+        <div className="absolute top-4 left-4 z-[1000] px-3 py-1.5 bg-amber-500/90 text-zinc-950 font-bold text-[11px] rounded-full shadow-lg backdrop-blur-md flex items-center gap-1.5 pointer-events-none">
+          <span>🌐</span>
+          <span>מפת גיבוי פעילה (CartoDB Dark Matter)</span>
+        </div>
+      )}
 
       {/* Floating Filter Pills — strictly single row on mobile with horizontal scroll */}
       <div className="absolute top-4 sm:top-8 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-nowrap items-center gap-1.5 sm:gap-2 bg-brand-deep/90 backdrop-blur-md px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/[0.08] shadow-lg pointer-events-auto max-w-[95vw] sm:max-w-max overflow-x-auto no-scrollbar">

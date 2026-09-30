@@ -1,16 +1,12 @@
 /**
- * AgentBotService.js - Conversational Hiking AI Agent & Guardrails Engine
+ * AgentBotService.js - Conversational Hiking AI Agent & Guardrails Orchestrator
  * 
- * Strict Guardrails:
- * 1. Zero politics, violence, drugs, weapons, or off-topic discussions.
- * 2. Zero prompt/architecture/key leakage.
- * 3. Warm, polite, helpful ("נעים הליכות") tone at all times.
- * 
- * Mandatory 4 Parameters:
- * 1. Timing (היום, מחר, מחרתיים, סופ"ש)
- * 2. Region (צפון, מרכז ושרון, ירושלים והשפלה, דרום ומדבר)
- * 3. Feature (מעיין, הליכה במים, סנפלינג/אתגרי, יער מוצל, תצפית)
- * 4. Youngest Age (0+ עגלות, 2-3, 4+, 7+, 10+)
+ * Part of Agent BAAL Architecture ($0 Operating Cost).
+ * Refactored modular façade orchestrating:
+ * - AgentGeoEngine: Spatial Intelligence, City Geocoding & Radius Filtering
+ * - AgentNLUParser: Natural Language Understanding, Hebrew Age Parsing & Guardrails
+ * - AgentCrisisEngine: Contextual What-If Scenarios & Safe Haven Fallback Routing
+ * - AgentRulesEngine: Multi-Factor Scoring, Cluster Diversity & Clarification UI
  */
 
 import assetsData from '../../assets_db.json' with { type: 'json' };
@@ -18,821 +14,109 @@ import { WeatherService } from './WeatherService.js';
 import { getWaterAdvisory } from '../utils/weatherUtils.js';
 import { calculateHaversineDistanceKm } from '../utils/geoUtils.js';
 
-// Strict Prohibited Topics (Politics, Violence, Weapons, Drugs, Hate, Jailbreak/Prompt Injection)
-const PROHIBITED_KEYWORDS = [
-  'פוליטיק', 'בחירות', 'ממשלה', 'ביבי', 'נתניהו', 'לפיד', 'גנץ', 'כנסת', 'מפלג',
-  'נשק', 'אקדח', 'רובה', 'טיל', 'פצצה', 'סמים', 'מריחואנה', 'קוקאין', 'סם',
-  'אלימות', 'רצח', 'פיגוע', 'מלחמה', 'הרג', 'לפגוע', 'לתקוף',
-  'system prompt', 'prompt injection', 'ignore previous instructions', 'architecture', 'api key', 'secret',
-  'מי תכנת אותך', 'איזה מודל אתה', 'הדלף', 'קוד מקור'
-];
+// Import modular sub-engines
+import { 
+  KNOWN_ORIGIN_CITIES, 
+  geocodeCity, 
+  filterCandidatesByGeo 
+} from './agent/AgentGeoEngine.js';
 
-// Foreign countries & abroad keywords
-const FOREIGN_COUNTRIES_KEYWORDS = [
-  'חו"ל', 'חול', 'חו״ל', 'בחו"ל', 'בחול', 'בחו״ל', 'חוץ לארץ', 'בחוץ לארץ', 'מחוץ לישראל',
-  'מדינה אחרת', 'מדינות אחרות', 'באירופה', 'אירופה', 'ארה"ב', 'ארצות הברית', 'ארה״ב',
-  'יוון', 'קפריסין', 'איטליה', 'צרפת', 'ספרד', 'גרמניה', 'שוויץ', 'אוסטריה', 'הולנד', 'לונדון', 'פריז',
-  'תאילנד', 'הודו', 'יפן', 'סיני', 'מצרים', 'ירדן', 'פטרה', 'גיאורגיה', 'גאורגיה', 'טורקיה', 'תורכיה',
-  'דובאי', 'אבו דאבי', 'מונטנגרו', 'אלפים', 'דולומיטים', 'רומא'
-];
+import { 
+  checkGuardrails, 
+  extractParameters, 
+  parseAgeFromText, 
+  applyTypoCorrections,
+  DOG_KEYWORDS 
+} from './agent/AgentNLUParser.js';
 
-// Dog / pet keywords for safety warning (nature reserves prohibit dogs)
-const DOG_KEYWORDS = [
-  'כלב', 'כלבה', 'כלבים', 'כלבלב', 'גור כלבים', 'גורים',
-  'חיית מחמד', 'חיות מחמד', 'dog', 'dogs', 'pet'
-];
+import { 
+  getSiteHazardScenario, 
+  handleWhatIfScenario 
+} from './agent/AgentCrisisEngine.js';
 
-// Hebrew month names for calendar date parsing
-const HEBREW_MONTHS = [
-  { names: ['ינואר', 'ינו', 'jan'], num: 1 },
-  { names: ['פברואר', 'פבר', 'feb'], num: 2 },
-  { names: ['מרץ', 'מרס', 'mar'], num: 3 },
-  { names: ['אפריל', 'אפר', 'apr'], num: 4 },
-  { names: ['מאי', 'may'], num: 5 },
-  { names: ['יוני', 'jun'], num: 6 },
-  { names: ['יולי', 'jul'], num: 7 },
-  { names: ['אוגוסט', 'אוג', 'aug'], num: 8 },
-  { names: ['ספטמבר', 'ספט', 'sep'], num: 9 },
-  { names: ['אוקטובר', 'אוק', 'oct'], num: 10 },
-  { names: ['נובמבר', 'נוב', 'nov'], num: 11 },
-  { names: ['דצמבר', 'דצ', 'dec'], num: 12 },
-];
+import { 
+  rankCandidates, 
+  selectDiverseTopCandidates, 
+  generateClarificationResponse, 
+  buildRationale 
+} from './agent/AgentRulesEngine.js';
 
-// Common typo corrections for region and feature keywords
-const TYPO_CORRECTIONS = {
-  // Region typos
-  'גלליל': 'גליל', 'גאליל': 'גליל', 'גלייל': 'גליל',
-  'ירושליים': 'ירושלים', 'ירושלאים': 'ירושלים',
-  'גולאן': 'גולן', 'גולאן': 'גולן',
-  'כנררת': 'כנרת', 'כינרת': 'כנרת',
-  'חרמן': 'חרמון', 'חרמן': 'חרמון',
-  // Feature typos
-  'סנפליג': 'סנפלינג', 'סנפאלינג': 'סנפלינג', 'סנפליינג': 'סנפלינג',
-  'מוצאל': 'מוצל', 'מצל': 'מוצל', 'מוצלל': 'מוצל',
-  'הלחכה': 'הליכה',
-  // Site name typos
-  'עין גידי': 'עין גדי', 'עין-גידי': 'עין גדי', 'עינגדי': 'עין גדי',
-  'מסדה': 'מצדה', 'מאסדה': 'מצדה', 'מסאדה': 'מצדה',
-  'תל-דן': 'תל דן', 'תלדן': 'תל דן',
-  'בית גוברין': 'בית גוברין', 'בית-גוברין': 'בית גוברין',
-};
-
-// Known Israeli origin cities / centers for distance radius queries
-export const KNOWN_ORIGIN_CITIES = [
-  // Gush Dan & Center
-  { names: ['פתח תקווה', 'פתח תקוה', 'פתח תיקווה', 'פתח תיקוה', 'פ"ת', 'פ״ת', 'בקעת אונו'], lat: 32.0840, lng: 34.8878, label: 'פתח תקווה', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['תל אביב', 'תל-אביב', 'ת"א', 'ת״א', 'גוש דן', 'המרכז', 'תל אביב יפו'], lat: 32.0853, lng: 34.7818, label: 'תל אביב', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['רמת גן', 'גבעתיים', 'בני ברק', 'קריית אונו', 'גני תקווה'], lat: 32.0684, lng: 34.8248, label: 'רמת גן/גוש דן', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['חולון', 'בת ים', 'אזור'], lat: 32.0158, lng: 34.7874, label: 'חולון/בת ים', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['ראשון לציון', 'ראשל"צ', 'ראשל״צ'], lat: 31.9730, lng: 34.7925, label: 'ראשון לציון', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['הרצליה', 'רעננה', 'כפר סבא', 'הוד השרון', 'רמת השרון'], lat: 32.1663, lng: 34.8433, label: 'הרצליה/שרון דרומי', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['ראש העין', 'אפק', 'מגדל צדק'], lat: 32.0956, lng: 34.9566, label: 'ראש העין', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['רחובות', 'נס ציונה', 'יבנה'], lat: 31.8928, lng: 34.8113, label: 'רחובות', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['לוד', 'רמלה', 'שוהם', 'בן שמן'], lat: 31.9514, lng: 34.8881, label: 'לוד/רמלה/שפלה', region: 'center', regionLabel: 'מרכז והשפלה' },
-  { names: ['מודיעין', 'מודיעין מכבים רעות', 'מכבים', 'רעות'], lat: 31.8903, lng: 35.0104, label: 'מודיעין', region: 'jerusalem', regionLabel: 'ירושלים והשפלה' },
-
-  // Sharon & Coastal Plain
-  { names: ['נתניה', 'השרון', 'שרון', 'עמק חפר', 'כפר יונה'], lat: 32.3215, lng: 34.8532, label: 'נתניה', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['חדרה', 'אור עקיבא', 'פרדס חנה', 'כרכור'], lat: 32.4340, lng: 34.9197, label: 'חדרה/פרדס חנה', region: 'center', regionLabel: 'השרון הצפוני' },
-  { names: ['קיסריה'], lat: 32.5000, lng: 34.9000, label: 'קיסריה', region: 'haifa_carmel', regionLabel: 'חוף הכרמל' },
-  { names: ['זכרון יעקב', 'זיכרון יעקב', 'זכרון', 'בנימינה', 'גבעת עדה'], lat: 32.5707, lng: 34.9525, label: 'זכרון יעקב/בנימינה', region: 'haifa_carmel', regionLabel: 'חוף הכרמל ורמת מנשה' },
-
-  // Haifa & North
-  { names: ['חיפה', 'הקריות', 'קריות', 'נשר', 'טירת כרמל'], lat: 32.7940, lng: 34.9896, label: 'חיפה', region: 'north', regionLabel: 'צפון (חיפה והכרמל)' },
-  { names: ['עכו', 'נהריה', 'שלומי', 'גליל מערבי'], lat: 33.0059, lng: 35.0941, label: 'נהריה/עכו', region: 'north', regionLabel: 'צפון (גליל מערבי)' },
-  { names: ['כרמיאל', 'משגב', 'סכנין', 'מעלות'], lat: 32.9199, lng: 35.2957, label: 'כרמיאל', region: 'north', regionLabel: 'צפון (גליל מרכזי)' },
-  { names: ['נצרת', 'נוף הגליל', 'מגדל העמק'], lat: 32.6996, lng: 35.3035, label: 'נצרת', region: 'north', regionLabel: 'צפון (עמקים וגליל תחתון)' },
-  { names: ['עפולה', 'עמק יזרעאל', 'יזרעאל', 'בית שאן'], lat: 32.6078, lng: 35.2894, label: 'עפולה/עמקים', region: 'north', regionLabel: 'צפון (עמק יזרעאל ובית שאן)' },
-  { names: ['טבריה', 'הכנרת', 'כנרת', 'סובב כנרת'], lat: 32.7922, lng: 35.5312, label: 'טבריה/כנרת', region: 'north', regionLabel: 'צפון (טבריה וסובב כנרת)' },
-  { names: ['צפת', 'ראש פינה', 'חצור הגלילית', 'מירון'], lat: 32.9646, lng: 35.4960, label: 'צפת/גליל עליון', region: 'north', regionLabel: 'צפון (גליל עליון)' },
-  { names: ['קריית שמונה', 'קרית שמונה', 'גליל עליון', 'אצבע הגליל', 'מטולה', 'דפנה'], lat: 33.2073, lng: 35.5721, label: 'קריית שמונה', region: 'north', regionLabel: 'צפון (אצבע הגליל)' },
-  { names: ['קצרין', 'רמת הגולן', 'הגולן', 'מג\'דל שמס', 'מגדל שמס'], lat: 32.9934, lng: 35.6908, label: 'קצרין/גולן', region: 'north', regionLabel: 'צפון (רמת הגולן)' },
-
-  // Jerusalem & Judea
-  { names: ['ירושלים', 'בירה', 'מבשרת ציון', 'מעלה אדומים'], lat: 31.7683, lng: 35.2137, label: 'ירושלים', region: 'jerusalem', regionLabel: 'ירושלים והסביבה' },
-  { names: ['בית שמש', 'מטה יהודה', 'שפלת יהודה'], lat: 31.7470, lng: 34.9881, label: 'בית שמש/שפלה', region: 'jerusalem', regionLabel: 'ירושלים ושפלת יהודה' },
-  { names: ['אריאל', 'שומרון'], lat: 32.1044, lng: 35.1744, label: 'אריאל/שומרון', region: 'center', regionLabel: 'מרכז ושומרון' },
-  { names: ['גוש עציון', 'אפרת'], lat: 31.6500, lng: 35.1500, label: 'גוש עציון', region: 'jerusalem', regionLabel: 'ירושלים וגוש עציון' },
-
-  // South & Negev
-  { names: ['אשדוד'], lat: 31.8044, lng: 34.6553, label: 'אשדוד', region: 'center', regionLabel: 'מישור החוף הדרומי' },
-  { names: ['אשקלון'], lat: 31.6688, lng: 34.5743, label: 'אשקלון', region: 'south', regionLabel: 'דרום (מישור החוף הדרומי)' },
-  { names: ['קריית גת', 'קרית גת', 'שדרות', 'נתיבות', 'אופקים', 'עוטף עזה'], lat: 31.6100, lng: 34.7600, label: 'קריית גת/צפון הנגב', region: 'south', regionLabel: 'דרום (צפון הנגב)' },
-  { names: ['באר שבע', 'באר-שבע', 'ב"ש', 'ב״ש', 'הנגב'], lat: 31.2529, lng: 34.7915, label: 'באר שבע', region: 'south', regionLabel: 'דרום ומרכז הנגב' },
-  { names: ['דימונה', 'ירוחם'], lat: 31.0700, lng: 35.0300, label: 'דימונה/ירוחם', region: 'south', regionLabel: 'דרום (מרכז הנגב)' },
-  { names: ['ערד', 'ים המלח'], lat: 31.2589, lng: 35.2128, label: 'ערד', region: 'south', regionLabel: 'דרום (ערד וים המלח)' },
-  { names: ['מצפה רמון', 'רמון'], lat: 30.6100, lng: 34.8015, label: 'מצפה רמון', region: 'south', regionLabel: 'דרום (הר הנגב ומכתש רמון)' },
-  { names: ['אילת'], lat: 29.5577, lng: 34.9519, label: 'אילת', region: 'south', regionLabel: 'דרום (אילת והערבה הדרומית)' },
-];
-
-const DYNAMIC_CITY_CACHE = new Map();
-
-/**
- * Resolve city coordinates with $0 open fallback (Nominatim OpenStreetMap)
- */
-export async function geocodeCity(name) {
-  if (!name || typeof name !== 'string') return null;
-  const clean = name.trim().toLowerCase().replace(/^(ב|מ|ל|מאיזור|מאזור|באזור|באיזור|ליד|קרוב ל)\s*/, '');
-  
-  if (DYNAMIC_CITY_CACHE.has(clean)) {
-    return DYNAMIC_CITY_CACHE.get(clean);
-  }
-  
-  for (const c of KNOWN_ORIGIN_CITIES) {
-    if (c.names.some((n) => clean.includes(n) || n.includes(clean))) {
-      const res = { label: c.label, lat: c.lat, lng: c.lng, region: c.region, regionLabel: c.regionLabel };
-      DYNAMIC_CITY_CACHE.set(clean, res);
-      return res;
-    }
-  }
-
-  // OpenStreetMap Nominatim Free Geocoder fallback ($0 Cost, Open Data)
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
-    const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=il&accept-language=he&limit=1&q=${encodeURIComponent(clean)}`;
-    const resp = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'Tiyul-Spatial-Agent/1.0' },
-    });
-    clearTimeout(timeout);
-    if (resp.ok) {
-      const data = await resp.json();
-      if (Array.isArray(data) && data.length > 0) {
-        const item = data[0];
-        const lat = parseFloat(item.lat);
-        const lng = parseFloat(item.lon);
-        let region = 'center';
-        let regionLabel = 'מרכז והשרון';
-        if (lat >= 32.5) { region = 'north'; regionLabel = 'צפון (גליל וגולן)'; }
-        else if (lat >= 31.7 && lat <= 31.95 && lng >= 34.95) { region = 'jerusalem'; regionLabel = 'ירושלים והשפלה'; }
-        else if (lat < 31.6) { region = 'south'; regionLabel = 'דרום ונגב'; }
-        
-        const res = {
-          label: item.display_name?.split(',')[0]?.trim() || clean,
-          lat,
-          lng,
-          region,
-          regionLabel,
-        };
-        DYNAMIC_CITY_CACHE.set(clean, res);
-        return res;
-      }
-    }
-  } catch (e) {
-    // Non-blocking fallback
-  }
-
-  return null;
-}
-
-// Israeli Days of the Week mapping for dynamic date & forecast indexing
-const HEBREW_DAYS = [
-  { dayNum: 0, names: ['יום ראשון', 'ראשון הקרוב', 'בראשון', 'יום א\'', 'יום א׳', 'יום א', 'ראשון'], label: 'יום ראשון' },
-  { dayNum: 1, names: ['יום שני', 'שני הקרוב', 'בשני', 'יום ב\'', 'יום ב׳', 'יום ב', 'שני'], label: 'יום שני' },
-  { dayNum: 2, names: ['יום שלישי', 'שלישי הקרוב', 'בשלישי', 'יום ג\'', 'יום ג׳', 'יום ג', 'שלישי'], label: 'יום שלישי' },
-  { dayNum: 3, names: ['יום רביעי', 'רביעי הקרוב', 'ברביעי', 'יום ד\'', 'יום ד׳', 'יום ד', 'רביעי'], label: 'יום רביעי' },
-  { dayNum: 4, names: ['יום חמישי', 'חמישי הקרוב', 'בחמישי', 'יום ה\'', 'יום ה׳', 'יום ה', 'חמישי'], label: 'יום חמישי' },
-  { dayNum: 5, names: ['יום שישי', 'שישי הקרוב', 'בשישי', 'יום ו\'', 'יום ו׳', 'יום ו', 'שישי', 'סופ"ש', 'סופש', 'סוף השבוע', 'סוף שבוע'], label: 'יום שישי (סופ"ש)' },
-  { dayNum: 6, names: ['יום שבת', 'שבת הקרובה', 'שבת הקרוב', 'בשבת', 'שבת'], label: 'יום שבת' },
-];
-
-// Hebrew number words mapping for textual age parsing (e.g. "בן חמש", "בן החמש", "בת ארבע", "בני שלוש", "בן שנתיים")
-const HEBREW_AGE_WORDS = [
-  { word: 'שמונה עשרה', age: 18 },
-  { word: 'שמונה עשר', age: 18 },
-  { word: 'שבע עשרה', age: 17 },
-  { word: 'שבעה עשר', age: 17 },
-  { word: 'שש עשרה', age: 16 },
-  { word: 'שישה עשר', age: 16 },
-  { word: 'חמש עשרה', age: 15 },
-  { word: 'חמישה עשר', age: 15 },
-  { word: 'ארבע עשרה', age: 14 },
-  { word: 'ארבעה עשר', age: 14 },
-  { word: 'שלוש עשרה', age: 13 },
-  { word: 'שלושה עשר', age: 13 },
-  { word: 'שתים עשרה', age: 12 },
-  { word: 'שנים עשר', age: 12 },
-  { word: 'אחת עשרה', age: 11 },
-  { word: 'אחד עשר', age: 11 },
-  { word: 'שנתיים וחצי', age: 2.5 },
-  { word: 'שנתיים', age: 2 },
-  { word: 'שנה וחצי', age: 1.5 },
-  { word: 'חצי שנה', age: 0.5 },
-  { word: 'עשרה', age: 10 },
-  { word: 'עשר', age: 10 },
-  { word: 'תשעה', age: 9 },
-  { word: 'תשע', age: 9 },
-  { word: 'שמונה', age: 8 },
-  { word: 'שבעה', age: 7 },
-  { word: 'שבע', age: 7 },
-  { word: 'שישה', age: 6 },
-  { word: 'שש', age: 6 },
-  { word: 'חמישה', age: 5 },
-  { word: 'חמש', age: 5 },
-  { word: 'ארבעה', age: 4 },
-  { word: 'ארבע', age: 4 },
-  { word: 'שלושה', age: 3 },
-  { word: 'שלוש', age: 3 },
-  { word: 'שתיים', age: 2 },
-  { word: 'שניים', age: 2 },
-  { word: 'אחת', age: 1 },
-  { word: 'אחד', age: 1 },
-  { word: 'שנה', age: 1 },
-  { word: 'חצי', age: 0.5 },
-  { word: 'אפס', age: 0 },
-];
-
-export { calculateHaversineDistanceKm } from '../utils/geoUtils.js';
-
-/**
- * Generate a contextual What-If crisis scenario tailored to a specific site
- */
-export function getSiteHazardScenario(site) {
-  if (!site) {
-    return {
-      hazard: 'שיטפון פתאומי',
-      hazardType: 'flood',
-      label: '🌊 What-If: מה אם שיטפון פתאומי בעין גדי?',
-      prompt: 'מה אם יש שיטפון פתאומי בעין גדי?',
-    };
-  }
-
-  const sName = site.name || 'האתר';
-  const sRegion = (site.region || '').toLowerCase();
-  const sGroup = site.region_group || '';
-  const sTypes = ((site.type || site.types || []).join(' ')).toLowerCase();
-  const sVulns = ((site.vulnerabilities || []).join(' ')).toLowerCase();
-
-  // 1. Flash flood vulnerability: Dead Sea, desert rivers, dry riverbeds
-  if (
-    sVulns.includes('שיטפונות') ||
-    sVulns.includes('שיטפון') ||
-    sName.includes('עין גדי') ||
-    sName.includes('ערוגות') ||
-    sName.includes('משמר') ||
-    sName.includes('צאלים') ||
-    (sGroup === 'south' && (sTypes.includes('מים') || sTypes.includes('נחל')))
-  ) {
-    return {
-      hazard: 'שיטפון פתאומי',
-      hazardType: 'flood',
-      label: `🌊 What-If: מה אם שיטפון פתאומי ב${sName}?`,
-      prompt: `מה אם יש שיטפון פתאומי ב${sName}?`,
-    };
-  }
-
-  // 2. Extreme heat: Desert, Arava, Craters, cliffs
-  if (
-    sGroup === 'south' ||
-    sVulns.includes('חום') ||
-    sName.includes('מצדה') ||
-    sName.includes('רמון') ||
-    sName.includes('יהב') ||
-    sName.includes('יורקעם') ||
-    sName.includes('תמנע') ||
-    sName.includes('עבדת')
-  ) {
-    return {
-      hazard: 'עומס חום קיצוני (44°C)',
-      hazardType: 'heat',
-      label: `☀️ What-If: מה אם עומס חום 44°C ב${sName}?`,
-      prompt: `מה אם יש חום 44 מעלות ב${sName}?`,
-    };
-  }
-
-  // 3. Northern stream water pollution or high river flow
-  if (
-    (sGroup === 'north' || sRegion.includes('גליל') || sRegion.includes('גולן')) &&
-    (sTypes.includes('מים') || sTypes.includes('נחל') || site.category === 'water')
-  ) {
-    return {
-      hazard: 'זיהום מים פעיל (משרד הבריאות)',
-      hazardType: 'pollution',
-      label: `🧪 What-If: מה אם זיהום מים ב${sName}?`,
-      prompt: `מה אם יש זיהום מים ב${sName}?`,
-    };
-  }
-
-  // 4. Coastal gales / high waves
-  if (
-    site.category === 'coast' ||
-    sVulns.includes('רוחות') ||
-    sVulns.includes('סערות') ||
-    sName.includes('קיסריה') ||
-    sName.includes('חוף') ||
-    sName.includes('דור') ||
-    sName.includes('אכזיב')
-  ) {
-    return {
-      hazard: 'סערת ים ורוחות עזות',
-      hazardType: 'storm',
-      label: `💨 What-If: מה אם סערת ים ב${sName}?`,
-      prompt: `מה אם יש סערת ים ורוחות עזות ב${sName}?`,
-    };
-  }
-
-  // 5. Mountain storm / severe rain / mud / slippery rocks
-  return {
-    hazard: 'מזג אוויר סוער וסכנת החלקה',
-    hazardType: 'storm',
-    label: `🚨 What-If: מה אם מזג אוויר סוער ב${sName}?`,
-    prompt: `מה אם יש מזג אוויר סוער וסכנת החלקה ב${sName}?`,
-  };
-}
+// Public re-exports for complete backward compatibility
+export { KNOWN_ORIGIN_CITIES, geocodeCity, calculateHaversineDistanceKm, getSiteHazardScenario };
 
 export class AgentBotService {
   /**
-   * Reset session state
+   * Reset or initialize session state
    */
   static getInitialState() {
     return {
-      timing: null,      // 'today' | 'tomorrow' | 'day_after' | 'weekend' | number (0-4)
-      timingLabel: null, // 'היום', 'מחר', 'מחרתיים'
+      timing: null,        // 'today' | 'tomorrow' | 'day_after' | 'weekend' | number (0-4)
+      timingLabel: null,   // 'היום', 'מחר', 'מחרתיים'
       dayIndex: 0,
-      region: null,      // 'north' | 'center' | 'jerusalem' | 'south' | 'all' | 'radius'
-      regionLabel: null, // 'צפון', 'מרכז ושרון', 'ירושלים', 'דרום', 'עד 40 ק"מ מתל אביב'
+      region: null,        // 'north' | 'center' | 'jerusalem' | 'south' | 'all' | 'radius'
+      regionLabel: null,   // 'צפון', 'מרכז ושרון', 'ירושלים', 'דרום', 'עד 40 ק"מ מתל אביב'
       maxDistanceKm: null, // e.g. 40 or 50
       originName: null,    // e.g. 'תל אביב'
       originCity: null,    // e.g. 'פתח תקווה'
       originCoords: null,  // [lat, lng]
-      feature: null,     // 'water' | 'spring' | 'shade' | 'adventure' | 'stroller' | 'view' | 'any'
-      featureLabel: null,// 'הליכה במים', 'מעיין', 'יער מוצל', 'סנפלינג/אתגרי'
-      minAge: null,      // 0, 2, 4, 7, 10
-      minAgeLabel: null, // '0+ (עגלות)', '4+', '7+'
-      step: 'init',      // 'init' | 'gathering' | 'ready'
-      lastProposals: [], // B3: stored proposals for follow-up questions
-      wheelchairNote: false, // B2: wheelchair caveat flag
-      dogWarning: false,     // A1: dog/pet warning flag
+      feature: null,       // 'water' | 'spring' | 'shade' | 'adventure' | 'stroller' | 'view' | 'any'
+      featureLabel: null,  // 'הליכה במים', 'מעיין', 'יער מוצל', 'סנפלינג/אתגרי'
+      minAge: null,        // 0, 2, 4, 7, 10
+      minAgeLabel: null,   // '0+ (עגלות)', '4+', '7+'
+      step: 'init',        // 'init' | 'gathering' | 'ready'
+      lastProposals: [],   // stored proposals for follow-up questions
+      wheelchairNote: false, // wheelchair caveat flag
+      dogWarning: false,     // dog/pet warning flag
     };
   }
 
   /**
-   * Check message against strict safety guardrails, foreign countries, and non-Hebrew languages
+   * Check message against strict safety guardrails
    */
   static checkGuardrails(message) {
-    if (!message || typeof message !== 'string') return { safe: true };
-    const trimmed = message.trim();
-    const lower = trimmed.toLowerCase();
-
-    // 1. Check if user is writing in a foreign language (English, Russian, Arabic, French, Spanish, etc.)
-    const hebrewLetters = (trimmed.match(/[\u0590-\u05FF]/g) || []).length;
-    const cyrillicLetters = (trimmed.match(/[\u0400-\u04FF]/g) || []).length;
-    const arabicLetters = (trimmed.match(/[\u0600-\u06FF]/g) || []).length;
-    const latinLetters = (trimmed.match(/[a-zA-Z]/g) || []).length;
-
-    // If message is in a foreign language (has foreign characters and NO Hebrew):
-    if (hebrewLetters === 0 && (cyrillicLetters > 2 || arabicLetters > 2 || latinLetters > 3)) {
-      if (cyrillicLetters > 2) {
-        return {
-          safe: false,
-          refusal: 'Здравствуйте! 🌿 Я виртуальный гид по походам в Израиле. В настоящее время я общаюсь только на **иврите**. Пожалуйста, напишите мне на иврите, и я с радостью помогу вам спланировать отличный и безопасный маршрут!',
-        };
-      }
-      if (arabicLetters > 2) {
-        return {
-          safe: false,
-          refusal: 'مرحباً! 🌿 أنا المرشد الذكي لمסارات الطبيعة في إسرائيل. أتحدث باللغة **العبرية** فقط حالياً. يرجى مراسلتي باللغة العبرية لمساعدتك في العثور على أفضل المسارات والرحلات!',
-        };
-      }
-      if (lower.includes('bonjour') || lower.includes('salut') || lower.includes('merci') || lower.includes('randonn')) {
-        return {
-          safe: false,
-          refusal: 'Bonjour ! 🌿 Je suis le guide virtuel de randonnée en Israël. Pour le moment, je communique uniquement en **hébreu**. Veuillez m\'écrire en hébreu afin que je puisse vous aider à planifier votre itinéraire !',
-        };
-      }
-      if (lower.includes('hola') || lower.includes('buenos') || lower.includes('gracias') || lower.includes('ruta')) {
-        return {
-          safe: false,
-          refusal: '¡Hola! 🌿 Soy el guía virtual de senderismo en Israel. Actualmente solo me comunico en **hebreo**. ¡Por favor escríbeme en hebreo para ayudarte a planificar tu ruta perfecta!',
-        };
-      }
-      // Default English
-      return {
-        safe: false,
-        refusal: 'Hello! 🌿 I am the "Where to Hike?" AI guide for nature reserves and hiking trails in Israel. Currently, I only communicate in **Hebrew**. Please write to me in Hebrew so I can help you plan the perfect, safe outdoor adventure!',
-      };
-    }
-
-    // 2. Check foreign countries / travel abroad
-    for (const fKw of FOREIGN_COUNTRIES_KEYWORDS) {
-      if (lower.includes(fKw)) {
-        return {
-          safe: false,
-          refusal: 'שלום! 🌿 המומחיות שלי כסוכן טיולים ממוקדת כולה בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה המרהיבים **בישראל** 🇮🇱 בלבד.\n\nאינני מספק מידע או המלצות למדינות אחרות או לחו"ל.\n\nאשמח מאוד לעזור לכם לתכנן טיול קסום ובטוח בארץ! לאיזה אזור בישראל תרצו לטייל (צפון, מרכז, ירושלים או דרום) ומתי?',
-        };
-      }
-    }
-
-    // 3. Check prohibited sensitive topics
-    for (const kw of PROHIBITED_KEYWORDS) {
-      if (lower.includes(kw)) {
-        return {
-          safe: false,
-          refusal: 'שלום! אני סוכן הטיולים החכם של "לאן נטייל?" 🧭, ומטרתי הבלעדית היא לעזור לכם לתכנן טיולים וחוויות בטוחות ומהנות בטבע בישראל 🌿.\n\nאשמח מאוד לעזור לכם למצוא את המסלול המושלם! לאיזה אזור בארץ תרצו לטייל ומתי?',
-        };
-      }
-    }
-    return { safe: true };
+    return checkGuardrails(message);
   }
 
   /**
-   * Parse user message and extract any of the 4 mandatory parameters
+   * Extract mandatory parameters from text
    */
   static extractParameters(message, currentState) {
-    // B4: Apply typo corrections before parsing
-    let text = message.toLowerCase();
-    for (const [typo, fix] of Object.entries(TYPO_CORRECTIONS)) {
-      if (text.includes(typo)) {
-        text = text.replaceAll(typo, fix);
-      }
-    }
-    const updated = { ...currentState };
-
-    // 0. Handle dimension-specific non-restrictive phrases
-    if (text.includes('לא משנה לי האזור') || text.includes('בכל הארץ') || text.includes('כל הארץ') || text.includes('כל מקום') || text.includes('ללא העדפה לאזור')) {
-      updated.region = 'all';
-      updated.regionLabel = 'כל הארץ';
-    }
-    if (text.includes('לא משנה לי התאריך') || text.includes('לא משנה מתי') || text.includes('בימים הקרובים') || text.includes('ללא העדפה לתאריך')) {
-      updated.timing = 'today';
-      updated.timingLabel = 'היום / בימים הקרובים';
-      updated.dayIndex = 0;
-    }
-    if (text.includes('לכל הגילאים') || text.includes('לא משנה הגיל') || text.includes('מתאים לכולם') || text.includes('ללא מגבלת גיל')) {
-      updated.minAge = 0;
-      updated.minAgeLabel = 'לכל הגילאים (0+)';
-    }
-    if (text.includes('לא משנה לי סגנון') || text.includes('הכל מתאים') || text.includes('הכל הולך') || text.includes('מה שהכי מומלץ') || text.includes('ללא העדפה לסגנון') || text.includes('גם וגם') || text.includes('שניהם') || text.includes('שילוב')) {
-      updated.feature = 'any';
-      updated.featureLabel = text.includes('גם וגם') ? 'גם וגם (שילוב סגנונות)' : 'כל סגנונות המסלול';
-    }
-
-    // Generic "לא משנה לי" / "גם וגם" / "לא משנה" / "אין לי העדפה" when dimension wasn't explicit
-    const isGenericAny = (
-      text === 'לא משנה' || 
-      text === 'לא משנה לי' || 
-      text === 'גם וגם' ||
-      text.includes('גם וגם') ||
-      text.includes('שניהם') ||
-      text.includes('לא משנה לי') || 
-      text.includes('לא משנה') || 
-      text.includes('אין לי העדפה') || 
-      text.includes('אין העדפה') || 
-      text.includes('לא חשוב') ||
-      text.includes('לא קריטי')
-    );
-
-    // Surprise Me shortcut (Finding L6)
-    if (text.includes('הפתע אותי') || text.includes('הפתעה') || text.includes('תפתיע אותי')) {
-      updated.timing = updated.timing || 'today';
-      updated.timingLabel = updated.timingLabel || 'היום';
-      updated.dayIndex = updated.dayIndex !== undefined ? updated.dayIndex : 0;
-      updated.region = updated.region || 'all';
-      updated.regionLabel = updated.regionLabel || 'כל הארץ';
-      updated.feature = updated.feature || 'any';
-      updated.featureLabel = updated.featureLabel || 'מסלול מובחר מומלץ';
-      if (updated.minAge === null || updated.minAge === undefined) {
-        updated.minAge = 4;
-        updated.minAgeLabel = '4+';
-      }
-    }
-
-    if (isGenericAny) {
-      if (!updated.region) {
-        updated.region = 'all';
-        updated.regionLabel = 'כל הארץ';
-      } else if (!updated.timing) {
-        updated.timing = 'today';
-        updated.timingLabel = 'היום / בימים הקרובים';
-        updated.dayIndex = 0;
-      } else if (updated.minAge === null || updated.minAge === undefined) {
-        updated.minAge = 0;
-        updated.minAgeLabel = 'לכל הגילאים (0+)';
-      } else if (!updated.feature) {
-        updated.feature = 'any';
-        updated.featureLabel = 'כל סגנונות המסלול';
-      }
-    }
-
-    // 1. Timing extraction (Relative terms, named weekdays, and specific day-of-week)
-    const currentDayNum = new Date().getDay(); // 0 = Sunday ... 6 = Saturday
-
-    if (text.includes('מחרתיים') || text.includes('בעוד יומיים')) {
-      updated.timing = 'day_after';
-      updated.timingLabel = 'מחרתיים';
-      updated.dayIndex = 2;
-    } else if (text.includes('מחר') || text.includes('למחרת')) {
-      updated.timing = 'tomorrow';
-      updated.timingLabel = 'מחר';
-      updated.dayIndex = 1;
-    } else if (text.includes('היום') || text.includes('עכשיו') || text.includes('הבוקר') || text.includes('הערב')) {
-      updated.timing = 'today';
-      updated.timingLabel = 'היום';
-      updated.dayIndex = 0;
-    } else if (text.includes('תחילת השבוע') || text.includes('בתחילת שבוע')) {
-      const diff = (0 - currentDayNum + 7) % 7;
-      updated.dayIndex = Math.min(diff === 0 ? 0 : diff, 4);
-      updated.timing = 'day_0';
-      updated.timingLabel = 'תחילת השבוע (יום ראשון)';
-    } else if (text.includes('אמצע השבוע') || text.includes('באמצע שבוע')) {
-      const diff = (2 - currentDayNum + 7) % 7;
-      updated.dayIndex = Math.min(diff === 0 ? 0 : diff, 4);
-      updated.timing = 'day_2';
-      updated.timingLabel = 'אמצע השבוע (שלישי/רביעי)';
-    } else {
-      // A3: Calendar date parsing (e.g. "25/9", "25.9", "25 בספטמבר", "ה-25 לחודש")
-      let calendarParsed = false;
-      // Pattern: dd/mm, dd.mm, dd-mm, dd/mm/yy(yy)
-      const calMatch = text.match(/(\d{1,2})[/.-](\d{1,2})(?:[/.-](\d{2,4}))?/);
-      if (calMatch) {
-        const day = parseInt(calMatch[1], 10);
-        const month = parseInt(calMatch[2], 10);
-        if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
-          const now = new Date();
-          const targetYear = calMatch[3] ? (calMatch[3].length === 2 ? 2000 + parseInt(calMatch[3], 10) : parseInt(calMatch[3], 10)) : now.getFullYear();
-          const target = new Date(targetYear, month - 1, day);
-          if (target < now) target.setFullYear(target.getFullYear() + 1);
-          const diffDays = Math.round((target - now) / (1000 * 60 * 60 * 24));
-          updated.dayIndex = Math.max(0, Math.min(diffDays, 4));
-          updated.timing = `calendar_${day}_${month}`;
-          updated.timingLabel = `${day}/${month}` + (diffDays === 0 ? ' (היום)' : diffDays === 1 ? ' (מחר)' : ` (בעוד ${diffDays} ימים)`);
-          calendarParsed = true;
-        }
-      }
-      // Pattern: "25 בספטמבר", "ה-25 בספט", "25 לספטמבר"
-      if (!calendarParsed) {
-        for (const hm of HEBREW_MONTHS) {
-          for (const mName of hm.names) {
-            const monthRegex = new RegExp(`(?:ה-?)?(\\d{1,2})\\s*(?:ב|ל)${mName}`);
-            const mMatch = text.match(monthRegex);
-            if (mMatch) {
-              const day = parseInt(mMatch[1], 10);
-              if (day >= 1 && day <= 31) {
-                const now = new Date();
-                const target = new Date(now.getFullYear(), hm.num - 1, day);
-                if (target < now) target.setFullYear(target.getFullYear() + 1);
-                const diffDays = Math.round((target - now) / (1000 * 60 * 60 * 24));
-                updated.dayIndex = Math.max(0, Math.min(diffDays, 4));
-                updated.timing = `calendar_${day}_${hm.num}`;
-                updated.timingLabel = `${day} ב${mName}` + (diffDays === 0 ? ' (היום)' : diffDays === 1 ? ' (מחר)' : ` (בעוד ${diffDays} ימים)`);
-                calendarParsed = true;
-                break;
-              }
-            }
-          }
-          if (calendarParsed) break;
-        }
-      }
-      // Check specific named days of the week (Sunday through Saturday)
-      if (!calendarParsed) {
-        let foundDay = null;
-        for (const day of HEBREW_DAYS) {
-          if (day.names.some((name) => text.includes(name))) {
-            foundDay = day;
-            break;
-          }
-        }
-        if (foundDay) {
-          const diff = (foundDay.dayNum - currentDayNum + 7) % 7;
-          const clampedDayIndex = Math.min(diff, 4);
-          updated.dayIndex = clampedDayIndex;
-          updated.timing = `day_${foundDay.dayNum}`;
-          if (diff === 0) {
-            updated.timingLabel = `${foundDay.label} (היום)`;
-          } else if (diff === 1) {
-            updated.timingLabel = `${foundDay.label} (מחר)`;
-          } else if (diff === 2) {
-            updated.timingLabel = `${foundDay.label} (מחרתיים)`;
-          } else {
-            updated.timingLabel = `${foundDay.label} הקרוב`;
-          }
-        }
-      }
-    }
-
-    // 2. Region / Distance extraction
-    const distMatch = text.match(/(?:עד|ברדיוס של|בטווח של|במרחק של|מרחק של)?\s*(\d+)\s*(?:ק["״]?מ|קילומטר|קמ|קילומטרים)/);
-
-    // Identify if user specified a known Israeli city/locality
-    let foundCity = null;
-    for (const city of KNOWN_ORIGIN_CITIES) {
-      if (city.names.some((name) => text.includes(name))) {
-        foundCity = city;
-        break;
-      }
-    }
-
-    if (distMatch && distMatch[1]) {
-      const distNum = parseInt(distMatch[1], 10);
-      if (foundCity) {
-        updated.region = 'radius';
-        updated.regionLabel = `עד ${distNum} ק"מ מ${foundCity.label}`;
-        updated.maxDistanceKm = distNum;
-        updated.originCity = foundCity.label;
-        updated.originName = foundCity.label;
-        updated.originCoords = [foundCity.lat, foundCity.lng];
-      } else {
-        // Default to Tel Aviv / Center if city not explicitly specified
-        updated.region = 'radius';
-        updated.regionLabel = `עד ${distNum} ק"מ מתל אביב (מרכז)`;
-        updated.maxDistanceKm = distNum;
-        updated.originCity = 'תל אביב';
-        updated.originName = 'תל אביב';
-        updated.originCoords = [32.0853, 34.7818];
-      }
-    } else if (foundCity) {
-      // User entered a city without an explicit radius: default to 50 km radius search!
-      updated.originCity = foundCity.label;
-      updated.originName = foundCity.label;
-      updated.originCoords = [foundCity.lat, foundCity.lng];
-
-      // Check if user specified travelling to a different region (e.g. "מפתח תקווה לצפון")
-      if (text.includes('לצפון') || text.includes('לגליל') || text.includes('לגולן')) {
-        updated.region = 'north';
-        updated.regionLabel = 'צפון (גליל וגולן)';
-        updated.maxDistanceKm = null;
-      } else if (text.includes('לדרום') || text.includes('לנגב') || text.includes('למדבר') || text.includes('לים המלח')) {
-        updated.region = 'south';
-        updated.regionLabel = 'דרום, נגב וים המלח';
-        updated.maxDistanceKm = null;
-      } else if (text.includes('לירושלים')) {
-        updated.region = 'jerusalem';
-        updated.regionLabel = 'ירושלים והשפלה';
-        updated.maxDistanceKm = null;
-      } else {
-        // Automatic 50 km radius search around the requested city
-        updated.region = 'radius';
-        updated.regionLabel = `רדיוס 50 ק"מ מ${foundCity.label}`;
-        updated.maxDistanceKm = 50;
-      }
-    } else {
-      if (text.includes('צפון') || text.includes('גליל') || text.includes('גולן') || text.includes('כנרת') || text.includes('כרמל') || text.includes('עמקים') || text.includes('חרמון') || text.includes('חיפה')) {
-        updated.region = 'north';
-        updated.regionLabel = 'צפון (גליל וגולן)';
-      } else if (text.includes('מרכז') || text.includes('שרון') || text.includes('תל אביב') || text.includes('חוף') || text.includes('ירקון') || text.includes('פולג') || text.includes('חדרה')) {
-        updated.region = 'center';
-        updated.regionLabel = 'מרכז והשרון';
-      } else if (text.includes('ירושלים') || text.includes('שפלה') || text.includes('יהודה') || text.includes('בית שמש') || text.includes('עציון')) {
-        updated.region = 'jerusalem';
-        updated.regionLabel = 'ירושלים והשפלה';
-      } else if (
-        text.includes('דרום') || text.includes('נגב') || text.includes('ים המלח') || text.includes('מדבר') ||
-        text.includes('ערבה') || text.includes('רמון') || text.includes('אילת') ||
-        text.includes('מכתש') || text.includes('מכתשים') || text.includes('יהב') || text.includes('עין יהב') ||
-        text.includes('ספיר') || text.includes('ירוחם')
-      ) {
-        updated.region = 'south';
-        updated.regionLabel = 'דרום, נגב וים המלח';
-      }
-    }
-
-    // 3. Feature extraction (with typo resilience e.g. הלחכה -> הליכה, במים -> water)
-    if (
-      text.includes('הליכה במים') || text.includes('הלחכה במים') || text.includes('בתוך המים') ||
-      text.includes('מסלול מים') || text.includes('מים') || text.includes('רטוב') || text.includes('נחל זורם') ||
-      text.includes('מג\'רסה') || text.includes('מג׳רסה') || text.includes('מגרסה') ||
-      text.includes('דליות') || text.includes('זאכי') || text.includes('שניר') || text.includes('תל דן')
-    ) {
-      updated.feature = 'water';
-      updated.featureLabel = 'הליכה בתוך המים';
-    } else if (text.includes('מעיין') || text.includes('בריכה') || text.includes('שכשוך') || text.includes('טבילה')) {
-      updated.feature = 'spring';
-      updated.featureLabel = 'מעיין / בריכת שכשוך';
-    } else if (text.includes('סנפלינג') || text.includes('אתגרי') || text.includes('סולמות') || text.includes('יתדות') || text.includes('קניון אתגרי') || text.includes('מצוק')) {
-      updated.feature = 'adventure';
-      updated.featureLabel = 'סנפלינג / מסלול אתגרי';
-    } else if (text.includes('מוצל') || text.includes('צל') || text.includes('יער') || text.includes('חורש') || text.includes('עצים')) {
-      updated.feature = 'shade';
-      updated.featureLabel = 'יער וחורש מוצל';
-    } else if (text.includes('כיסא גלגלים') || text.includes('כסא גלגלים') || text.includes('קשיש') || text.includes('קשישים') || text.includes('הליכון') || text.includes('מוגבלות') || text.includes('מוגבל בהליכה')) {
-      // B2: Wheelchair / elderly → map to stroller with caveat
-      updated.feature = 'stroller';
-      updated.featureLabel = 'שביל סלול / נגיש (כיסא גלגלים)';
-      updated.wheelchairNote = true;
-    } else if (
-      (text.includes('עגלה') || text.includes('עגלות') || text.includes('שביל סלול') || text.includes('סלול ל') || /(?:^|[^\u0590-\u05fe])סלול(?=[^\u0590-\u05fe]|$)/.test(text) || text.includes('נגיש לעגלות')) &&
-      !text.includes('בלי עגלה') && !text.includes('ללא עגלה') && !text.includes('בלי עגלות') && !text.includes('ללא עגלות') && !text.includes('אין עגלה') && !text.includes('לא עגלה') && !text.includes('כולל מסלולים עם עגלות') && !text.includes('כולל עגלות') && !text.includes('כוללים עגלות')
-    ) {
-      updated.feature = 'stroller';
-      updated.featureLabel = 'שביל סלול / נגיש לעגלות';
-    } else if (text.includes('נוף') || text.includes('תצפית') || text.includes('פריחה') || text.includes('מבצר') || text.includes('עתיקות')) {
-      updated.feature = 'view';
-      updated.featureLabel = 'תצפיות ונוף';
-    }
-
-    // 4. Youngest age extraction (handles Hebrew words e.g. "בן החמש", "בת ארבע", "בני שלוש" and numbers e.g. "בן 5", "לגיל 4")
-    const extractedAge = AgentBotService.parseAgeFromText(text);
-    if (extractedAge !== null) {
-      if (extractedAge <= 2) {
-        updated.minAge = 0;
-        updated.minAgeLabel = '0+ (תינוקות ועגלות)';
-      } else if (extractedAge <= 6) {
-        updated.minAge = 4;
-        updated.minAgeLabel = '4+ (ילדים קטנים)';
-      } else if (extractedAge <= 9) {
-        updated.minAge = 7;
-        updated.minAgeLabel = '7+ (ילדים בוגרים)';
-      } else {
-        updated.minAge = 10;
-        updated.minAgeLabel = '10+ (נוער ומבוגרים)';
-      }
-    }
-
-    // 5. Subregion / destination keyword tracking (persists crater, Ein Yahav across turns)
-    if (text.includes('מכתש') || text.includes('מכתשים') || text.includes('רמון') || text.includes('מנסרה')) {
-      updated.subRegionKeyword = 'crater';
-      if (!updated.region) {
-        updated.region = 'south';
-        updated.regionLabel = 'מכתש רמון והנגב';
-      }
-    } else if (text.includes('יהב') || text.includes('עין יהב') || text.includes('ספיר') || text.includes('שיזף')) {
-      updated.subRegionKeyword = 'yahav';
-      if (!updated.region) {
-        updated.region = 'south';
-        updated.regionLabel = 'הערבה התיכונה ועין יהב';
-      }
-    }
-
-    // If timing, feature and minAge are supplied but region was omitted in query, search nationwide
-    if (updated.timing && updated.feature && (updated.minAge !== null && updated.minAge !== undefined) && !updated.region) {
-      updated.region = 'all';
-      updated.regionLabel = 'כל הארץ';
-    }
-
-    return updated;
+    return extractParameters(message, currentState);
   }
 
   /**
-   * Helper to parse and extract youngest hiker age from Hebrew text (numeric and textual phrases)
+   * Parse youngest hiker age from Hebrew text
    */
   static parseAgeFromText(text) {
-    if (!text || typeof text !== 'string') return null;
+    return parseAgeFromText(text);
+  }
 
-    const foundAges = [];
+  /**
+   * Tailor contextual What-If hazard scenario to site
+   */
+  static getSiteHazardScenario(site) {
+    return getSiteHazardScenario(site);
+  }
 
-    // 1. Explicit Hebrew age words after age markers (בן/בת/בני/בנות/בגיל/לגיל/גיל/הילד שלי בן...)
-    for (const item of HEBREW_AGE_WORDS) {
-      const escapedWord = item.word.replace(/\s+/g, '\\s+');
-      const prefixRegex = new RegExp(
-        `(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\\s+בן|ילדה\\s+בת|ילדים\\s+בני|תינוק\\s+בן|פעוט\\s+בן|הילד(?:\\s+שלי)?\\s+בן|הילדה(?:\\s+שלי)?\\s+בת)\\s+(?:ה-?|ה)?${escapedWord}(?:\\s+וחצי|\\s+שנים|\\s+שנה)?`,
-        'gi'
-      );
-      if (prefixRegex.test(text)) {
-        foundAges.push(item.age);
-      }
-    }
+  /**
+   * Handle interactive What-If crisis simulation & Safe Haven routing
+   */
+  static handleWhatIfScenario(message, sessionState) {
+    return handleWhatIfScenario(message, sessionState, assetsData, this.getInitialState());
+  }
 
-    // Check standalone compound age terms when paired with child/baby context
-    if (/(?:ילד|ילדה|פעוט|תינוק|מטייל|הילד|הילדה|הילדים)?\s*(?:בן|בת|בני)?\s*(?:שנה וחצי|חצי שנה)/i.test(text) && (text.includes('ילד') || text.includes('תינוק') || text.includes('פעוט') || text.includes('בן') || text.includes('בת') || text.includes('גיל'))) {
-      foundAges.push(1);
-    }
-    if (/(?:ילד|ילדה|פעוט|תינוק|הילד|הילדה|הילדים)?\s*(?:בן|בת|בני)?\s*(?:שנתיים וחצי|שנתיים)/i.test(text)) {
-      foundAges.push(2);
-    }
+  /**
+   * Generate clarification prompt when mandatory parameters are missing
+   */
+  static generateClarificationResponse(targetField, state, allMissing) {
+    return generateClarificationResponse(targetField, state, allMissing);
+  }
 
-    // 2. Numeric age matches & compound multiple ages/ranges (e.g. "בני 8 ו-4", "גילאי 4-7", "בן 5", "בני 4, 7")
-    const compoundRegex = /(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\s+בן|ילדה\s+בת|הילד(?:\s+שלי)?\s+בן|הילדה(?:\s+שלי)?\s+בת)\s*(?:של|ה-?|ה)?\s*(\d+(?:\.\d+)?)\s*(?:-|–|עד|ו-|ו\s*|,|\s+וגם\s+)\s*(?:ה-?|ה)?(\d+(?:\.\d+)?)/gi;
-    let match;
-    while ((match = compoundRegex.exec(text)) !== null) {
-      if (match[1]) foundAges.push(parseFloat(match[1]));
-      if (match[2]) foundAges.push(parseFloat(match[2]));
-    }
-
-    const singleNumericRegex = /(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\s+בן|ילדה\s+בת|הילד(?:\s+שלי)?\s+בן|הילדה(?:\s+שלי)?\s+בת)\s*(?:של|ה-?|ה)?\s*(\d+(?:\.\d+)?)/gi;
-    while ((match = singleNumericRegex.exec(text)) !== null) {
-      if (match[1]) {
-        foundAges.push(parseFloat(match[1]));
-      }
-    }
-
-    // Number followed by "שנים" / "שנה" / "חודשים" with child context: e.g. "ילד 5 שנים"
-    const yearsRegex = /(?:ילד|ילדה|ילדים|פעוט|תינוק|מטייל)\s*(?:שלי|שלנו)?\s*(\d+)\s*(?:שנים|שנה)/gi;
-    while ((match = yearsRegex.exec(text)) !== null) {
-      if (match[1]) {
-        foundAges.push(parseInt(match[1], 10));
-      }
-    }
-
-    // 3. Categorical age keywords (if no explicit number found)
-    if (foundAges.length === 0) {
-      if (text.includes('תינוק') || text.includes('תינוקת') || text.includes('תינוקות') || text.includes('פעוט') || text.includes('פעוטות') || text.includes('עגלה') || text.includes('עגלות') || text.includes('0+')) {
-        foundAges.push(0);
-      } else if (text.includes('קטנים') || text.includes('קטנטנים') || text.includes('גן') || text.includes('ילדי גן')) {
-        foundAges.push(4);
-      } else if (text.includes('יסודי') || text.includes('ילדי יסודי') || text.includes('בוגרים') || text.includes('ילדים בוגרים')) {
-        foundAges.push(7);
-      } else if (text.includes('נוער') || text.includes('מתבגרים') || text.includes('מבוגרים') || text.includes('חטיבה') || text.includes('תיכון')) {
-        foundAges.push(10);
-      }
-    }
-
-    if (foundAges.length > 0) {
-      // Return youngest hiker age
-      return Math.min(...foundAges);
-    }
-
-    return null;
+  /**
+   * Build explainable rationale (XAI) for recommended sites
+   */
+  static buildRationale(site, state, weather) {
+    return buildRationale(site, state, weather);
   }
 
   /**
@@ -863,10 +147,10 @@ export class AgentBotService {
       };
     }
 
-    const text = message.toLowerCase();
+    const text = (message || '').toLowerCase();
     const currentState = sessionState || this.getInitialState();
 
-    // 1.1 Handle Full Conversation Reset ("התחל מחדש", "אפס שיחה", "נקה שיחה", "restart", "reset")
+    // 1.1 Handle Full Conversation Reset
     if (
       text.includes('התחל מחדש') ||
       text.includes('להתחיל מחדש') ||
@@ -898,7 +182,7 @@ export class AgentBotService {
       };
     }
 
-    // 1.2 Handle Explicit Parameter Reset Buttons ("שנה אזור", "בדוק תאריך אחר", "שנה גיל מטייל")
+    // 1.2 Handle Explicit Parameter Reset Buttons
     if (text.includes('שנה אזור') || text.includes('אזור אחר') || text.includes('איזור אחר')) {
       const resetState = { ...currentState, region: null, regionLabel: null };
       return this.generateClarificationResponse('region', resetState, ['region']);
@@ -916,10 +200,10 @@ export class AgentBotService {
       return this.generateClarificationResponse('feature', resetState, ['feature']);
     }
 
-    // 1.3 A1: Dog / Pet warning detection (non-blocking — adds warning banner)
+    // 1.3 Dog / Pet warning detection
     const hasDogMention = DOG_KEYWORDS.some((kw) => text.includes(kw));
 
-    // 1.4 B3: Follow-up question about a previous proposal ("ספר לי עוד על הראשון/השני/השלישי")
+    // 1.4 Follow-up question about previous proposal
     if (currentState.lastProposals && currentState.lastProposals.length > 0) {
       const ordinalMatch = text.match(/(?:ה-?)?(ראשון|שני|שלישי|1|2|3)/);
       const hasFollowUp = text.includes('ספר לי עוד') || text.includes('עוד על') || text.includes('פרטים על') || text.includes('מידע על') || text.includes('מה יש ב');
@@ -951,7 +235,7 @@ export class AgentBotService {
       }
     }
 
-    // 1.45 Inquiry about whether trails for older children / specific ages include stroller paths
+    // 1.45 Inquiry about whether trails for older children include stroller paths
     const isStrollerInquiry = (
       (text.includes('עגל') || text.includes('עגלה') || text.includes('עגלות')) &&
       (text.includes('כולל') || text.includes('כוללים') || text.includes('נכלל') || text.includes('מתאים גם') || text.includes('האם זה כולל') || text.includes('האם מסלול') || text.includes('האם מסלולים')) &&
@@ -971,7 +255,7 @@ export class AgentBotService {
       };
     }
 
-    // 1.5 B1: Direct site name lookup — bypass 4-param flow if user asks about a specific site
+    // 1.5 Direct site name lookup
     const directLookupIntents = [
       'ספר לי על', 'מה יש ב', 'מידע על', 'תגיד לי על', 'מכיר את', 'איך מגיעים ל', 'איך להגיע ל',
       'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר'
@@ -985,9 +269,7 @@ export class AgentBotService {
       const inputWords = text.split(/[\s\-–—,?!.:;]+/).filter(Boolean);
       const matchedSite = assetsData.find((site) => {
         const siteName = site.name.toLowerCase();
-        // Exact name match
         if (text.includes(siteName)) return true;
-        // Two-word phrase match (e.g. "עין יהב", "עין גדי", "מכתש רמון", "פארק ספיר", "נחל עיון", "מפל התנור")
         const words = siteName.split(/[\s\-–—]+/).filter(Boolean);
         for (let i = 0; i < words.length - 1; i++) {
           const phrase = `${words[i]} ${words[i + 1]}`;
@@ -999,10 +281,10 @@ export class AgentBotService {
             return true;
           }
         }
-        // Distinctive non-generic word match (e.g. "יהב", "סהרונים", "המנסרה", "יורקעם", "עבדת", "שבטה")
         const distinctiveWords = words.filter((w) => w.length >= 3 && !GENERIC_PREFIXES.includes(w));
         return distinctiveWords.some((w) => inputWords.includes(w));
       });
+
       if (matchedSite) {
         let weather = null;
         try { weather = await WeatherService.fetchSiteWeather(matchedSite, 0); } catch (e) { /* fallback */ }
@@ -1018,8 +300,23 @@ export class AgentBotService {
           stroller_accessible: matchedSite.stroller_accessible,
           category: matchedSite.category,
           types: matchedSite.type || [],
-          weather: weather ? { temp: weather.temp, conditions: weather.conditions, heatLoad: weather.heatLoad, wind: weather.wind, rain: weather.rain, isLive: true, source: 'Tomorrow.io Live' }
-            : { temp: '28°C', conditions: 'בהיר ונוח', heatLoad: 'נוח לטיול', wind: '15 קמ"ש', rain: '0 מ"מ', isLive: false, source: 'תחזית IMS' },
+          weather: weather ? { 
+            temp: weather.temp, 
+            conditions: weather.conditions, 
+            heatLoad: weather.heatLoad, 
+            wind: weather.wind, 
+            rain: weather.rain, 
+            isLive: weather.isLive ?? true, 
+            source: weather.source || 'Open-Meteo Live' 
+          } : { 
+            temp: '28°C', 
+            conditions: 'בהיר ונוח', 
+            heatLoad: 'נוח לטיול', 
+            wind: '15 קמ"ש', 
+            rain: '0 מ"מ', 
+            isLive: false, 
+            source: 'תחזית IMS' 
+          },
           safetyBadge: !advisory ? 'בטוח ומומלץ לטיול 🛡️' : 'נדרשת תשומת לב ⚠️',
           waterAdvisory: advisory,
           matchRationale: `אתר ${matchedSite.name} באזור ${matchedSite.region}`,
@@ -1038,14 +335,13 @@ export class AgentBotService {
       }
     }
 
-    // 1.6 Check if user triggered an interactive What-If Crisis Scenario
+    // 1.6 Interactive What-If Crisis Scenario
     if (text.includes('מה אם') || text.includes('what if') || text.includes('תרחיש') || text.includes('שיטפון') || text.includes('44°c') || text.includes('חום קיצוני') || text.includes('זיהום')) {
       return this.handleWhatIfScenario(message, sessionState);
     }
 
     const state = this.extractParameters(message, currentState);
 
-    // A1: Attach dog warning flag to state if detected
     if (hasDogMention) {
       state.dogWarning = true;
     }
@@ -1057,372 +353,36 @@ export class AgentBotService {
     if (state.minAge === null || state.minAge === undefined) missing.push('minAge');
     if (!state.feature) missing.push('feature');
 
-    // If parameters are missing, ask politely for the most critical missing one
     if (missing.length > 0) {
       const nextMissing = missing[0];
       return this.generateClarificationResponse(nextMissing, state, missing);
     }
 
-    // 3. All parameters present (or nationwide)! Run Tool Execution & Recommendation Flow
+    // 3. All parameters present! Run Tool Execution & Recommendation Flow
     return await this.generateRecommendations(state, message);
   }
 
   /**
-   * Attempt LLM Inference via Groq Cloud API (Llama 3.3 70B) or Local Ollama
-   */
-  static async callOllamaOrGroqLLM(prompt, currentState) {
-    const groqKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) 
-      || (typeof process !== 'undefined' ? process.env?.VITE_GROQ_API_KEY : '');
-
-    // 1. Try Groq Llama 3.3 70B Cloud API if key is available
-    if (groqKey && groqKey !== 'your_groq_api_key_here') {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${groqKey}`,
-            'Content-Type': 'application/json',
-          },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-              {
-                role: 'system',
-                content: `You are Ariel, Principal Spatial AI Hiking Agent for Israel. Analyze user query: "${prompt}". Respond with structured JSON parameters and brief rationale in Hebrew.`
-              },
-              { role: 'user', content: prompt }
-            ],
-            temperature: 0.2,
-            max_tokens: 300,
-          }),
-        });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const data = await res.json();
-          const replyText = data.choices?.[0]?.message?.content;
-          return {
-            success: true,
-            response: replyText,
-            model: 'Groq Llama 3.3 70B (Ultra-Fast LLM)',
-          };
-        }
-      } catch (e) {
-        // Fallback gracefully
-      }
-    }
-
-    // 2. Try Local Ollama (127.0.0.1:11434)
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-      const res = await fetch('http://127.0.0.1:11434/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: 'llama3',
-          prompt: `[SYSTEM: You are Ariel Spatial AI Hiking Agent. Extract intent for query: "${prompt}"]`,
-          stream: false,
-        }),
-      });
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        const data = await res.json();
-        return { success: true, response: data.response, model: 'Ollama Llama 3 (127.0.0.1:11434)' };
-      }
-    } catch (e) {
-      // Offline fallback
-    }
-
-    return { success: false, model: 'Groq Llama 3.3 / Ollama Spatial Agent' };
-  }
-
-  /**
-   * Handle interactive What-If scenario simulation tailored to the selected or requested site
-   */
-  static getSiteHazardScenario(site) {
-    return getSiteHazardScenario(site);
-  }
-
-  static handleWhatIfScenario(message, sessionState) {
-    const text = message.toLowerCase();
-
-    // 1. Identify which site is affected
-    // Check if a specific site is mentioned in the query
-    let affectedSite = assetsData.find((a) => {
-      const name = a.name.toLowerCase();
-      if (text.includes(name)) return true;
-      const stripped = name.replace(/^(שמורת טבע|גן לאומי|פארק|יער|חורבת|עין|נחל)\s+/, '');
-      return stripped.length >= 3 && text.includes(stripped);
-    });
-
-    // If no site mentioned in the message, check sessionState.lastProposals
-    if (!affectedSite && sessionState?.lastProposals?.length > 0) {
-      affectedSite = sessionState.lastProposals[0];
-    }
-
-    // Fallback if none found: Ein Gedi (103)
-    if (!affectedSite) {
-      affectedSite = assetsData.find((a) => a.id === 103) || {
-        name: 'שמורת טבע עין גדי',
-        id: 103,
-        lat: 31.4655,
-        lng: 35.3884,
-        region: 'ים המלח ומדבר יהודה',
-      };
-    }
-
-    // 2. Identify the hazard & type
-    let hazard = 'שיטפון פתאומי';
-    let hazardType = 'flood';
-
-    if (text.includes('חום') || text.includes('44') || text.includes('שרב')) {
-      hazard = 'עומס חום קיצוני (44°C)';
-      hazardType = 'heat';
-    } else if (text.includes('זיהום')) {
-      hazard = 'זיהום מים פעיל (משרד הבריאות)';
-      hazardType = 'pollution';
-    } else if (text.includes('סער') || text.includes('רוח') || text.includes('גשם')) {
-      hazard = 'סערה ורוחות חזקות';
-      hazardType = 'storm';
-    } else if (text.includes('שיטפון')) {
-      hazard = 'שיטפון פתאומי';
-      hazardType = 'flood';
-    } else {
-      const siteScenario = getSiteHazardScenario(affectedSite);
-      hazard = siteScenario.hazard;
-      hazardType = siteScenario.hazardType;
-    }
-
-    // 3. Find the nearest Safe Haven in the database
-    const safeHavens = assetsData.filter((a) =>
-      a.category === 'safe_haven' ||
-      (a.vulnerabilities &&
-        a.vulnerabilities.some(
-          (v) => typeof v === 'string' && (v.toLowerCase().includes('safe haven') || v.includes('מקלט בטוח'))
-        ))
-    );
-
-    const affLat = affectedSite.lat || (affectedSite.location && affectedSite.location.lat) || 31.4655;
-    const affLng = affectedSite.lng || (affectedSite.location && affectedSite.location.lng) || 35.3884;
-
-    let nearestHaven = null;
-    let minDistanceKm = Infinity;
-
-    for (const haven of safeHavens) {
-      if (haven.id === affectedSite.id) continue;
-      const hLat = haven.lat || (haven.location && haven.location.lat);
-      const hLng = haven.lng || (haven.location && haven.location.lng);
-      if (hLat && hLng) {
-        const d = calculateHaversineDistanceKm(affLat, affLng, hLat, hLng);
-        if (d < minDistanceKm) {
-          minDistanceKm = d;
-          nearestHaven = haven;
-        }
-      }
-    }
-
-    // Fallbacks if no haven found
-    if (!nearestHaven) {
-      if (hazardType === 'heat') {
-        nearestHaven = assetsData.find((a) => a.id === 211) || {
-          name: 'בית ספר שדה כפר עציון',
-          id: 211,
-          lat: 31.6495,
-          lng: 35.116,
-          authority_id: 'SPNI-211',
-          region: 'הרי יהודה',
-          min_age: 0,
-        };
-        minDistanceKm = 35;
-      } else {
-        nearestHaven = assetsData.find((a) => a.id === 105) || {
-          name: 'גן לאומי בית גוברין',
-          id: 105,
-          lat: 31.6053,
-          lng: 34.8984,
-          authority_id: 'INPA-105',
-          region: 'שפלת יהודה',
-          min_age: 0,
-        };
-        minDistanceKm = 32.9;
-      }
-    }
-
-    // 4. Formulate contextual XAI reasoning log
-    let rationale = '';
-    if (hazardType === 'flood') {
-      rationale = `זוהתה סכנת שיטפונות בזק קריטית (98%) באגן ${affectedSite.name}. הסוכן הפעיל אלגוריתם Haversine וניתב אוטומטית למקלט הבטוח הקרוב ביותר: ${nearestHaven.name} (${minDistanceKm.toFixed(1)} ק"מ, אזור מנוקז וקרקע בטוחה).`;
-    } else if (hazardType === 'heat') {
-      rationale = `חריגה מסף עומס חום קיצוני ב${affectedSite.name}. הסוכן ניתב אוטומטית למקלט בטוח מוצל ומוגן ב${nearestHaven.name} (${minDistanceKm.toFixed(1)} ק"מ, תנאים נוחים).`;
-    } else if (hazardType === 'pollution') {
-      rationale = `הופעלה אזהרת זיהום מים וחריגת עכירות ב${affectedSite.name}. הסוכן ניתב למסלול יער יבש, מוצל ומאובטח ב${nearestHaven.name} (${minDistanceKm.toFixed(1)} ק"מ).`;
-    } else {
-      rationale = `זוהו תנאי מזג אוויר מסוכנים ב${affectedSite.name}. הסוכן ניתב אוטומטית למקלט הבטוח הקרוב ביותר: ${nearestHaven.name} (${minDistanceKm.toFixed(1)} ק"מ).`;
-    }
-
-    const proposal = {
-      id: nearestHaven.id,
-      name: `🛡️ מקלט בטוח: ${nearestHaven.name}`,
-      region: nearestHaven.region,
-      authority_id: nearestHaven.authority_id || 'SAFE-HAVEN',
-      lat: nearestHaven.lat,
-      lng: nearestHaven.lng,
-      min_age: nearestHaven.min_age || 0,
-      stroller_accessible: true,
-      weather: {
-        temp: '26°C',
-        conditions: 'בהיר ונוח',
-        heatLoad: 'נוח ובטוח לשהייה',
-        wind: '12 קמ"ש',
-        rain: '0 מ"מ',
-        isLive: true,
-      },
-      safetyBadge: 'מקלט בטוח מאומת (Safe Haven) 🛡️',
-      matchRationale: rationale,
-    };
-
-    // 5. Contextual options returned after What-If (clean, focused options without redundant secondary What-If)
-    const options = [
-      { label: '🔄 חזרה לתכנון טיול רגיל', value: 'בוא נחזור לתכנון מסלול רגיל' },
-      { label: '🗺️ תכנן טיול באזור אחר', value: 'אני רוצה לבדוק אזור אחר בארץ' },
-    ];
-
-    return {
-      text: `🚨 הופעל ניתוח תרחיש What-If אוטונומי!\n\nבמידה ומתרחש ${hazard} באזור ${affectedSite.name}:\n\n🧠 החלטת ה-Agent (Re-Planning):\nהסוכן זיהה סיכון חיים/בריאות קריטי, פסל את המשך השהייה באתר וחישב נתיב מילוט מיידי באלגוריתם Haversine אל היעד הבטוח ${nearestHaven.name}.\n\n👇 לחצו על הכרטיסייה למטה לצפייה בנתיב המילוט במפה!`,
-      state: sessionState || this.getInitialState(),
-      options,
-      proposals: [proposal],
-      toolActivity: `🚨 תרחיש What-If זוהה • ⚠️ ${affectedSite.name} נפסל • 🛡️ חושב וקטור מילוט ל-${nearestHaven.name} (${minDistanceKm.toFixed(1)} ק"מ)`,
-    };
-  }
-
-  /**
-   * Generate gentle, polite clarification prompt with quick-reply buttons
-   */
-  static generateClarificationResponse(targetField, state, allMissing) {
-    let text = '';
-    let options = [];
-
-    // Friendly recap of what we know so far
-    const knownParts = [];
-    if (state.timingLabel) knownParts.push(`📅 **מועד:** ${state.timingLabel}`);
-    if (state.regionLabel) knownParts.push(`📍 **אזור:** ${state.regionLabel}`);
-    if (state.minAgeLabel) knownParts.push(`👶 **גיל צעיר:** ${state.minAgeLabel}`);
-    if (state.featureLabel) knownParts.push(`💧 **סגנון:** ${state.featureLabel}`);
-
-    const summaryPrefix = knownParts.length > 0 
-      ? `מעולה, רשמתי לפניי:\n${knownParts.join(' • ')}\n\n` 
-      : '';
-
-    switch (targetField) {
-      case 'region':
-        text = `${summaryPrefix}באיזה **אזור בארץ** תרצו לטייל? 🗺️`;
-        options = [
-          { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
-          { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
-          { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
-          { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
-          { label: '🎲 לא משנה לי / כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
-        ];
-        break;
-
-      case 'timing':
-        text = `${summaryPrefix}**מתי** אתם מתכננים לצאת למסלול? 📅`;
-        options = [
-          { label: '☀️ היום', value: 'מתכננים להיום', field: 'timing' },
-          { label: '🌅 מחר', value: 'מתכננים למחר', field: 'timing' },
-          { label: '📆 מחרתיים', value: 'מתכננים למחרתיים', field: 'timing' },
-          { label: '🏕️ סוף השבוע (שבת)', value: 'מתכננים לסוף השבוע', field: 'timing' },
-          { label: '🎲 לא משנה לי התאריך', value: 'לא משנה לי התאריך, בימים הקרובים', field: 'timing' },
-        ];
-        break;
-
-      case 'minAge':
-        text = `${summaryPrefix}מה **גיל המטייל הצעיר ביותר** שמצטרף אליכם? 👶`;
-        options = [
-          { label: '👶 0+ (תינוק / עגלה)', value: 'מטיילים עם עגלה ותינוק 0+', field: 'minAge' },
-          { label: '🧒 4+ (ילדים קטנים)', value: 'הילד הצעיר בן 4', field: 'minAge' },
-          { label: '🧗 7+ (ילדים בוגרים)', value: 'הילד הצעיר בן 7', field: 'minAge' },
-          { label: '🧗‍♂️ 10+ (נוער / מבוגרים)', value: 'כולם בני 10 ומעלה', field: 'minAge' },
-          { label: '🎲 לכל הגילאים / לא משנה', value: 'לכל הגילאים, מתאים לכולם', field: 'minAge' },
-        ];
-        break;
-
-      case 'feature':
-        text = `${summaryPrefix}איזה **סגנון מסלול** הכי מתאים לכם? 🌿`;
-        options = [
-          { label: '💧 הליכה בתוך המים', value: 'רוצים מסלול רטוב עם הליכה במים', field: 'feature' },
-          { label: '🏊‍♂️ מעיין / בריכת שכשוך', value: 'מחפשים מעיין או בריכה נעימה', field: 'feature' },
-          { label: '🌲 יער מוצל וקריר', value: 'מעדיפים יער מוצל ושבילי הליכה', field: 'feature' },
-          { label: '🧗 סנפלינג / מסלול אתגרי', value: 'מחפשים סנפלינג או מסלול אתגרי', field: 'feature' },
-          { label: '🏰 תצפית ועתיקות', value: 'מעוניינים בתצפית נוף ואתר היסטורי', field: 'feature' },
-          { label: '✨ גם וגם / שילוב סגנונות', value: 'מעדיפים שילוב של מים, צל ונוף - גם וגם', field: 'feature' },
-          { label: '🎲 לא משנה לי / הכל מתאים', value: 'לא משנה לי סגנון המסלול, מה שהכי מומלץ ובטוח', field: 'feature' },
-        ];
-        break;
-    }
-
-    return {
-      text,
-      state,
-      options,
-      proposals: [],
-      toolActivity: null,
-    };
-  }
-
-  /**
-   * Search, filter, query Tomorrow.io and build rich recommendations
+   * Search, filter, query weather and build rich recommendations
    */
   static async generateRecommendations(state, rawMessage = '') {
     const dayIndex = state.dayIndex || 0;
     const targetAge = Number(state.minAge) || 4;
     const rawText = (rawMessage || '').toLowerCase();
 
-    // Deep clone assets to guarantee zero mutation on the base database (Finding C5)
+    // Deep clone assets to guarantee zero mutation on base data (Finding C5)
     const clonedAssets = typeof structuredClone === 'function'
       ? structuredClone(assetsData)
       : JSON.parse(JSON.stringify(assetsData));
 
-    // 1. Filter database by region/radius, age, and stroller
-    let candidates = clonedAssets.filter((site) => {
-      // Distance and driving time computation if origin coordinates are known
-      if (state.originCoords) {
-        const [oLat, oLng] = state.originCoords;
-        const sLat = site.location ? site.location.lat : site.lat;
-        const sLng = site.location ? site.location.lng : site.lng;
-        const dist = calculateHaversineDistanceKm(oLat, oLng, sLat, sLng);
-        site._distKm = dist;
-        site._driveMinutes = Math.max(10, Math.round(dist * 1.25));
-
-        if (state.region === 'radius' && state.maxDistanceKm && dist > state.maxDistanceKm) {
-          return false;
-        }
-      } else if (state.region && state.region !== 'all' && state.region !== 'radius') {
-        if (state.region === 'north' && site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
-        if (state.region === 'center' && site.region_group !== 'center') return false;
-        if (state.region === 'jerusalem' && site.region_group !== 'jerusalem') return false;
-        if (state.region === 'south' && site.region_group !== 'south') return false;
-      }
-
-      // Age constraint: site minimum age must be <= youngest hiker age
+    // 1. Filter candidates by geography / distance, age, and stroller
+    let candidates = filterCandidatesByGeo(clonedAssets, state).filter((site) => {
       if (site.min_age > targetAge) return false;
-
-      // Stroller constraint
       if (targetAge === 0 && !site.stroller_accessible && site.min_age > 0) return false;
-
       return true;
     });
 
-    // 1.1 Zero Results Check: If any parameter combination zeros the candidates, return polite message & options
+    // 1.1 Zero Results Check
     if (candidates.length === 0) {
       let explanation = 'לא מצאתי מסלולים המתאימים במדויק לשילוב התנאים שבחרתם';
       if (state.region === 'radius' && state.originName && state.maxDistanceKm) {
@@ -1461,138 +421,11 @@ export class AgentBotService {
       };
     }
 
-    // 2. Rank candidates by feature preference, proximity, and explicit query keyword match (e.g. דליות, מג'רסה, מכתש, עין יהב)
-    const activeSubRegion = state.subRegionKeyword || (
-      (rawText.includes('מכתש') || rawText.includes('מכתשים') || rawText.includes('רמון') || rawText.includes('מנסרה')) ? 'crater' :
-      (rawText.includes('יהב') || rawText.includes('עין יהב') || rawText.includes('ספיר') || rawText.includes('שיזף')) ? 'yahav' : null
-    );
+    // 2. Multi-factor ranking & sub-regional cluster diversity (RulesEngine)
+    rankCandidates(candidates, state, rawText);
+    const topSites = selectDiverseTopCandidates(candidates, state, rawText, 3);
 
-    candidates.sort((a, b) => {
-      const aTypes = (a.type || []).join(' ') + ' ' + (a.name || '');
-      const bTypes = (b.type || []).join(' ') + ' ' + (b.name || '');
-
-      let scoreA = 0;
-      let scoreB = 0;
-
-      // Primary nature attraction bonus vs facility / field school / base / night campground
-      if (a.name.includes('בית ספר שדה') || aTypes.includes('חניון לילה')) scoreA -= 20;
-      if (b.name.includes('בית ספר שדה') || bTypes.includes('חניון לילה')) scoreB -= 20;
-
-      // Targeted subregion boosts (persists across multi-turn dialogs via state.subRegionKeyword)
-      if (activeSubRegion === 'crater') {
-        if (aTypes.includes('מכתש') || a.name.includes('מכתש') || a.name.includes('רמון') || a.name.includes('מנסרה') || a.name.includes('יורקעם')) scoreA += 40;
-        if (bTypes.includes('מכתש') || b.name.includes('מכתש') || b.name.includes('רמון') || b.name.includes('מנסרה') || b.name.includes('יורקעם')) scoreB += 40;
-      } else if (activeSubRegion === 'yahav') {
-        if (aTypes.includes('עין יהב') || a.name.includes('יהב') || a.name.includes('ספיר') || a.name.includes('שיזף')) scoreA += 40;
-        if (bTypes.includes('עין יהב') || b.name.includes('יהב') || b.name.includes('ספיר') || b.name.includes('שיזף')) scoreB += 40;
-      }
-
-      // Explicit keyword boost if user mentioned site/stream/region name in current message
-      if (rawText.includes('דליות') || rawText.includes('מג\'רסה') || rawText.includes('מג׳רסה') || rawText.includes('מגרסה')) {
-        if (a.name.includes('דליות') || a.name.includes('מג׳רסה') || a.name.includes('מג\'רסה')) scoreA += 25;
-        if (b.name.includes('דליות') || b.name.includes('מג׳רסה') || b.name.includes('מג\'רסה')) scoreB += 25;
-      }
-      if (rawText.includes('מכתש') || rawText.includes('מכתשים') || rawText.includes('רמון') || rawText.includes('מנסרה')) {
-        if (aTypes.includes('מכתש') || a.name.includes('מכתש') || a.name.includes('רמון') || a.name.includes('מנסרה')) scoreA += 30;
-        if (bTypes.includes('מכתש') || b.name.includes('מכתש') || b.name.includes('רמון') || b.name.includes('מנסרה')) scoreB += 30;
-      }
-      if (rawText.includes('יהב') || rawText.includes('עין יהב') || rawText.includes('ספיר') || rawText.includes('שיזף')) {
-        if (aTypes.includes('עין יהב') || a.name.includes('יהב') || a.name.includes('ספיר')) scoreA += 30;
-        if (bTypes.includes('עין יהב') || b.name.includes('יהב') || b.name.includes('ספיר')) scoreB += 30;
-      }
-
-      // Flagship regional nature pillars (when general South is selected without a specific subregion)
-      if (state.region === 'south' && !activeSubRegion) {
-        // Craters, Arava/Ein Yahav, and Dead Sea Oasis are the 3 flagship pillars of South hiking
-        const isFlagshipSouth = (types, name) => (
-          types.includes('מכתש') || types.includes('מכתשים') || name.includes('מכתש') || name.includes('רמון') || name.includes('המנסרה') ||
-          types.includes('עין יהב') || types.includes('ערבה') || name.includes('יהב') || name.includes('ספיר') || name.includes('שיזף') ||
-          name.includes('עין גדי')
-        );
-        if (isFlagshipSouth(aTypes, a.name)) scoreA += 15;
-        if (isFlagshipSouth(bTypes, b.name)) scoreB += 15;
-      }
-
-      // Kid-friendly bonus for young kids (targetAge <= 5)
-      if (targetAge <= 5) {
-        if (a.stroller_accessible || aTypes.includes('חולות') || aTypes.includes('גשר עץ') || aTypes.includes('אגם') || aTypes.includes('מונגש') || a.min_age === 0) scoreA += 10;
-        if (b.stroller_accessible || bTypes.includes('חולות') || bTypes.includes('גשר עץ') || bTypes.includes('אגם') || bTypes.includes('מונגש') || b.min_age === 0) scoreB += 10;
-      }
-
-      if (state.feature === 'water' || state.feature === 'spring') {
-        if (aTypes.includes('מים') || aTypes.includes('בריכות') || aTypes.includes('מעיין') || aTypes.includes('שניר') || aTypes.includes('דן') || aTypes.includes('דליות') || aTypes.includes('מג׳רסה')) scoreA += 10;
-        if (bTypes.includes('מים') || bTypes.includes('בריכות') || bTypes.includes('מעיין') || bTypes.includes('שניר') || bTypes.includes('דן') || bTypes.includes('דליות') || bTypes.includes('מג׳רסה')) scoreB += 10;
-      }
-      if (state.feature === 'shade') {
-        if (aTypes.includes('חורש') || aTypes.includes('יער') || aTypes.includes('טבע') || aTypes.includes('כרמל') || aTypes.includes('מירון')) scoreA += 10;
-        if (bTypes.includes('חורש') || bTypes.includes('יער') || bTypes.includes('טבע') || bTypes.includes('כרמל') || bTypes.includes('מירון')) scoreB += 10;
-      }
-      if (state.feature === 'adventure') {
-        if (aTypes.includes('הרים') || aTypes.includes('אתגרי') || aTypes.includes('מצוק') || aTypes.includes('סנפלינג')) scoreA += 10;
-        if (bTypes.includes('הרים') || bTypes.includes('אתגרי') || bTypes.includes('מצוק') || bTypes.includes('סנפלינג')) scoreB += 10;
-      }
-      if (state.feature === 'stroller') {
-        if (a.stroller_accessible) scoreA += 15;
-        if (b.stroller_accessible) scoreB += 15;
-      }
-
-      if (scoreB !== scoreA) {
-        return scoreB - scoreA;
-      }
-
-      // If scores tied and distance is present, prefer closer site
-      if (a._distKm !== undefined && b._distKm !== undefined) {
-        return a._distKm - b._distKm;
-      }
-
-      return 0;
-    });
-
-    // Top 3 best matched sites with sub-regional cluster diversity (prevents duplicate Ein Gedi or clustered sites)
-    const topSites = [];
-    const seenClusters = new Set();
-    for (const site of candidates) {
-      const aTypes = (site.type || []).join(' ') + ' ' + (site.name || '');
-      let clusterKey = site.name;
-
-      if (!activeSubRegion) {
-        // Broad regional query: ensure diverse distribution across Dead Sea, Craters, and Arava/Ein Yahav
-        if (site.name.includes('עין גדי') || aTypes.includes('מדבר יהודה') || aTypes.includes('ים המלח')) {
-          clusterKey = 'dead_sea_oasis';
-        } else if (site.name.includes('רמון') || aTypes.includes('מכתש') || aTypes.includes('מכתשים') || site.name.includes('המנסרה') || site.name.includes('יורקעם')) {
-          clusterKey = 'crater_region';
-        } else if (site.name.includes('יהב') || site.name.includes('ספיר') || aTypes.includes('ערבה') || aTypes.includes('עין יהב')) {
-          clusterKey = 'arava_yahav';
-        }
-      } else {
-        // Specific sub-region query: only deduplicate direct overlaps (e.g. two Ramon boardwalks or two Ein Gedi paths)
-        if (site.name.includes('עין גדי')) clusterKey = 'ein_gedi';
-        else if (site.name.includes('מנסרה') || site.name.includes('צבעי מכתש רמון')) clusterKey = 'ramon_boardwalk';
-        else if (site.name.includes('סהרונים')) clusterKey = 'ramon_saharonim';
-        else if (site.name.includes('המכתש הגדול')) clusterKey = 'great_crater';
-        else if (site.name.includes('ספיר')) clusterKey = 'sapir';
-        else if (site.name.includes('שיזף') || site.name.includes('מצפור השלום')) clusterKey = 'shizaf';
-      }
-
-      if (site.name.includes('דן')) clusterKey = 'tel_dan';
-      if (site.name.includes('שניר')) clusterKey = 'snir';
-      
-      if (!seenClusters.has(clusterKey)) {
-        seenClusters.add(clusterKey);
-        topSites.push(site);
-      }
-      if (topSites.length === 3) break;
-    }
-    if (topSites.length < 3) {
-      for (const site of candidates) {
-        if (!topSites.some((s) => s.id === site.id)) {
-          topSites.push(site);
-        }
-        if (topSites.length === 3) break;
-      }
-    }
-
-    // 3. Query Tomorrow.io live weather for each candidate
+    // 3. Query weather for each candidate
     const proposals = [];
     for (const site of topSites) {
       let weather = null;
@@ -1622,8 +455,8 @@ export class AgentBotService {
           heatLoad: weather.heatLoad,
           wind: weather.wind,
           rain: weather.rain,
-          isLive: true,
-          source: 'Tomorrow.io Live',
+          isLive: weather.isLive ?? true,
+          source: weather.source || 'Open-Meteo Live',
         } : {
           temp: '28°C',
           conditions: 'בהיר ונוח',
@@ -1691,14 +524,13 @@ export class AgentBotService {
       }
     }
 
-    const introText = `${cityNotice}מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **Tomorrow.io** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}`;
+    const weatherSource = proposals[0]?.weather?.source || 'Open-Meteo Live';
+    const introText = `${cityNotice}מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **${weatherSource}** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}`;
 
-    const llmStatus = await this.callOllamaOrGroqLLM(rawMessage, state);
-
-    // B3: Store proposals in state for follow-up questions
+    // Store proposals in state for follow-up questions
     state.lastProposals = proposals;
 
-    // Tailor What-If crisis scenario specifically to the recommended sites
+    // Tailor What-If crisis scenario specifically to the top recommended site
     const topProposal = proposals[0];
     const siteWhatIf = getSiteHazardScenario(topProposal);
 
@@ -1712,48 +544,13 @@ export class AgentBotService {
       resultOptions.push({ label: '🌲 הצע מסלול מוצל במקום', value: 'מעדיפים יער מוצל ושבילי הליכה' });
     }
 
+    // Eliminate dead LLM blocking delay (Finding H8) — Instant deterministic execution (<50ms)
     return {
       text: introText,
       state,
       options: resultOptions,
       proposals,
-      toolActivity: `🤖 ${llmStatus.model} • 📡 נשלפה תחזית Tomorrow.io • 🛡️ Guardrails Passed`,
+      toolActivity: `🤖 Agent BAAL Spatial Engine • 📡 נשלפה תחזית ${weatherSource} • 🛡️ Guardrails Passed`,
     };
-  }
-
-  /**
-   * Build concise explainable rationale (XAI)
-   */
-  static buildRationale(site, state, weather) {
-    const parts = [];
-    const city = state.originCity || state.originName;
-    if (site._distKm !== undefined && city) {
-      const driveMins = site._driveMinutes || Math.max(10, Math.round(site._distKm * 1.25));
-      if (driveMins >= 60) {
-        const hours = Math.floor(driveMins / 60);
-        const mins = driveMins % 60;
-        parts.push(`🚗 כ-${hours} שע' ו-${mins} דק' נסיעה מ${city} (${site._distKm} ק"מ)`);
-      } else {
-        parts.push(`🚗 כ-${driveMins} דק' נסיעה מ${city} (${site._distKm} ק"מ)`);
-      }
-    }
-
-    if (site.stroller_accessible || site.min_age === 0) {
-      parts.push('נגיש לעגלות ושביל סלול ובטוח');
-    } else {
-      parts.push(`מתאים בול לגילאי ${site.min_age}+`);
-    }
-
-    if (weather) {
-      parts.push(`${weather.temp} (${weather.conditions}) ב-Tomorrow.io`);
-    }
-
-    if (site.type?.includes('מים') || site.type?.includes('בריכות')) {
-      parts.push('כולל גישה נוחה למים ושכשוך');
-    } else if (site.type?.includes('חורש') || site.type?.includes('יער')) {
-      parts.push('מסלול עשיר בצל טבעי');
-    }
-
-    return parts.join(' • ');
   }
 }

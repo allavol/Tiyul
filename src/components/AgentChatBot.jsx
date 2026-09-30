@@ -88,7 +88,10 @@ export default function AgentChatBot({
   queryTrigger = null,
   onClearQueryTrigger = null,
 }) {
-  const [messages, setMessages] = useState([
+  const CHAT_STORAGE_KEY = 'tiyul_agent_chat_messages_v1';
+  const SESSION_STORAGE_KEY = 'tiyul_agent_session_state_v1';
+
+  const defaultWelcomeMessages = [
     {
       id: 'welcome',
       sender: 'bot',
@@ -102,14 +105,49 @@ export default function AgentChatBot({
       proposals: [],
       toolActivity: null,
     }
-  ]);
+  ];
+
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return defaultWelcomeMessages;
+  });
+
+  const [sessionState, setSessionState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch (e) {}
+    return AgentBotService.getInitialState();
+  });
 
   const [inputVal, setInputVal] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
-  const [sessionState, setSessionState] = useState(AgentBotService.getInitialState());
   const messagesEndRef = useRef(null);
+
+  // Sync messages to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    } catch (e) {}
+  }, [messages]);
+
+  // Sync sessionState to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionState));
+    } catch (e) {}
+  }, [sessionState]);
 
   // Auto scroll to bottom
   const scrollToBottom = () => {
@@ -205,6 +243,10 @@ export default function AgentChatBot({
 
   // Reset conversation
   const handleReset = () => {
+    try {
+      localStorage.removeItem(CHAT_STORAGE_KEY);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch (e) {}
     setSessionState(AgentBotService.getInitialState());
     if (onProposalsUpdate) {
       onProposalsUpdate([]);

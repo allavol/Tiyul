@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Compass, Sparkles, Map, Mountain, Settings, Search, Sun, Moon } from 'lucide-react';
+import { Compass, Sparkles, Map, Mountain, Settings, Search, Sun, Moon, ShieldAlert } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
 import TacticalSidebar from './components/TacticalSidebar';
 import TacticalMap from './components/TacticalMap';
+import MapErrorBoundary from './components/MapErrorBoundary';
 import AgentOperationsModal from './components/AgentOperationsModal';
 import AgentChatBot from './components/AgentChatBot';
 import { AgentService } from './services/AgentService';
@@ -235,24 +236,26 @@ export default function App() {
     <div className={`fixed inset-0 flex flex-col bg-brand-deep text-[var(--text-primary)] overflow-hidden font-body select-none ${isLightMode ? 'light' : ''}`}>
       {/* ── Full-Width Map (100% Screen) ─────────────────── */}
       <div className="w-full h-full relative z-10">
-        <TacticalMap
-          assets={filteredAssets}
-          activeRoute={activeRoute}
-          selectedAssetId={selectedAssetId}
-          onSelectAsset={(id) => {
-            setSelectedAssetId(id);
-            setShowNationalRadar(false);
-          }}
-          onCloseCard={() => setSelectedAssetId(null)}
-          activeScenario={activeScenario}
-          selectedDayIndex={selectedDayIndex}
-          showNationalRadar={showNationalRadar}
-          onCloseNationalRadar={() => setShowNationalRadar(false)}
-          isLightMode={isLightMode}
-          recommendedAssetIds={recommendedAssetIds}
-          onAskAgentAboutSite={handleAskAgentAboutSite}
-          onClearRecommendations={() => setRecommendedAssetIds(null)}
-        />
+        <MapErrorBoundary>
+          <TacticalMap
+            assets={filteredAssets}
+            activeRoute={activeRoute}
+            selectedAssetId={selectedAssetId}
+            onSelectAsset={(id) => {
+              setSelectedAssetId(id);
+              setShowNationalRadar(false);
+            }}
+            onCloseCard={() => setSelectedAssetId(null)}
+            activeScenario={activeScenario}
+            selectedDayIndex={selectedDayIndex}
+            showNationalRadar={showNationalRadar}
+            onCloseNationalRadar={() => setShowNationalRadar(false)}
+            isLightMode={isLightMode}
+            recommendedAssetIds={recommendedAssetIds}
+            onAskAgentAboutSite={handleAskAgentAboutSite}
+            onClearRecommendations={() => setRecommendedAssetIds(null)}
+          />
+        </MapErrorBoundary>
 
         {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
         <div className="absolute bottom-4 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
@@ -274,21 +277,21 @@ export default function App() {
             </div>
           </button>
 
-          {/* Agent Brain & Crisis Simulations Modal Trigger */}
+          {/* Agent Brain & C4I Tactical Dashboard Modal Trigger (Finding H3) */}
           <button
             onClick={() => setIsAgentModalOpen(true)}
-            title="מוח הסוכן ותרחישי חירום"
-            className={`h-[52px] px-3.5 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
+            title="חמ״ל מבצעי ותרחישי חירום (C4I Tactical Mission Control)"
+            className={`h-[52px] px-4 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
               isLightMode
-                ? 'text-teal-700 border-teal-200/60 hover:bg-teal-50/50 shadow-teal-900/5'
-                : 'text-accent border-accent/30 hover:bg-white/10'
+                ? 'text-teal-800 border-teal-300 bg-white/80 hover:bg-teal-50/80 shadow-teal-900/10'
+                : 'text-accent border-accent/40 bg-brand-deep/80 hover:bg-white/10 hover:border-accent'
             }`}
           >
             <div className="relative">
-              <Sparkles className="w-5 h-5" />
-              <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse ${isLightMode ? 'bg-teal-500' : 'bg-accent'}`} />
+              <ShieldAlert className="w-5 h-5 text-accent animate-pulse" />
+              <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-ping ${isLightMode ? 'bg-teal-500' : 'bg-accent'}`} />
             </div>
-            <span className="hidden sm:inline">מוח הסוכן</span>
+            <span className="inline">חמ״ל מבצעי (C4I)</span>
           </button>
 
           {/* Theme Toggle Button */}
