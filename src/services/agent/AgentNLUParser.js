@@ -675,6 +675,10 @@ export function extractParameters(message, currentState) {
     text.includes('טיול באדמה') ||
     text.includes('ביבשה') ||
     text.includes('הליכה ביבשה') ||
+    text.includes('בלי להחליף בגדים') ||
+    text.includes('ללא סנדלי שורש') ||
+    text.includes('לא להתרטב') ||
+    text.includes('יבשה לחלוטין') ||
     /(?:^|[^\u0590-\u05fe])יבש(?=[^\u0590-\u05fe]|$)/.test(text) ||
     /(?:^|[^\u0590-\u05fe])יבשים(?=[^\u0590-\u05fe]|$)/.test(text) ||
     /(?:^|[^\u0590-\u05fe])יבשה(?=[^\u0590-\u05fe]|$)/.test(text) ||
@@ -685,7 +689,136 @@ export function extractParameters(message, currentState) {
     updated.excludeWater = true;
   }
 
-  if (
+  // Conceptual Intent Mapping (Slang & Metaphors)
+  const isPicnicIntent = (
+    text.includes('פקל קפה') || text.includes('פק"ל קפה') || text.includes('פק״ל קפה') ||
+    text.includes('מחצלת') || text.includes('לשבת עם קפה') || text.includes('פיקניק') ||
+    text.includes('על האש') || text.includes('מנגל') || text.includes('שולחנות פיקניק') ||
+    text.includes('חניון יום') || text.includes('פינת חמד') || text.includes('לפתוח שולחן') ||
+    text.includes('פינג\'אן') || text.includes('פינגאן') || text.includes('קפה שחור') ||
+    text.includes('פינת זולה') || text.includes('שולחנות עץ')
+  );
+
+  const isCoolHavenIntent = (
+    text.includes('שלא נתבשל') || text.includes('שלא נשרף') || text.includes('חם מדי') ||
+    text.includes('חם בחוץ') || text.includes('חום אימים') || text.includes('בריחה מהחום') ||
+    text.includes('משהו קריר') || text.includes('מערה קרירה') || text.includes('צל כבד') ||
+    text.includes('להימלט מהחום') || text.includes('בריחה מהשמש') || text.includes('רק צל') ||
+    text.includes('מזגן של הטבע')
+  );
+
+  const isIntenseHikeIntent = (
+    text.includes('לשרוף שרירים') || text.includes('שרוף שרירים') || text.includes('שובר רגליים') ||
+    text.includes('לשבור רגליים') || text.includes('בא לי לטפס') || text.includes('עליות קשות') ||
+    text.includes('מיטיבי לכת') || text.includes('טרק קשוח') || text.includes('כושר') ||
+    text.includes('סלעים') || text.includes('מסלול שחורים') || text.includes('סכינים ורכסים') ||
+    text.includes('כושר קרבי') || text.includes('לתת עבודה') || text.includes('בולדרים')
+  );
+
+  const isCasualWalkIntent = (
+    text.includes('קליל') || text.includes('קצרצר') || text.includes('סיבוב קצר') ||
+    text.includes('לא ללכת הרבה') || text.includes('קצר וקולע') || text.includes('שעה שעתיים') ||
+    text.includes('להתאוורר') || text.includes('בלי מאמץ') || text.includes('הליכה רגועה') ||
+    text.includes('מישורי') || text.includes('סיבוב של שבת') || text.includes('לנשום אוויר') ||
+    text.includes('קרוב לאוטו') || text.includes('קרוב לרכב') || text.includes('בלי מאמץ פיזי')
+  );
+
+  const isSeniorIntent = (
+    text.includes('סבא') || text.includes('סבתא') || text.includes('הורים מבוגרים') ||
+    text.includes('קשיש') || text.includes('גיל הזהב') || text.includes('קשה ללכת') ||
+    text.includes('בלי מדרגות') || text.includes('שביל נוח למבוגרים') ||
+    text.includes('ישיבה קרובה לרכב') || text.includes('בלי אבנים')
+  );
+
+  const isWildlifeIntent = (
+    text.includes('חיות בר') || text.includes('לראות חיות') || text.includes('ציפורים') ||
+    text.includes('צפרות') || text.includes('אגמון') || text.includes('עופות') ||
+    text.includes('צבאים') || text.includes('יחמורים') || text.includes('ספארי') ||
+    text.includes('חי בר') || text.includes('נדידת ציפורים') || text.includes('נשרים') ||
+    text.includes('שפני סלע')
+  );
+
+  const isBloomingIntent = (
+    text.includes('איפה ירוק') || text.includes('איפה יש ירוק') || text.includes('כלניות') ||
+    text.includes('רקפות') || text.includes('תורמוסים') || text.includes('אירוסים') ||
+    text.includes('שקדיות') || text.includes('מרבדי פריחה') || text.includes('פריחה') ||
+    text.includes('ריח של אורנים') || text.includes('ירוק בעיניים') || text.includes('זרימת חורף')
+  );
+
+  const isSunsetIntent = (
+    text.includes('שקיעה') || text.includes('לתפוס שקיעה') || text.includes('זריחה') ||
+    text.includes('לתפוס זריחה') || text.includes('פנורמי') || text.includes('נוף עוצר נשימה') ||
+    text.includes('תצפית מטורפת') || text.includes('רואים הכל') || text.includes('תצפית זהב') ||
+    text.includes('רואים עד הים') || text.includes('מצפור יפה') || text.includes('נוף הרים')
+  );
+
+  const isHistoryIntent = (
+    text.includes('היסטוריה') || text.includes('סיפורים מעניינים') || text.includes('תנך') ||
+    text.includes('תנ"ך') || text.includes('רומאים') || text.includes('צלבנים') ||
+    text.includes('עתיקות') || text.includes('ארכיאולוגיה') || text.includes('מבצר') ||
+    text.includes('מבצרים') || text.includes('מערות מסתור') || text.includes('סיפורי קרבות') ||
+    text.includes('אתר מורשת')
+  );
+
+  const isQuietIntent = (
+    text.includes('שקט') || text.includes('בלי הרבה אנשים') || text.includes('בלי המונים') ||
+    text.includes('פינה שקטה') || text.includes('רומנטי') || text.includes('שלווה') ||
+    text.includes('מבודד') || text.includes('זמן איכות') || text.includes('לברוח מההמונים') ||
+    text.includes('להתרחק מהרעש') || text.includes('לנקות את הראש') ||
+    text.includes('טעינת מצברים') || text.includes('בלי רעש')
+  );
+
+  if (isSeniorIntent) {
+    updated.feature = 'stroller';
+    updated.featureLabel = 'שביל סלול / נגיש ונוח להליכה';
+    updated.minAge = 0;
+    updated.minAgeLabel = 'שבילים סלולים ונוחים';
+    if (text.includes('קשיש') || text.includes('קשישים') || text.includes('הליכון') || text.includes('כיסא גלגלים') || text.includes('כסא גלגלים')) {
+      updated.wheelchairNote = true;
+    }
+  } else if (isIntenseHikeIntent) {
+    updated.feature = 'adventure';
+    updated.featureLabel = 'מסלול אתגרי למיטיבי לכת';
+    if (updated.minAge === null || updated.minAge < 10) {
+      updated.minAge = 10;
+      updated.minAgeLabel = '10+ (נוער ומבוגרים)';
+    }
+  } else if (isPicnicIntent) {
+    updated.concept = 'picnic';
+    updated.feature = 'shade';
+    updated.featureLabel = 'פיקניק ופק"ל קפה בחורש מוצל';
+  } else if (isCoolHavenIntent) {
+    updated.concept = 'cool_haven';
+    updated.feature = 'shade';
+    updated.featureLabel = isNoWater ? 'בריחה מהחום - מערות ויערות מוצלים' : 'בריחה מהחום - מערות וחורש מוצל';
+  } else if (isWildlifeIntent) {
+    updated.concept = 'wildlife';
+    updated.feature = 'view';
+    updated.featureLabel = 'תצפית חיות בר וציפורים';
+  } else if (isBloomingIntent) {
+    updated.concept = 'blooming';
+    updated.feature = 'view';
+    updated.featureLabel = 'מרבדי פריחה ונוף ירוק';
+  } else if (isSunsetIntent) {
+    updated.concept = 'sunset';
+    updated.feature = 'view';
+    updated.featureLabel = 'מצפורים לשקיעה ונוף פנורמי';
+  } else if (isHistoryIntent) {
+    updated.concept = 'history';
+    updated.feature = 'view';
+    updated.featureLabel = 'אתרי מורשת, מבצרים והיסטוריה';
+  } else if (isQuietIntent) {
+    updated.concept = 'quiet';
+    updated.feature = 'view';
+    updated.featureLabel = 'פינות חמד שקטות ותצפיות נוף';
+  } else if (isCasualWalkIntent) {
+    updated.feature = 'stroller';
+    updated.featureLabel = 'מסלול קליל וקצר';
+    if (updated.minAge === null) {
+      updated.minAge = 0;
+      updated.minAgeLabel = 'מתאים לכולם (0+)';
+    }
+  } else if (
     !isNoWater && (
       text.includes('הליכה במים') || text.includes('הלחכה במים') || text.includes('בתוך המים') ||
       text.includes('מסלול מים') || text.includes('מים') || text.includes('רטוב') || text.includes('נחל זורם') ||

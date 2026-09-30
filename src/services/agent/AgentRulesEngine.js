@@ -89,6 +89,36 @@ export function rankCandidates(candidates, state, rawText = '') {
       if (b.stroller_accessible) scoreB += 15;
     }
 
+    // Semantic Conceptual Boosts
+    if (state.concept === 'picnic') {
+      if (aTypes.includes('יער') || aTypes.includes('חניון') || aTypes.includes('פארק') || aTypes.includes('חורש')) scoreA += 15;
+      if (bTypes.includes('יער') || bTypes.includes('חניון') || bTypes.includes('פארק') || bTypes.includes('חורש')) scoreB += 15;
+    }
+    if (state.concept === 'cool_haven') {
+      if (aTypes.includes('מערה') || aTypes.includes('חורש') || aTypes.includes('אלונים') || aTypes.includes('מוצל')) scoreA += 15;
+      if (bTypes.includes('מערה') || bTypes.includes('חורש') || bTypes.includes('אלונים') || bTypes.includes('מוצל')) scoreB += 15;
+    }
+    if (state.concept === 'wildlife') {
+      if (aTypes.includes('צפרות') || aTypes.includes('אגם') || aTypes.includes('עופות') || a.name.includes('צבאים') || a.name.includes('גמלא') || a.name.includes('ציפורי ירושלים')) scoreA += 20;
+      if (bTypes.includes('צפרות') || bTypes.includes('אגם') || bTypes.includes('עופות') || b.name.includes('צבאים') || b.name.includes('גמלא') || b.name.includes('ציפורי ירושלים')) scoreB += 20;
+    }
+    if (state.concept === 'sunset') {
+      if (aTypes.includes('מצפור') || aTypes.includes('תצפית') || a.name.includes('שלום') || a.name.includes('בנטל') || a.name.includes('מונפורט') || a.name.includes('אפולוניה')) scoreA += 20;
+      if (bTypes.includes('מצפור') || bTypes.includes('תצפית') || b.name.includes('שלום') || b.name.includes('בנטל') || b.name.includes('מונפורט') || b.name.includes('אפולוניה')) scoreB += 20;
+    }
+    if (state.concept === 'history') {
+      if (aTypes.includes('ארכיאולוגיה') || aTypes.includes('עתיקות') || aTypes.includes('מבצר') || a.name.includes('בית גוברין') || a.name.includes('ציפורי') || a.name.includes('מצדה') || a.name.includes('נמרוד')) scoreA += 20;
+      if (bTypes.includes('ארכיאולוגיה') || bTypes.includes('עתיקות') || bTypes.includes('מבצר') || b.name.includes('בית גוברין') || b.name.includes('ציפורי') || b.name.includes('מצדה') || b.name.includes('נמרוד')) scoreB += 20;
+    }
+    if (state.concept === 'blooming') {
+      if (aTypes.includes('פריחה') || aTypes.includes('חורש') || aTypes.includes('אלונים') || a.name.includes('גמלא') || a.name.includes('אלוני אבא') || a.name.includes('גורן')) scoreA += 15;
+      if (bTypes.includes('פריחה') || bTypes.includes('חורש') || bTypes.includes('אלונים') || b.name.includes('גמלא') || b.name.includes('אלוני אבא') || b.name.includes('גורן')) scoreB += 15;
+    }
+    if (state.concept === 'quiet') {
+      if (aTypes.includes('מצפור') || aTypes.includes('חורש') || aTypes.includes('נוף') || a.name.includes('שלום') || a.name.includes('אודם') || a.name.includes('גמלא')) scoreA += 15;
+      if (bTypes.includes('מצפור') || bTypes.includes('חורש') || bTypes.includes('נוף') || b.name.includes('שלום') || b.name.includes('אודם') || b.name.includes('גמלא')) scoreB += 15;
+    }
+
     if (scoreB !== scoreA) {
       return scoreB - scoreA;
     }
