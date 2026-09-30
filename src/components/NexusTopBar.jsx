@@ -22,10 +22,10 @@ export default function NexusTopBar({
           <div className="flex items-center gap-2">
             <h1 className="text-base font-extrabold text-slate-100 leading-none">לאן נטייל?</h1>
             <span className="text-[10px] bg-slate-800 text-sky-400 border border-slate-700 font-bold px-1.5 py-0.5 rounded">
-              C4I
+              AI
             </span>
           </div>
-          <span className="text-[11px] text-slate-400">GeoGuard Tactical Control</span>
+          <span className="text-[11px] text-slate-400">המלצות טיולים חכמות</span>
         </div>
       </div>
 

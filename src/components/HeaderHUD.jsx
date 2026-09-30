@@ -67,7 +67,7 @@ export default function HeaderHUD({
               textShadow: '0 0 10px rgba(0, 240, 255, 0.4)',
             }}
           >
-            GEOGUARD C4I
+            GEOGUARD AI
             <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px', fontWeight: 500 }}>
               v2.4-TACTICAL
             </span>

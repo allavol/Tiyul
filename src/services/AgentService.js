@@ -1,5 +1,5 @@
 /**
- * AgentService: Autonomous C4I Agent Brain & What-If Re-Planning Engine
+ * AgentService: Autonomous Agent Brain & What-If Re-Planning Engine
  * 
  * Supports interactive What-If Crisis Simulations:
  * 1. SIMULATE_FLOOD (Flash Flood in Dead Sea/Judean Desert -> Beit Guvrin Safe Haven)

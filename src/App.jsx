@@ -314,11 +314,11 @@ export default function App() {
             </div>
           </button>
 
-          {/* Agent Brain & C4I Tactical Dashboard Modal Trigger (Finding H3) */}
+          {/* Agent Brain Trigger */}
           <button
             onClick={() => setIsAgentModalOpen(true)}
-            title="חמ״ל מבצעי ותרחישי חירום (C4I Tactical Mission Control)"
-            aria-label="חמ״ל מבצעי ותרחישי חירום"
+            title="מוח - החלטות וספי בטיחות"
+            aria-label="פתח חלון מוח וספי בטיחות"
             className={`h-[52px] px-4 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
               isLightMode
                 ? 'text-teal-800 border-teal-300 bg-white/80 hover:bg-teal-50/80 shadow-teal-900/10'
@@ -329,7 +329,7 @@ export default function App() {
               <ShieldAlert className="w-5 h-5 text-accent animate-pulse" />
               <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-ping ${isLightMode ? 'bg-teal-500' : 'bg-accent'}`} />
             </div>
-            <span className="inline">חמ״ל מבצעי (C4I)</span>
+            <span className="inline">מוח</span>
           </button>
 
           {/* Theme Toggle Button */}
@@ -358,7 +358,11 @@ export default function App() {
           aria-label="קטלוג אתרים ומסלולים"
         >
           <div 
-            className="w-full sm:w-[420px] max-w-full h-full bg-[#1c1c21] shadow-2xl border-r border-white/10 flex flex-col"
+            className={`w-full sm:w-[420px] max-w-full h-full shadow-2xl flex flex-col transition-colors ${
+              isLightMode 
+                ? 'bg-[#fcfdfd] border-r border-zinc-200 text-zinc-900' 
+                : 'bg-[#1c1c21] border-r border-white/10 text-zinc-100'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             <TacticalSidebar
@@ -390,6 +394,7 @@ export default function App() {
                 setIsChatBotOpen(true);
               }}
               onCloseSidebar={() => setIsSidebarOpen(false)}
+              isLightMode={isLightMode}
             />
           </div>
         </div>

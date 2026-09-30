@@ -1,10 +1,7 @@
 import React from 'react';
 import { 
   Search, 
-  Info, 
   Sparkles,
-  X,
-  CalendarDays,
   ChevronLeft
 } from 'lucide-react';
 import { 
@@ -40,19 +37,31 @@ export default function TacticalSidebar({
   onOpenAgentModal,
   onOpenChatBot,
   onCloseSidebar,
+  isLightMode = false,
 }) {
   const isAlertState = agentStatus === 'ALERT_REROUTED';
   const fiveDays = getFiveDaysList();
 
   return (
-    <aside className="w-full h-full flex flex-col text-zinc-100 font-body select-none overflow-hidden" dir="rtl">
+    <aside 
+      className={`w-full h-full flex flex-col font-body select-none overflow-hidden transition-colors ${
+        isLightMode ? 'bg-[#fcfdfd] text-zinc-800' : 'bg-[#1c1c21] text-zinc-100'
+      }`} 
+      dir="rtl"
+    >
       {/* ── 1. Editorial Header ─────────────────────────────────── */}
-      <div className="px-5 pt-5 pb-3 flex items-start justify-between">
+      <div className={`px-5 pt-5 pb-3 flex items-start justify-between border-b ${
+        isLightMode ? 'border-zinc-200/80' : 'border-white/[0.04]'
+      }`}>
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight leading-none font-display">
+          <h1 className={`text-2xl font-black tracking-tight leading-none font-display ${
+            isLightMode ? 'text-zinc-900' : 'text-white'
+          }`}>
             לאן נטייל?
           </h1>
-          <p className="text-[11px] text-accent font-semibold uppercase tracking-wider mt-1.5">
+          <p className={`text-[11px] font-semibold uppercase tracking-wider mt-1.5 ${
+            isLightMode ? 'text-teal-700' : 'text-accent'
+          }`}>
             AI TRAIL GUIDE • סוכן הטיולים
           </p>
         </div>
@@ -61,10 +70,12 @@ export default function TacticalSidebar({
           {/* Agent Brain Trigger */}
           <button
             onClick={onOpenAgentModal}
-            title="מוח הסוכן"
+            title="מוח"
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition border ${
               isAlertState
                 ? 'bg-amber-950/60 text-amber-300 border-amber-700/60'
+                : isLightMode
+                ? 'border-teal-200 text-teal-800 bg-teal-50 hover:bg-teal-100 shadow-sm'
                 : 'border-accent/30 text-accent bg-accent/[0.08] hover:bg-accent/15'
             }`}
           >
@@ -74,16 +85,24 @@ export default function TacticalSidebar({
                   ? 'bg-amber-400 animate-ping'
                   : isAlertState
                   ? 'bg-amber-400'
+                  : isLightMode
+                  ? 'bg-teal-600'
                   : 'bg-accent'
               }`}
             />
-            <span>{isProcessing ? 'סורק...' : isAlertState ? 'שינוי מסלול' : 'C4I'}</span>
+            <span>{isProcessing ? 'סורק...' : isAlertState ? 'שינוי מסלול' : 'מוח'}</span>
           </button>
 
           {/* Close Sidebar */}
           <button
             onClick={onCloseSidebar}
-            className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition"
+            title="סגור קטלוג"
+            aria-label="סגור קטלוג"
+            className={`w-7 h-7 rounded-lg flex items-center justify-center transition ${
+              isLightMode
+                ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900 border border-zinc-200'
+                : 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white'
+            }`}
           >
             <ChevronLeft size={14} />
           </button>
@@ -91,34 +110,54 @@ export default function TacticalSidebar({
       </div>
 
       {/* ── 1.5 AI Bot Launcher ─────────────────────────────────── */}
-      <div className="px-4 pb-2">
+      <div className="px-4 pt-3 pb-2">
         <button
           onClick={onOpenChatBot}
-          className="w-full bg-accent/[0.06] hover:bg-accent/[0.12] border border-accent/20 hover:border-accent/40 p-2.5 rounded-2xl flex items-center justify-between transition-all group active:scale-[0.99]"
+          className={`w-full p-2.5 rounded-2xl flex items-center justify-between transition-all group active:scale-[0.99] border ${
+            isLightMode
+              ? 'bg-teal-50/80 hover:bg-teal-100/70 border-teal-200 text-teal-950 shadow-sm'
+              : 'bg-accent/[0.06] hover:bg-accent/[0.12] border-accent/20 hover:border-accent/40 text-white'
+          }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-accent/20 text-accent flex items-center justify-center flex-shrink-0">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+              isLightMode ? 'bg-teal-600 text-white shadow-sm' : 'bg-accent/20 text-accent'
+            }`}>
               <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
             </div>
             <div className="text-right min-w-0">
-              <div className="text-[11px] font-bold text-white flex items-center gap-1.5">
+              <div className={`text-[11px] font-bold flex items-center gap-1.5 ${
+                isLightMode ? 'text-zinc-900' : 'text-white'
+              }`}>
                 <span>סוכן הטיולים האישי</span>
-                <span className="text-[8px] bg-accent text-brand-deep px-1.5 py-0.5 rounded-full font-mono font-black">AI</span>
+                <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-mono font-black ${
+                  isLightMode ? 'bg-teal-600 text-white' : 'bg-accent text-brand-deep'
+                }`}>AI</span>
               </div>
-              <p className="text-[10px] text-zinc-400 truncate">
+              <p className={`text-[10px] truncate ${
+                isLightMode ? 'text-zinc-500' : 'text-zinc-400'
+              }`}>
                 תכנון מסלול לפי גיל, מים ומזג אוויר
               </p>
             </div>
           </div>
-          <span className="text-accent text-[10px] font-bold bg-accent/10 px-2.5 py-1 rounded-lg border border-accent/20 flex-shrink-0">
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border flex-shrink-0 ${
+            isLightMode
+              ? 'bg-white text-teal-700 border-teal-200 shadow-sm'
+              : 'text-accent bg-accent/10 border-accent/20'
+          }`}>
             💬 שאל
           </span>
         </button>
       </div>
 
       {/* ── 2. 5-Day Timeline Strip ─────────────────────────────── */}
-      <div className="px-4 py-2 border-b border-white/[0.04]">
-        <div className="flex items-center justify-between gap-1 bg-brand-card border border-white/[0.06] p-1 rounded-2xl">
+      <div className={`px-4 py-2 border-b ${
+        isLightMode ? 'border-zinc-200/80' : 'border-white/[0.04]'
+      }`}>
+        <div className={`flex items-center justify-between gap-1 p-1 rounded-2xl border ${
+          isLightMode ? 'bg-zinc-100/80 border-zinc-200' : 'bg-brand-card border-white/[0.06]'
+        }`}>
           {fiveDays.map((day) => {
             const isSelected = selectedDayIndex === day.index;
             return (
@@ -127,12 +166,20 @@ export default function TacticalSidebar({
                 onClick={() => onSelectDayIndex?.(day.index)}
                 className={`flex-1 py-1.5 px-1 rounded-xl text-center transition flex flex-col items-center justify-center ${
                   isSelected
-                    ? 'bg-accent text-brand-deep shadow-md font-black'
+                    ? isLightMode
+                      ? 'bg-teal-600 text-white shadow-sm font-black'
+                      : 'bg-accent text-brand-deep shadow-md font-black'
+                    : isLightMode
+                    ? 'text-zinc-600 hover:text-zinc-900 hover:bg-white'
                     : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]'
                 }`}
               >
                 <span className="text-[11px] font-bold leading-tight">{day.label}</span>
-                <span className={`text-[9.5px] leading-tight font-mono ${isSelected ? 'text-brand-deep/70 font-bold' : 'text-zinc-600'}`}>
+                <span className={`text-[9.5px] leading-tight font-mono ${
+                  isSelected 
+                    ? (isLightMode ? 'text-white/80 font-bold' : 'text-brand-deep/70 font-bold') 
+                    : (isLightMode ? 'text-zinc-400' : 'text-zinc-600')
+                }`}>
                   {day.dateStr}
                 </span>
               </button>
@@ -145,7 +192,9 @@ export default function TacticalSidebar({
       <div className="px-4 pt-2.5 pb-1">
         {/* Age Filter */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-[10px] mb-2">
-          <span className="text-zinc-500 font-semibold text-[9px] ml-1 flex-shrink-0 uppercase tracking-wider">גיל:</span>
+          <span className={`font-semibold text-[9px] ml-1 flex-shrink-0 uppercase tracking-wider ${
+            isLightMode ? 'text-zinc-500' : 'text-zinc-500'
+          }`}>גיל:</span>
           {AGE_TIERS_CONFIG.map((item) => {
             const isSelected = selectedAgeFilter === item.id;
             return (
@@ -163,7 +212,9 @@ export default function TacticalSidebar({
 
         {/* Category Filter */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-[10px]">
-          <span className="text-zinc-500 font-semibold text-[9px] ml-1 flex-shrink-0 uppercase tracking-wider">סוג:</span>
+          <span className={`font-semibold text-[9px] ml-1 flex-shrink-0 uppercase tracking-wider ${
+            isLightMode ? 'text-zinc-500' : 'text-zinc-500'
+          }`}>סוג:</span>
           {CATEGORIES_CONFIG.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             return (
@@ -189,15 +240,19 @@ export default function TacticalSidebar({
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="חיפוש שמורה, שביל, שרון או מדבר..."
-            className="w-full bg-brand-card border border-white/[0.06] focus:border-accent/50 rounded-xl py-2 pr-9 pl-4 text-xs text-zinc-100 placeholder-zinc-500 outline-none transition font-body"
+            className={`w-full rounded-xl py-2 pr-9 pl-4 text-xs outline-none transition font-body border ${
+              isLightMode
+                ? 'bg-white border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-teal-500 shadow-sm'
+                : 'bg-brand-card border-white/[0.06] text-zinc-100 placeholder-zinc-500 focus:border-accent/50'
+            }`}
           />
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-500">
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-400">
             <Search size={14} />
           </div>
           {searchQuery && (
             <button
               onClick={() => onSearchChange?.('')}
-              className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-500 hover:text-accent text-xs"
+              className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 hover:text-accent text-xs"
             >
               ✕
             </button>
@@ -207,10 +262,14 @@ export default function TacticalSidebar({
 
       {/* ── 5. Results Counter ────────────────────────────────────── */}
       <div className="px-5 pt-1 pb-1.5 flex items-center justify-between text-[10px]">
-        <span className="text-zinc-300 font-bold uppercase tracking-wider">
+        <span className={`font-bold uppercase tracking-wider ${
+          isLightMode ? 'text-zinc-700' : 'text-zinc-300'
+        }`}>
           {assets.length} מסלולים
         </span>
-        <span className="text-zinc-600 font-mono">
+        <span className={`font-mono ${
+          isLightMode ? 'text-zinc-400' : 'text-zinc-600'
+        }`}>
           ממוין לפי בטיחות
         </span>
       </div>
@@ -220,8 +279,8 @@ export default function TacticalSidebar({
         {assets.length === 0 ? (
           <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-zinc-500">
             <Search size={28} className="mb-2 opacity-30 text-accent" />
-            <p className="text-xs font-bold text-zinc-400">לא נמצאו מסלולים</p>
-            <p className="text-[10px] text-zinc-600 mt-0.5">נסה להרחיב את הסינון</p>
+            <p className={`text-xs font-bold ${isLightMode ? 'text-zinc-600' : 'text-zinc-400'}`}>לא נמצאו מסלולים</p>
+            <p className={`text-[10px] mt-0.5 ${isLightMode ? 'text-zinc-400' : 'text-zinc-600'}`}>נסה להרחיב את הסינון</p>
           </div>
         ) : (
           assets.map((asset) => {
@@ -236,10 +295,12 @@ export default function TacticalSidebar({
               <div
                 key={asset.id}
                 onClick={() => onSelectAsset?.(asset.id)}
-                className={`editorial-card ${isSelected ? 'selected' : ''} p-3 cursor-pointer flex items-start justify-between gap-2.5`}
+                className={`editorial-card ${isSelected ? 'selected' : ''} p-3 cursor-pointer flex items-start justify-between gap-2.5 ${
+                  isLightMode && !isSelected ? 'bg-white border-zinc-200 shadow-sm hover:border-teal-300 hover:bg-teal-50/20' : ''
+                }`}
               >
                 <div className="flex items-start gap-3 min-w-0 pr-0.5">
-                  {/* Teal Category Circle */}
+                  {/* Category Circle */}
                   <div className={`data-badge flex-shrink-0 mt-0.5 ${
                     isAlert ? 'alert' : isSafeHaven ? 'dark' : 'teal'
                   }`}>
@@ -249,26 +310,32 @@ export default function TacticalSidebar({
                   <div className="min-w-0">
                     {/* Name + Badges */}
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <h4 className="text-[13px] font-black text-white leading-tight truncate font-display">
+                      <h4 className={`text-[13px] font-black leading-tight truncate font-display ${
+                        isLightMode ? 'text-zinc-900' : 'text-white'
+                      }`}>
                         {asset.name}
                       </h4>
                       {isSafeHaven && (
-                        <span className="text-[8px] px-1.5 py-0.5 rounded-full font-mono font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                        <span className="text-[8px] px-1.5 py-0.5 rounded-full font-mono font-bold bg-blue-500/15 text-blue-500 border border-blue-500/30">
                           מקלט
                         </span>
                       )}
                       {isAlert && (
-                        <span className="text-[8px] px-1.5 py-0.5 rounded-full font-mono font-bold bg-red-500/15 text-red-300 border border-red-500/30 animate-pulse">
+                        <span className="text-[8px] px-1.5 py-0.5 rounded-full font-mono font-bold bg-red-500/15 text-red-500 border border-red-500/30 animate-pulse">
                           שינוי נתיב
                         </span>
                       )}
                     </div>
 
                     {/* Region + Authority */}
-                    <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-zinc-500">
-                      <span className="text-accent/70 font-semibold uppercase tracking-wider">{asset.region}</span>
-                      <span>•</span>
-                      <span className="font-mono text-[9px] text-zinc-600">
+                    <div className="flex items-center gap-1.5 mt-0.5 text-[10px]">
+                      <span className={`font-semibold uppercase tracking-wider ${
+                        isLightMode ? 'text-teal-700' : 'text-accent/70'
+                      }`}>{asset.region}</span>
+                      <span className={isLightMode ? 'text-zinc-300' : 'text-zinc-600'}>•</span>
+                      <span className={`font-mono text-[9px] ${
+                        isLightMode ? 'text-zinc-400' : 'text-zinc-600'
+                      }`}>
                         {asset.authority_id || 'INPA'}
                       </span>
                     </div>
@@ -277,7 +344,11 @@ export default function TacticalSidebar({
                     <div className="flex items-center gap-2 mt-2">
                       {/* Temp Badge */}
                       {weather && (
-                        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-lg bg-brand-surface text-zinc-300 border border-white/[0.06]">
+                        <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-lg border ${
+                          isLightMode 
+                            ? 'bg-zinc-100 text-zinc-700 border-zinc-200' 
+                            : 'bg-brand-surface text-zinc-300 border-white/[0.06]'
+                        }`}>
                           {weather.temp}
                         </span>
                       )}
@@ -295,9 +366,11 @@ export default function TacticalSidebar({
                 <div className="flex flex-col items-end flex-shrink-0">
                   <span className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded-full border ${
                     isAlert
-                      ? 'bg-red-500/15 text-red-300 border-red-500/30'
+                      ? 'bg-red-500/15 text-red-500 border-red-500/30'
                       : isSafeHaven
-                      ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                      ? 'bg-blue-500/15 text-blue-500 border-blue-500/30'
+                      : isLightMode
+                      ? 'bg-teal-50 text-teal-700 border-teal-300 font-bold'
                       : 'bg-accent/10 text-accent border-accent/30'
                   }`}>
                     {isAlert ? '⚠️ התרעה' : isSafeHaven ? '🛡️ מקלט' : '✓ 100'}

@@ -67,7 +67,7 @@ export default function TerminalConsole({ logs = [], onClearLogs }) {
               letterSpacing: '1px',
             }}
           >
-            המדריך TACTICAL CONSOLE // C4I KERNEL
+            המדריך TACTICAL CONSOLE // AGENT KERNEL
           </span>
           <span
             style={{
