@@ -2917,5 +2917,1217 @@
     ],
     "description": "מבצר עתיק וגן לאומי מרהיב בראש גבעה החולשת על כל מישור החוף. שבילים סלולים ומונגשים, מבנים מקורים ומתחם מנוקז לחלוטין משיטפונות, 7 ק\"מ מפתח תקווה.",
     "id": 114
+  },
+  {
+    "id": 850,
+    "name": "עין שוקק - פארק המעיינות",
+    "name_en": "Ein Shokek Spring - Park HaMayanot",
+    "region": "עמק המעיינות",
+    "region_group": "north",
+    "lat": 32.5055,
+    "lng": 35.4388,
+    "type": [
+      "מים",
+      "מעיין",
+      "פארק",
+      "טבע"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Park",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4001",
+    "trail_length_km": 2.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת מעיין צלולה ורחבת ידיים עם שביל סלול מונגש, שולחנות פיקניק וצל עצי איקליפטוס."
+  },
+  {
+    "id": 851,
+    "name": "עין הקיבוצים - נחל הקיבוצים",
+    "name_en": "Ein HaKibbutzim Stream",
+    "region": "עמק המעיינות",
+    "region_group": "north",
+    "lat": 32.5085,
+    "lng": 35.4485,
+    "type": [
+      "מים",
+      "נחל",
+      "שכשוך",
+      "טבע"
+    ],
+    "type_en": [
+      "Water",
+      "Stream",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4002",
+    "trail_length_km": 1.8,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "שחייה ושכשוך במים זורמים ונעימים לאורך כל השנה עם מגלשות מים טבעיות בצינורות הבטון."
+  },
+  {
+    "id": 852,
+    "name": "עין חנדק - הרי ירושלים",
+    "name_en": "Ein Handak Spring - Jerusalem Hills",
+    "region": "ירושלים והרי יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.7615,
+    "lng": 35.1382,
+    "type": [
+      "מים",
+      "מעיין",
+      "נקבה",
+      "הרים"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Cave",
+      "Mountains"
+    ],
+    "vulnerabilities": [
+      "החלקה בסלעים"
+    ],
+    "vulnerabilities_en": [
+      "Slippery Rocks"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4003",
+    "trail_length_km": 1.2,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מעיין שכבה מרשים עם שתי נקבות מים חצובות באורך עשרות מטרים בעמק התימנים סמוך להדסה."
+  },
+  {
+    "id": 853,
+    "name": "עין לבן - רכס לבן ועמק רפאים",
+    "name_en": "Ein Lavan Spring - Reches Lavan",
+    "region": "ירושלים והרי יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.7505,
+    "lng": 35.1633,
+    "type": [
+      "מים",
+      "מעיין",
+      "בריכה",
+      "בוסתנים"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Pool"
+    ],
+    "vulnerabilities": [
+      "עומס מבקרים"
+    ],
+    "vulnerabilities_en": [
+      "Crowds"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4004",
+    "trail_length_km": 0.8,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "שתי בריכות אבן נהדרות המוקפות עצי תאנה, זית וחרוב מעל נחל רפאים ופארק ירושלים."
+  },
+  {
+    "id": 854,
+    "name": "עין לימון - נחל כסלון ועין ראפה",
+    "name_en": "Ein Limon Spring",
+    "region": "ירושלים והשפלה",
+    "region_group": "jerusalem",
+    "lat": 31.7865,
+    "lng": 35.1275,
+    "type": [
+      "מים",
+      "מעיין",
+      "בריכה",
+      "טבע"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "זיהום מים ארעי"
+    ],
+    "vulnerabilities_en": [
+      "Pollution"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4005",
+    "trail_length_km": 1.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מעיין שכבה ובריכת שכשוך מוצלת בערוץ נחל כסלון למרגלות הכפר עין ראפה וקיבוץ צובה."
+  },
+  {
+    "id": 855,
+    "name": "עין טייסים - הר הטייסים",
+    "name_en": "Ein Tayasim Spring",
+    "region": "ירושלים והרי יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.777,
+    "lng": 35.093,
+    "type": [
+      "מים",
+      "מעיין",
+      "בוסתנים",
+      "יער"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Forest"
+    ],
+    "vulnerabilities": [
+      "שביל תלול"
+    ],
+    "vulnerabilities_en": [
+      "Steep Trail"
+    ],
+    "category": "water",
+    "min_age": 7,
+    "age_group": "7+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4006",
+    "trail_length_km": 2.5,
+    "difficulty": "בינוני",
+    "entry_fee": "חינם",
+    "description": "בריכת מעיין מבודדת החבויה בתוך בוסתן שקדים, גפנים ועצי תאנה תחת מדרון הר איתן."
+  },
+  {
+    "id": 856,
+    "name": "עין קובי - פארק בגין",
+    "name_en": "Ein Kobi Spring - Begin Park",
+    "region": "ירושלים והשפלה",
+    "region_group": "jerusalem",
+    "lat": 31.729,
+    "lng": 35.109,
+    "type": [
+      "מים",
+      "מעיין",
+      "נקבה",
+      "ארכיאולוגיה"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Cave",
+      "Archaeology"
+    ],
+    "vulnerabilities": [
+      "חושך בנקבה"
+    ],
+    "vulnerabilities_en": [
+      "Dark Cave"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4007",
+    "trail_length_km": 1.5,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מערכת מים תת-קרקעית מרתקת עם נקבה להליכה שפופה, בריכת אגירה וחניון פיקניק מוצל."
+  },
+  {
+    "id": 857,
+    "name": "עין מטע ועין תנור - נחל זנוח",
+    "name_en": "Ein Mata and Ein Tanur Springs",
+    "region": "שפלת יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.708,
+    "lng": 35.028,
+    "type": [
+      "מים",
+      "מעיין",
+      "חורש",
+      "עצי תאנה"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Forest"
+    ],
+    "vulnerabilities": [
+      "בוץ ורטיבות"
+    ],
+    "vulnerabilities_en": [
+      "Mud"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4008",
+    "trail_length_km": 3.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מסלול מוצל קסום העובר בין פלג מים, עצי תאנה ענקיים ונקבת עין תנור בצורת פרסה."
+  },
+  {
+    "id": 858,
+    "name": "גן לאומי עין חמד (אקווה בלה)",
+    "name_en": "Ein Hemed National Park (Aqua Bella)",
+    "region": "ירושלים והרי יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.8005,
+    "lng": 35.125,
+    "type": [
+      "מים",
+      "גן לאומי",
+      "מבצר צלבני",
+      "דשא"
+    ],
+    "type_en": [
+      "Water",
+      "National Park",
+      "Fortress",
+      "Lawn"
+    ],
+    "vulnerabilities": [
+      "עומס מבקרים בשבת"
+    ],
+    "vulnerabilities_en": [
+      "Crowds"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "INPA-4009",
+    "trail_length_km": 1.2,
+    "difficulty": "קל",
+    "entry_fee": "בתשלום (מנוי מטמון)",
+    "description": "חווה צלבנית מבוצרת ושמורה, תעלות מים זורמות, בריכות שכשוך ומדשאות רחבות ידיים לעגלות."
+  },
+  {
+    "id": 859,
+    "name": "עין מבוע (עין פוואר) - שמורת נחל פרת",
+    "name_en": "Ein Mabua Spring - Prat Stream",
+    "region": "מדבר יהודה וים המלח",
+    "region_group": "south",
+    "lat": 31.8385,
+    "lng": 35.349,
+    "type": [
+      "מים",
+      "מעיין פועם",
+      "נחל",
+      "מדבר"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Desert"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": true,
+    "authority_id": "INPA-4010",
+    "trail_length_km": 1.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מעיין פועם ייחודי המתמלא ומתרוקן בקצב קבוע בתוך בריכה עגולה מרוצפת פסיפס ביזנטי."
+  },
+  {
+    "id": 860,
+    "name": "עין פרת (עין פארה) - שמורת נחל פרת",
+    "name_en": "Ein Prat Nature Reserve",
+    "region": "מדבר יהודה וים המלח",
+    "region_group": "south",
+    "lat": 31.8315,
+    "lng": 35.3015,
+    "type": [
+      "מים",
+      "קניון",
+      "מנזר פארן",
+      "מדבר"
+    ],
+    "type_en": [
+      "Water",
+      "Canyon",
+      "Monastery",
+      "Desert"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "INPA-4011",
+    "trail_length_km": 3.5,
+    "difficulty": "קל עד בינוני",
+    "entry_fee": "בתשלום (מנוי מטמון)",
+    "description": "נאת מדבר מרהיבה עם קניון סלעים עמוק, בריכות מים טבעיות ומנזר חריטון התלוי על המצוק."
+  },
+  {
+    "id": 861,
+    "name": "שמורת טבע עין בוקק",
+    "name_en": "Ein Bokek Nature Reserve",
+    "region": "ים המלח ומדבר יהודה",
+    "region_group": "south",
+    "lat": 31.1985,
+    "lng": 35.362,
+    "type": [
+      "מים",
+      "נחל זורם",
+      "נווה מדבר",
+      "מפלים"
+    ],
+    "type_en": [
+      "Water",
+      "Oasis",
+      "Desert"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "INPA-4012",
+    "trail_length_km": 2.2,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "נאת מדבר מדהימה שבה פלג מים חיים זורם בכל עונות השנה בין קירות קניון אדומים."
+  },
+  {
+    "id": 862,
+    "name": "עין פלוטית (מעיין האהבה) - נאות הכיכר",
+    "name_en": "Ein Plotit Spring (Spring of Love)",
+    "region": "דרום ים המלח וכיכר סדום",
+    "region_group": "south",
+    "lat": 30.9575,
+    "lng": 35.383,
+    "type": [
+      "מים",
+      "מעיין",
+      "נווה מדבר",
+      "עצי תמר"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Desert"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4013",
+    "trail_length_km": 0.3,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת מים מתוקים צלולים וקסומים בצל דקלים ועצי אשל בכיכר סדום, פינת חמד מוצלת ושקטה."
+  },
+  {
+    "id": 863,
+    "name": "שמורת טבע עינות צוקים (עין פשחה)",
+    "name_en": "Einot Tzukim Nature Reserve (Ein Feshkha)",
+    "region": "ים המלח ומדבר יהודה",
+    "region_group": "south",
+    "lat": 31.7145,
+    "lng": 35.457,
+    "type": [
+      "מים",
+      "נווה מדבר",
+      "שמורה חבויה",
+      "בריכות"
+    ],
+    "type_en": [
+      "Water",
+      "Oasis",
+      "Pools",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "שיטפונות בזק",
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Flash Floods",
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "INPA-4014",
+    "trail_length_km": 1.5,
+    "difficulty": "קל",
+    "entry_fee": "בתשלום (מנוי מטמון)",
+    "description": "נווה המדבר הנמוך בעולם עם בריכות שכשוך מרווחות לילדים, צמחיית ג'ונגל עשירה וסיורים בשמורה החבויה."
+  },
+  {
+    "id": 864,
+    "name": "עין נון - מושבה מגדל",
+    "name_en": "Ein Nun Spring - Migdal",
+    "region": "סובב כנרת והגליל התחתון",
+    "region_group": "north",
+    "lat": 32.825,
+    "lng": 35.508,
+    "type": [
+      "מים",
+      "מעיין",
+      "פארק",
+      "כנרת"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Park"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4015",
+    "trail_length_km": 0.6,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת מעיין גדולה ומשופצת המוקפת מדשאות ירוקות, עצי אקליפטוס ושבילי עגלות סמוך לכנרת."
+  },
+  {
+    "id": 866,
+    "name": "עין כנף (חניון עין איקלית) - רמת הגולן",
+    "name_en": "Ein Kanaf Spring - Golan",
+    "region": "רמת הגולן",
+    "region_group": "north",
+    "lat": 32.8715,
+    "lng": 35.719,
+    "type": [
+      "מים",
+      "מעיין",
+      "בריכה",
+      "בית כנסת עתיק"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Archaeology"
+    ],
+    "vulnerabilities": [
+      "עומס בסופש"
+    ],
+    "vulnerabilities_en": [
+      "Crowds"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4017",
+    "trail_length_km": 1.5,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "שלוש בריכות אבן צלולות שמימיהן זורמים מתוך נקבה עתיקה אל מול נוף נחל כנף וחורבת דיר עזיז."
+  },
+  {
+    "id": 867,
+    "name": "עין א-תינה (עין נוטרה) - עמק החולה",
+    "name_en": "Ein Tina (Ein Notera)",
+    "region": "עמק החולה ומורדות הגולן",
+    "region_group": "north",
+    "lat": 33.076,
+    "lng": 35.644,
+    "type": [
+      "מים",
+      "נביעה בצינור",
+      "הליכה במים",
+      "מפל"
+    ],
+    "type_en": [
+      "Water",
+      "Waterfall",
+      "Hike in Water"
+    ],
+    "vulnerabilities": [
+      "סלעים חלקלקים"
+    ],
+    "vulnerabilities_en": [
+      "Slippery Rocks"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4018",
+    "trail_length_km": 2.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מסלול הליכה רטוב ומרענן בערוץ מים פראי עד למפל שוצף הפורץ מצינור בטון ענקי בצל עצי תאנה."
+  },
+  {
+    "id": 868,
+    "name": "עין דבשה (טחנת דרבשיה) - מורדות הגולן",
+    "name_en": "Ein Divsha Mill",
+    "region": "עמק החולה ומורדות הגולן",
+    "region_group": "north",
+    "lat": 33.0975,
+    "lng": 35.648,
+    "type": [
+      "מים",
+      "טחנת קמח",
+      "פלג מים",
+      "צל"
+    ],
+    "type_en": [
+      "Water",
+      "Historic Mill",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "סלעים חלקים"
+    ],
+    "vulnerabilities_en": [
+      "Slippery Rocks"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4019",
+    "trail_length_km": 1.2,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "הליכה קלילה בתוך פלג מים רדוד הזורם לצד טחנת קמח עתיקה ומשופצת המוקפת צל עצי איקליפטוס."
+  },
+  {
+    "id": 869,
+    "name": "עין יזרעאל - עמק חרוד והגלבוע",
+    "name_en": "Ein Yizre'el Spring - Gilboa",
+    "region": "עמק יזרעאל ועמק חרוד",
+    "region_group": "north",
+    "lat": 32.559,
+    "lng": 35.318,
+    "type": [
+      "מים",
+      "מעיין",
+      "חורשת אקליפטוס",
+      "היסטוריה"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Forest"
+    ],
+    "vulnerabilities": [
+      "עומס חום"
+    ],
+    "vulnerabilities_en": [
+      "Heat"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4020",
+    "trail_length_km": 1.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת מים גדולה עם בית משאבה עתיק בלב חורשת איקליפטוסים עבותה למרגלות תל יזרעאל התנ\"כי."
+  },
+  {
+    "id": 870,
+    "name": "עין שרונה - רמת סירין",
+    "name_en": "Ein Sharona Spring - Ramat Sirin",
+    "region": "הגליל התחתון",
+    "region_group": "north",
+    "lat": 32.723,
+    "lng": 35.485,
+    "type": [
+      "מים",
+      "מעיין",
+      "תצפית",
+      "בריכות אבן"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Viewpoint"
+    ],
+    "vulnerabilities": [
+      "שביל משופע"
+    ],
+    "vulnerabilities_en": [
+      "Sloped Trail"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4021",
+    "trail_length_km": 1.4,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מעיין שכבה המזרים מימיו לשלוש בריכות מדורגות תחת עצי תאנה וחרוב עם נוף לרמת סירין ובקעת יבנאל."
+  },
+  {
+    "id": 871,
+    "name": "עין יפתחאל (מעיין חרבג') - אלון הגליל",
+    "name_en": "Ein Yiftachel Spring - Alon HaGalil",
+    "region": "הגליל התחתון ועמק יזרעאל",
+    "region_group": "north",
+    "lat": 32.756,
+    "lng": 35.217,
+    "type": [
+      "מים",
+      "מעיין",
+      "אלונים",
+      "שכשוך"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Oaks"
+    ],
+    "vulnerabilities": [
+      "עונתיות במים"
+    ],
+    "vulnerabilities_en": [
+      "Seasonal Water"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4022",
+    "trail_length_km": 0.8,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת שכשוך נעימה ומוצלת במפגש נחל ציפורי ונחל יפתחאל סמוך למרכז שטח אלון הגליל."
+  },
+  {
+    "id": 872,
+    "name": "עין צור - רמת הנדיב ופארק ז'בוטינסקי",
+    "name_en": "Ein Tzur Spring - Ramat HaNadiv",
+    "region": "חוף הכרמל ורמת מנשה",
+    "region_group": "haifa_carmel",
+    "lat": 32.551,
+    "lng": 34.954,
+    "type": [
+      "מים",
+      "נקבת מים",
+      "בית מרחץ רומי",
+      "שביל עגלות"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Roman Bath",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "עומס מבקרים"
+    ],
+    "vulnerabilities_en": [
+      "Crowds"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "INPA-4023",
+    "trail_length_km": 2.5,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "שביל מעיין מונגש ומסודר המוביל לנקבת מים צוננת, בית מרחץ רומי שמור ובריכת שכשוך קסומה."
+  },
+  {
+    "id": 873,
+    "name": "עין ריחניה - רמת מנשה",
+    "name_en": "Ein Rihaniya Spring - Ramat Menashe",
+    "region": "רמת מנשה וחוף הכרמל",
+    "region_group": "haifa_carmel",
+    "lat": 32.608,
+    "lng": 35.099,
+    "type": [
+      "מים",
+      "נחל השופט",
+      "בריכת מים",
+      "חורש"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Forest"
+    ],
+    "vulnerabilities": [
+      "בוץ בחורף"
+    ],
+    "vulnerabilities_en": [
+      "Mud"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4024",
+    "trail_length_km": 3.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת מעיין עמוקה וצלולה מוקפת צמחיית קנים ועצי פטל במרחב הביוספרי הפסטורלי של רמת מנשה."
+  },
+  {
+    "id": 874,
+    "name": "שביל כרמי הרי יהודה וגיתות יין",
+    "name_en": "Judean Hills Vineyards & Ancient Winepresses Trail",
+    "region": "ירושלים והרי יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.748,
+    "lng": 35.048,
+    "type": [
+      "חקלאות",
+      "כרמים",
+      "גיתות יין",
+      "נוף הררי"
+    ],
+    "type_en": [
+      "Agriculture",
+      "Vineyards",
+      "Winepress",
+      "Mountains"
+    ],
+    "vulnerabilities": [
+      "חשיפה לשמש בקיץ"
+    ],
+    "vulnerabilities_en": [
+      "Sun Exposure"
+    ],
+    "category": "nature",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "AGRI-TRAIL-4025",
+    "trail_length_km": 4.5,
+    "difficulty": "קל עד בינוני",
+    "entry_fee": "חינם",
+    "description": "שביל נוף העובר בין כרמי ענבים משגשגים, טרסות חקלאיות משוחזרות וגיתות יין קדומות חצובות בסלע."
+  },
+  {
+    "id": 875,
+    "name": "שביל בוסתני עמק רפאים ועין אל-בלד",
+    "name_en": "Emek Refaim Orchards and Terraces Trail",
+    "region": "ירושלים והרי יהודה",
+    "region_group": "jerusalem",
+    "lat": 31.746,
+    "lng": 35.155,
+    "type": [
+      "חקלאות",
+      "טרסות",
+      "בוסתנים",
+      "מים"
+    ],
+    "type_en": [
+      "Agriculture",
+      "Terraces",
+      "Orchards",
+      "Water"
+    ],
+    "vulnerabilities": [
+      "עומס חום בצהריים"
+    ],
+    "vulnerabilities_en": [
+      "Heat"
+    ],
+    "category": "nature",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "AGRI-TRAIL-4026",
+    "trail_length_km": 3.8,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מסלול חקלאות הררית מסורתית עם עצי זית עתיקים, שקדיות, תעלות שלחין ונופי פארק ירושלים."
+  },
+  {
+    "id": 876,
+    "name": "דרך נוף רמת מנשה ומרחב ביוספרי חקלאי",
+    "name_en": "Ramat Menashe Agricultural Scenic Byway",
+    "region": "רמת מנשה וחוף הכרמל",
+    "region_group": "haifa_carmel",
+    "lat": 32.585,
+    "lng": 35.075,
+    "type": [
+      "חקלאות",
+      "שדות דגנים",
+      "נוף פתוח",
+      "שביל אופניים והליכה"
+    ],
+    "type_en": [
+      "Agriculture",
+      "Fields",
+      "Scenic Road",
+      "Cycling"
+    ],
+    "vulnerabilities": [
+      "בוץ אחרי גשם"
+    ],
+    "vulnerabilities_en": [
+      "Mud"
+    ],
+    "category": "nature",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "AGRI-TRAIL-4027",
+    "trail_length_km": 6.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "שביל כורכר כבוש ונוח בין שדות חיטה ירוקים, מרעה בקר, מטעי פרי וגבעות טוסקניות מתגלגלות."
+  },
+  {
+    "id": 877,
+    "name": "שביל מטעי התמרים ובריכות נאות הכיכר",
+    "name_en": "Neot HaKikar Date Palm Groves Trail",
+    "region": "דרום ים המלח וכיכר סדום",
+    "region_group": "south",
+    "lat": 30.965,
+    "lng": 35.39,
+    "type": [
+      "חקלאות מדברית",
+      "מטעי תמרים",
+      "מדבר",
+      "ציפורים"
+    ],
+    "type_en": [
+      "Desert Agriculture",
+      "Date Palms",
+      "Desert",
+      "Birds"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "category": "desert",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "AGRI-TRAIL-4028",
+    "trail_length_km": 3.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "הליכה בין כפות תמרים גבוהות, חממות חקלאות מים מליחים ובריכות אידוי ססגוניות בלב המדבר."
+  },
+  {
+    "id": 878,
+    "name": "עין חרדלית עליון ובריכות הדולבים - נחל כזיב",
+    "name_en": "Upper Ein Hardalit & Plane Tree Pools",
+    "region": "גליל מערבי",
+    "region_group": "north",
+    "lat": 33.044,
+    "lng": 35.215,
+    "type": [
+      "מים",
+      "נחל",
+      "בריכות עמוקות",
+      "חורש"
+    ],
+    "type_en": [
+      "Water",
+      "Stream",
+      "Pools",
+      "Forest"
+    ],
+    "vulnerabilities": [
+      "זיהום מים ארעי"
+    ],
+    "vulnerabilities_en": [
+      "Pollution"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4029",
+    "trail_length_km": 3.2,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכות טורקיז עמוקות בצל עצי דולב ענקיים במעלה נחל כזיב מזרחית למתקן השאיבה של מקורות."
+  },
+  {
+    "id": 879,
+    "name": "עין פיק - דרום הגולן ומצוקי נחל עין גב",
+    "name_en": "Ein Fik Spring - Southern Golan",
+    "region": "רמת הגולן",
+    "region_group": "north",
+    "lat": 32.782,
+    "lng": 35.701,
+    "type": [
+      "מים",
+      "מעיין",
+      "בוסתן תאנים",
+      "מפל"
+    ],
+    "type_en": [
+      "Water",
+      "Spring",
+      "Figs",
+      "Waterfall"
+    ],
+    "vulnerabilities": [
+      "מדרגות תלולות"
+    ],
+    "vulnerabilities_en": [
+      "Steep Stairs"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4030",
+    "trail_length_km": 1.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "ירידה במדרגות מוצלות לבריכת מעיין עמוקה וקרירה תחת מצוק בזלת, עצי תאנה ומפל קטן."
+  },
+  {
+    "id": 880,
+    "name": "עין מוקש - צפון רמת הגולן",
+    "name_en": "Ein Mokesh Spring - Northern Golan",
+    "region": "רמת הגולן",
+    "region_group": "north",
+    "lat": 33.141,
+    "lng": 35.808,
+    "type": [
+      "מים",
+      "מעיין עמוק",
+      "בריכת בזלת",
+      "שחייה"
+    ],
+    "type_en": [
+      "Water",
+      "Deep Spring",
+      "Basalt Pool"
+    ],
+    "vulnerabilities": [
+      "מים עמוקים מאוד",
+      "עומס מבקרים"
+    ],
+    "vulnerabilities_en": [
+      "Deep Water",
+      "Crowds"
+    ],
+    "category": "water",
+    "min_age": 7,
+    "age_group": "7+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4031",
+    "trail_length_km": 0.5,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת בזלת עגולה ועמוקה בקוטר 10 מטרים עם סולמות מתכת לירידה נוחה למים צוננים."
+  },
+  {
+    "id": 881,
+    "name": "עין ג'ונס (עין עלמין) - פארק הירדן והגולן",
+    "name_en": "Ein Almin (Ein Jones) - Golan",
+    "region": "רמת הגולן ועמק הירדן",
+    "region_group": "north",
+    "lat": 32.965,
+    "lng": 35.658,
+    "type": [
+      "מים",
+      "בריכת קצינים",
+      "איקליפטוסים",
+      "שחייה"
+    ],
+    "type_en": [
+      "Water",
+      "Officers Pool",
+      "Eucalyptus"
+    ],
+    "vulnerabilities": [
+      "עומס בסופש"
+    ],
+    "vulnerabilities_en": [
+      "Crowds"
+    ],
+    "category": "water",
+    "min_age": 4,
+    "age_group": "4+",
+    "stroller_accessible": false,
+    "authority_id": "OSM-NODE-4032",
+    "trail_length_km": 0.6,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת קצינים סורית גדולה ומוצלת הניזונה ממעיין שופע בצל חורשת איקליפטוס מעל ערוץ נחל משושים."
+  },
+  {
+    "id": 882,
+    "name": "עין נזם (חניון חנצי) - עמק המעיינות",
+    "name_en": "Ein Nezem Spring - Beit Shean Valley",
+    "region": "עמק המעיינות",
+    "region_group": "north",
+    "lat": 32.443,
+    "lng": 35.534,
+    "type": [
+      "מים",
+      "מעיין עמוק",
+      "מקפצה",
+      "דשא"
+    ],
+    "type_en": [
+      "Water",
+      "Deep Spring",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "category": "water",
+    "min_age": 7,
+    "age_group": "7+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4033",
+    "trail_length_km": 0.4,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "בריכת מים מתוקים עמוקה ורחבת ידיים סמוך לשדה אליהו, אהובה על קופצי מים וחובבי שחייה."
+  },
+  {
+    "id": 883,
+    "name": "פארק נחל קרמיאן ומעיינות בקעת בית נטופה",
+    "name_en": "Nahal Karmian & Beit Netofa Valley Springs",
+    "region": "הגליל התחתון",
+    "region_group": "north",
+    "lat": 32.812,
+    "lng": 35.345,
+    "type": [
+      "מים",
+      "שכשוך",
+      "שדות חקלאיים",
+      "נוף פתוח"
+    ],
+    "type_en": [
+      "Water",
+      "Wading",
+      "Fields",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "חשיפה לשמש"
+    ],
+    "vulnerabilities_en": [
+      "Sun Exposure"
+    ],
+    "category": "water",
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "authority_id": "OSM-NODE-4034",
+    "trail_length_km": 2.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "שבילי הליכה נעימים לצד תעלות מים זורמות ופינות ישיבה מוצלות בלב שדות בקעת בית נטופה."
+  },
+  {
+    "id": 884,
+    "name": "שמורת טבע עין תאו (עין ג'יהולה)",
+    "name_en": "Ein Teo Nature Reserve",
+    "lat": 33.125,
+    "lng": 35.584,
+    "authority_id": "INPA-4035",
+    "category": "water",
+    "region": "עמק החולה וגליל עליון",
+    "region_group": "north",
+    "type": [
+      "מים",
+      "בריכה",
+      "שמורה",
+      "טבע"
+    ],
+    "type_en": [
+      "Water",
+      "Pool",
+      "Nature"
+    ],
+    "vulnerabilities": [
+      "סגור לרחצה בשמורה"
+    ],
+    "vulnerabilities_en": [
+      "No Swimming in Reserve"
+    ],
+    "min_age": 0,
+    "age_group": "0+",
+    "stroller_accessible": true,
+    "trail_length_km": 1.0,
+    "difficulty": "קל",
+    "entry_fee": "חינם",
+    "description": "מעיין שכבה שופע עם בריכה טבעית גדולה מוקפת צמחי נופר צהוב ועצי ערבה ענקיים בעמק החולה."
   }
 ]

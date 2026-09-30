@@ -265,28 +265,38 @@ export class AgentBotService {
     ];
     const hasLookupIntent = directLookupIntents.some((intent) => text.includes(intent));
     if (hasLookupIntent) {
-      const GENERIC_PREFIXES = [
-        'עין', 'נחל', 'פארק', 'שמורת', 'גן', 'יער', 'הר', 'תל', 'חוף', 'דרך', 'בית', 'ספר', 'שדה', 'מצפור', 'מצפה', 'חורבת',
-        'מסלול', 'מסלולים', 'מסלולי', 'שביל', 'שבילי', 'משפחתי', 'משפחתיים', 'טיול', 'טיולים', 'מעגלי', 'קצר', 'ארוך', 'לאומי', 'טבע'
-      ];
-      const inputWords = text.split(/[\s\-–—,?!.:;]+/).filter(Boolean);
-      const matchedSite = assetsData.find((site) => {
-        const siteName = site.name.toLowerCase();
-        if (text.includes(siteName)) return true;
-        const words = siteName.split(/[\s\-–—]+/).filter(Boolean);
-        for (let i = 0; i < words.length - 1; i++) {
-          const phrase = `${words[i]} ${words[i + 1]}`;
-          if (
-            phrase.length >= 6 &&
-            text.includes(phrase) &&
-            !['מסלול משפחתי', 'שביל משפחתי', 'מסלול מעגלי', 'שביל מעגלי', 'טיול משפחתי'].includes(phrase)
-          ) {
-            return true;
+      // 1. Exact full name match across all sites (prioritizing longest match)
+      let matchedSite = assetsData
+        .filter((s) => text.includes(s.name.toLowerCase()))
+        .sort((a, b) => b.name.length - a.name.length)[0];
+
+      if (!matchedSite) {
+        const GENERIC_PREFIXES = [
+          'עין', 'נחל', 'פארק', 'שמורת', 'גן', 'יער', 'הר', 'תל', 'חוף', 'דרך', 'בית', 'ספר', 'שדה', 'מצפור', 'מצפה', 'חורבת',
+          'מסלול', 'מסלולים', 'מסלולי', 'שביל', 'שבילי', 'משפחתי', 'משפחתיים', 'טיול', 'טיולים', 'מעגלי', 'קצר', 'ארוך', 'לאומי', 'טבע'
+        ];
+        const GENERIC_EXCLUDED_PHRASES = [
+          'שמורת טבע', 'גן לאומי', 'בית ספר', 'ספר שדה', 'חניון לילה', 'מסלול הליכה', 'שביל הליכה',
+          'מסלול משפחתי', 'שביל משפחתי', 'מסלול מעגלי', 'שביל מעגלי', 'טיול משפחתי'
+        ];
+        const inputWords = text.split(/[\s\-–—,?!.:;]+/).filter(Boolean);
+        matchedSite = assetsData.find((site) => {
+          const siteName = site.name.toLowerCase();
+          const words = siteName.split(/[\s\-–—]+/).filter(Boolean);
+          for (let i = 0; i < words.length - 1; i++) {
+            const phrase = `${words[i]} ${words[i + 1]}`;
+            if (
+              phrase.length >= 6 &&
+              text.includes(phrase) &&
+              !GENERIC_EXCLUDED_PHRASES.includes(phrase)
+            ) {
+              return true;
+            }
           }
-        }
-        const distinctiveWords = words.filter((w) => w.length >= 3 && !GENERIC_PREFIXES.includes(w));
-        return distinctiveWords.some((w) => inputWords.includes(w));
-      });
+          const distinctiveWords = words.filter((w) => w.length >= 3 && !GENERIC_PREFIXES.includes(w));
+          return distinctiveWords.some((w) => inputWords.includes(w));
+        });
+      }
 
       if (matchedSite) {
         let weather = null;
@@ -344,6 +354,28 @@ export class AgentBotService {
     }
 
     const state = this.extractParameters(message, currentState);
+
+    // Dynamic 50km Geocoding for any Israeli town (Finding A2)
+    if (!state.originCoords) {
+      const cityMatch = text.match(/(?:יוצאים מ|מאיזור|מאזור|ליד|קרוב ל|במרחק\s*(?:\d+\s*ק["״]?מ\s*)?מ|ברדיוס\s*(?:\d+\s*ק["״]?מ\s*)?מ|גרים ב|אנחנו מ|אני מ)\s*([א-ת]{3,15}(?:\s+[א-ת]{3,15})?)/);
+      if (cityMatch && cityMatch[1]) {
+        const candidateName = cityMatch[1].trim();
+        const STOPWORDS = ['הצפון', 'הדרום', 'המרכז', 'השרון', 'השפלה', 'הגולן', 'הגליל', 'המים', 'עגלות', 'ילדים', 'הבוקר', 'הצהריים', 'הערב', 'השבת', 'מחר', 'הבית', 'שם'];
+        if (!STOPWORDS.includes(candidateName)) {
+          const geo = await geocodeCity(candidateName);
+          if (geo) {
+            state.originCoords = [geo.lat, geo.lng];
+            state.originCity = geo.label;
+            state.originName = geo.label;
+            if (!state.region || state.region === 'all') {
+              state.region = 'radius';
+              state.maxDistanceKm = state.maxDistanceKm || 50;
+              state.regionLabel = `רדיוס ${state.maxDistanceKm} ק"מ מ${geo.label}`;
+            }
+          }
+        }
+      }
+    }
 
     if (hasDogMention) {
       state.dogWarning = true;

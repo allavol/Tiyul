@@ -186,6 +186,23 @@ export function checkGuardrails(message) {
   // 2. Foreign countries / travel abroad
   for (const fKw of FOREIGN_COUNTRIES_KEYWORDS) {
     if (lower.includes(fKw)) {
+      // Exception: Jordan River / Valley in Israel
+      if (fKw === 'ירדן') {
+        const isJordanRiver = (
+          lower.includes('נהר הירדן') ||
+          lower.includes('נהר ירדן') ||
+          lower.includes('בירדן') ||
+          lower.includes('נחל ירדן') ||
+          lower.includes('פארק הירדן') ||
+          lower.includes('הירדן ההררי') ||
+          lower.includes('עמק הירדן') ||
+          lower.includes('זיהום') ||
+          lower.includes('שייט') ||
+          lower.includes('קיאק') ||
+          lower.includes('רפטינג')
+        );
+        if (isJordanRiver) continue;
+      }
       return {
         safe: false,
         refusal: 'שלום! 🌿 המומחיות שלי כסוכן טיולים ממוקדת כולה בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה המרהיבים **בישראל** 🇮🇱 בלבד.\n\nאינני מספק מידע או המלצות למדינות אחרות או לחו"ל.\n\nאשמח מאוד לעזור לכם לתכנן טיול קסום ובטוח בארץ! לאיזה אזור בישראל תרצו לטייל (צפון, מרכז, ירושלים או דרום) ומתי?',
@@ -212,6 +229,21 @@ export function parseAgeFromText(text) {
   if (!text || typeof text !== 'string') return null;
 
   const foundAges = [];
+
+  // Baby / Stroller categorical keywords (detect 0+ unless baby has an attached explicit age or stroller is negated)
+  const hasNegativeStroller = (
+    text.includes('ללא עגלה') || text.includes('בלי עגלה') ||
+    text.includes('ללא עגלות') || text.includes('בלי עגלות') ||
+    text.includes('אין עגלה') || text.includes('לא עגלה')
+  );
+  const isStandaloneBaby = (
+    text.includes('0+') || 
+    ((text.includes('עגלה') || text.includes('עגלות')) && !hasNegativeStroller) ||
+    (/(?:תינוק|תינוקת|פעוט)/.test(text) && !/(?:תינוק|תינוקת|פעוט)\s+(?:בן|בת|בגיל)/.test(text))
+  );
+  if (isStandaloneBaby) {
+    foundAges.push(0);
+  }
 
   // 1. Explicit Hebrew age words after age markers
   for (const item of HEBREW_AGE_WORDS) {
@@ -263,9 +295,7 @@ export function parseAgeFromText(text) {
 
   // 3. Categorical age keywords (if no explicit number found)
   if (foundAges.length === 0) {
-    if (text.includes('תינוק') || text.includes('תינוקת') || text.includes('תינוקות') || text.includes('פעוט') || text.includes('פעוטות') || text.includes('עגלה') || text.includes('עגלות') || text.includes('0+')) {
-      foundAges.push(0);
-    } else if (text.includes('קטנים') || text.includes('קטנטנים') || text.includes('גן') || text.includes('ילדי גן')) {
+    if (text.includes('קטנים') || text.includes('קטנטנים') || text.includes('גן') || text.includes('ילדי גן')) {
       foundAges.push(4);
     } else if (text.includes('יסודי') || text.includes('ילדי יסודי') || text.includes('בוגרים') || text.includes('ילדים בוגרים')) {
       foundAges.push(7);
@@ -553,7 +583,8 @@ export function extractParameters(message, currentState) {
   // 4. Youngest age extraction
   const extractedAge = parseAgeFromText(text);
   if (extractedAge !== null) {
-    if (extractedAge <= 2) {
+    updated.exactAge = extractedAge;
+    if (extractedAge <= 2.5) {
       updated.minAge = 0;
       updated.minAgeLabel = '0+ (תינוקות ועגלות)';
     } else if (extractedAge <= 6) {

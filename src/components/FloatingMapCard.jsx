@@ -532,6 +532,32 @@ export default function FloatingMapCard({
             <span>{suitability.parts[suitability.parts.length - 1]}</span>
           </span>
         </div>
+
+        {/* Trail Specs (Finding L5): אורך מסלול, דרגת קושי, דמי כניסה */}
+        {(asset.trail_length_km || asset.difficulty || asset.entry_fee) && (
+          <div className="flex items-center justify-between bg-brand-deep/60 rounded-xl p-2.5 border border-white/[0.06] text-xs mt-2">
+            {asset.trail_length_km && (
+              <div className="flex items-center gap-1.5 text-zinc-300">
+                <span className="text-accent">📏</span>
+                <span className="font-mono font-bold text-white">{asset.trail_length_km} ק״מ</span>
+              </div>
+            )}
+            {asset.difficulty && (
+              <div className="flex items-center gap-1.5 text-zinc-300">
+                <span>🥾</span>
+                <span className="font-medium text-zinc-200">{asset.difficulty}</span>
+              </div>
+            )}
+            {asset.entry_fee && (
+              <div className="flex items-center gap-1.5 text-zinc-300">
+                <span>🎟️</span>
+                <span className={`text-[11px] font-bold ${asset.entry_fee.includes('חינם') ? 'text-emerald-400' : 'text-amber-300'}`}>
+                  {asset.entry_fee}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Agent Verdict ─────────────────────────────────────── */}
