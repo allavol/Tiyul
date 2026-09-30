@@ -74,7 +74,7 @@ export const HEBREW_DAYS = [
   { dayNum: 2, names: ['יום שלישי', 'שלישי הקרוב', 'בשלישי', 'יום ג\'', 'יום ג׳', 'יום ג', 'שלישי'], label: 'יום שלישי' },
   { dayNum: 3, names: ['יום רביעי', 'רביעי הקרוב', 'ברביעי', 'יום ד\'', 'יום ד׳', 'יום ד', 'רביעי'], label: 'יום רביעי' },
   { dayNum: 4, names: ['יום חמישי', 'חמישי הקרוב', 'בחמישי', 'יום ה\'', 'יום ה׳', 'יום ה', 'חמישי'], label: 'יום חמישי' },
-  { dayNum: 5, names: ['יום שישי', 'שישי הקרוב', 'בשישי', 'יום ו\'', 'יום ו׳', 'יום ו', 'שישי', 'סופ"ש', 'סופש', 'סוף השבוע', 'סוף שבוע'], label: 'יום שישי (סופ"ש)' },
+  { dayNum: 5, names: ['יום שישי', 'שישי הקרוב', 'בשישי', 'יום ו\'', 'יום ו׳', 'יום ו', 'שישי'], label: 'יום שישי' },
   { dayNum: 6, names: ['יום שבת', 'שבת הקרובה', 'שבת הקרוב', 'בשבת', 'שבת'], label: 'יום שבת' },
 ];
 
@@ -386,6 +386,17 @@ export function extractParameters(message, currentState) {
   // 1. Timing extraction
   const currentDayNum = new Date().getDay();
 
+  const isWeekendExplicit = (
+    text.includes('סוף השבוע') || 
+    text.includes('סוף שבוע') || 
+    text.includes('בסוף השבוע') || 
+    text.includes('בסוף שבוע') || 
+    text.includes('סופ"ש') || 
+    text.includes('סופש') || 
+    text.includes('בסופש') || 
+    text.includes('בסופ"ש')
+  );
+
   if (text.includes('מחרתיים') || text.includes('בעוד יומיים')) {
     updated.timing = 'day_after';
     updated.timingLabel = 'מחרתיים';
@@ -398,6 +409,22 @@ export function extractParameters(message, currentState) {
     updated.timing = 'today';
     updated.timingLabel = 'היום';
     updated.dayIndex = 0;
+  } else if (isWeekendExplicit) {
+    // Weekend in Israel spans Friday (day 5) & Saturday (day 6)
+    const diffFriday = (5 - currentDayNum + 7) % 7;
+    updated.timing = 'weekend';
+    updated.dayIndex = Math.min(diffFriday, 4);
+    if (currentDayNum === 5) {
+      updated.timingLabel = 'סוף השבוע (היום ומחר - שישי ושבת)';
+    } else if (currentDayNum === 6) {
+      updated.timingLabel = 'סוף השבוע (היום - שבת)';
+    } else if (diffFriday === 1) {
+      updated.timingLabel = 'סוף השבוע (מחר ומחרתיים - שישי ושבת)';
+    } else if (diffFriday === 2) {
+      updated.timingLabel = 'סוף השבוע הקרוב (שישי-שבת, בעוד יומיים)';
+    } else {
+      updated.timingLabel = `סוף השבוע הקרוב (שישי-שבת, בעוד ${diffFriday} ימים)`;
+    }
   } else if (text.includes('תחילת השבוע') || text.includes('בתחילת שבוע')) {
     const diff = (0 - currentDayNum + 7) % 7;
     updated.dayIndex = Math.min(diff === 0 ? 0 : diff, 4);
@@ -479,6 +506,40 @@ export function extractParameters(message, currentState) {
   // 2. Region / Distance extraction
   const distMatch = text.match(/(?:עד|ברדיוס של|בטווח של|במרחק של|מרחק של)?\s*(\d+)\s*(?:ק["״]?מ|קילומטר|קמ|קילומטרים)/);
 
+  // Target Destination Regions detection
+  const isJerusalemRegion = (
+    text.includes('בירושלים') || text.includes('לירושלים') || text.includes('באזור ירושלים') ||
+    text.includes('סביב ירושלים') || text.includes('הרי ירושלים') || text.includes('בהרי ירושלים') ||
+    text.includes('ירושלים והסביבה') || text.includes('ירושלים') || text.includes('שפלת יהודה') ||
+    text.includes('בשפלה') || text.includes('לשפלה') || text.includes('שפלה') ||
+    text.includes('מטה יהודה') || text.includes('גוש עציון') || text.includes('עציון') || text.includes('בית שמש')
+  );
+
+  const isNorthRegion = (
+    text.includes('בצפון') || text.includes('לצפון') || text.includes('באזור הצפון') ||
+    text.includes('צפון') || text.includes('גליל') || text.includes('בגליל') || text.includes('לגליל') ||
+    text.includes('גולן') || text.includes('בגולן') || text.includes('לגולן') ||
+    text.includes('כנרת') || text.includes('בכנרת') || text.includes('סובב כנרת') ||
+    text.includes('כרמל') || text.includes('בכרמל') || text.includes('חרמון') || text.includes('בחרמון') ||
+    text.includes('עמקים') || text.includes('בעמקים') || text.includes('חיפה') || text.includes('בחיפה')
+  );
+
+  const isCenterRegion = (
+    text.includes('במרכז') || text.includes('למרכז') || text.includes('באזור המרכז') ||
+    text.includes('מרכז') || text.includes('שרון') || text.includes('בשרון') || text.includes('באזור השרון') ||
+    text.includes('תל אביב') || text.includes('בתל אביב') || text.includes('עמק חפר') ||
+    text.includes('פולג') || text.includes('ירקון') || text.includes('גוש דן')
+  );
+
+  const isSouthRegion = (
+    text.includes('בדרום') || text.includes('לדרום') || text.includes('באזור הדרום') ||
+    text.includes('דרום') || text.includes('נגב') || text.includes('בנגב') || text.includes('לנגב') ||
+    text.includes('מדבר') || text.includes('במדבר') || text.includes('למדבר') ||
+    text.includes('ים המלח') || text.includes('בים המלח') || text.includes('ערבה') || text.includes('בערבה') ||
+    text.includes('אילת') || text.includes('באילת') || text.includes('מכתש רמון') || text.includes('במכתש רמון') ||
+    text.includes('רמון') || text.includes('ברמון') || text.includes('עין יהב') || text.includes('ספיר') || text.includes('ירוחם')
+  );
+
   let foundCity = null;
   for (const city of KNOWN_ORIGIN_CITIES) {
     if (city.names.some((name) => text.includes(name))) {
@@ -504,47 +565,49 @@ export function extractParameters(message, currentState) {
       updated.originName = 'תל אביב';
       updated.originCoords = [32.0853, 34.7818];
     }
+  } else if (isJerusalemRegion) {
+    updated.region = 'jerusalem';
+    updated.regionLabel = 'ירושלים והסביבה';
+    updated.maxDistanceKm = null;
+    if (foundCity && !['ירושלים', 'בירה', 'מבשרת ציון', 'מעלה אדומים', 'בית שמש', 'גוש עציון'].some(n => foundCity.names.includes(n))) {
+      updated.originCity = foundCity.label;
+      updated.originName = foundCity.label;
+      updated.originCoords = [foundCity.lat, foundCity.lng];
+    }
+  } else if (isNorthRegion) {
+    updated.region = 'north';
+    updated.regionLabel = 'צפון (גליל וגולן)';
+    updated.maxDistanceKm = null;
+    if (foundCity) {
+      updated.originCity = foundCity.label;
+      updated.originName = foundCity.label;
+      updated.originCoords = [foundCity.lat, foundCity.lng];
+    }
+  } else if (isCenterRegion) {
+    updated.region = 'center';
+    updated.regionLabel = 'מרכז והשרון';
+    updated.maxDistanceKm = null;
+    if (foundCity) {
+      updated.originCity = foundCity.label;
+      updated.originName = foundCity.label;
+      updated.originCoords = [foundCity.lat, foundCity.lng];
+    }
+  } else if (isSouthRegion) {
+    updated.region = 'south';
+    updated.regionLabel = 'דרום, נגב וים המלח';
+    updated.maxDistanceKm = null;
+    if (foundCity) {
+      updated.originCity = foundCity.label;
+      updated.originName = foundCity.label;
+      updated.originCoords = [foundCity.lat, foundCity.lng];
+    }
   } else if (foundCity) {
     updated.originCity = foundCity.label;
     updated.originName = foundCity.label;
     updated.originCoords = [foundCity.lat, foundCity.lng];
-
-    if (text.includes('לצפון') || text.includes('לגליל') || text.includes('לגולן')) {
-      updated.region = 'north';
-      updated.regionLabel = 'צפון (גליל וגולן)';
-      updated.maxDistanceKm = null;
-    } else if (text.includes('לדרום') || text.includes('לנגב') || text.includes('למדבר') || text.includes('לים המלח')) {
-      updated.region = 'south';
-      updated.regionLabel = 'דרום, נגב וים המלח';
-      updated.maxDistanceKm = null;
-    } else if (text.includes('לירושלים')) {
-      updated.region = 'jerusalem';
-      updated.regionLabel = 'ירושלים והשפלה';
-      updated.maxDistanceKm = null;
-    } else {
-      updated.region = 'radius';
-      updated.regionLabel = `רדיוס 50 ק"מ מ${foundCity.label}`;
-      updated.maxDistanceKm = 50;
-    }
-  } else {
-    if (text.includes('צפון') || text.includes('גליל') || text.includes('גולן') || text.includes('כנרת') || text.includes('כרמל') || text.includes('עמקים') || text.includes('חרמון') || text.includes('חיפה')) {
-      updated.region = 'north';
-      updated.regionLabel = 'צפון (גליל וגולן)';
-    } else if (text.includes('מרכז') || text.includes('שרון') || text.includes('תל אביב') || text.includes('חוף') || text.includes('ירקון') || text.includes('פולג') || text.includes('חדרה')) {
-      updated.region = 'center';
-      updated.regionLabel = 'מרכז והשרון';
-    } else if (text.includes('ירושלים') || text.includes('שפלה') || text.includes('יהודה') || text.includes('בית שמש') || text.includes('עציון')) {
-      updated.region = 'jerusalem';
-      updated.regionLabel = 'ירושלים והשפלה';
-    } else if (
-      text.includes('דרום') || text.includes('נגב') || text.includes('ים המלח') || text.includes('מדבר') ||
-      text.includes('ערבה') || text.includes('רמון') || text.includes('אילת') ||
-      text.includes('מכתש') || text.includes('מכתשים') || text.includes('יהב') || text.includes('עין יהב') ||
-      text.includes('ספיר') || text.includes('ירוחם')
-    ) {
-      updated.region = 'south';
-      updated.regionLabel = 'דרום, נגב וים המלח';
-    }
+    updated.region = 'radius';
+    updated.regionLabel = `רדיוס 50 ק"מ מ${foundCity.label}`;
+    updated.maxDistanceKm = 50;
   }
 
   // 3. Feature extraction

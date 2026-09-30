@@ -14,9 +14,10 @@ export { calculateHaversineDistanceKm } from '../../utils/geoUtils.js';
 export const KNOWN_ORIGIN_CITIES = [
   // Gush Dan & Center
   { names: ['פתח תקווה', 'פתח תקוה', 'פתח תיקווה', 'פתח תיקוה', 'פ"ת', 'פ״ת', 'בקעת אונו'], lat: 32.0840, lng: 34.8878, label: 'פתח תקווה', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['תל אביב', 'תל-אביב', 'ת"א', 'ת״א', 'גוש דן', 'המרכז', 'תל אביב יפו'], lat: 32.0853, lng: 34.7818, label: 'תל אביב', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['תל אביב', 'תל-אביב', 'ת"א', 'ת״א', 'גוש דן', 'תל אביב יפו'], lat: 32.0853, lng: 34.7818, label: 'תל אביב', region: 'center', regionLabel: 'מרכז והשרון' },
   { names: ['רמת גן', 'גבעתיים', 'בני ברק', 'קריית אונו', 'גני תקווה'], lat: 32.0684, lng: 34.8248, label: 'רמת גן/גוש דן', region: 'center', regionLabel: 'מרכז והשרון' },
-  { names: ['חולון', 'בת ים', 'אזור'], lat: 32.0158, lng: 34.7874, label: 'חולון/בת ים', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['חולון', 'בת ים'], lat: 32.0158, lng: 34.7874, label: 'חולון/בת ים', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['היישוב אזור', 'מועצה מקומית אזור', 'צומת אזור'], lat: 32.0242, lng: 34.8056, label: 'אזור', region: 'center', regionLabel: 'מרכז והשרון' },
   { names: ['ראשון לציון', 'ראשל"צ', 'ראשל״צ'], lat: 31.9730, lng: 34.7925, label: 'ראשון לציון', region: 'center', regionLabel: 'מרכז והשרון' },
   { names: ['הרצליה', 'רעננה', 'כפר סבא', 'הוד השרון', 'רמת השרון'], lat: 32.1663, lng: 34.8433, label: 'הרצליה/שרון דרומי', region: 'center', regionLabel: 'מרכז והשרון' },
   { names: ['ראש העין', 'אפק', 'מגדל צדק'], lat: 32.0956, lng: 34.9566, label: 'ראש העין', region: 'center', regionLabel: 'מרכז והשרון' },
@@ -25,7 +26,7 @@ export const KNOWN_ORIGIN_CITIES = [
   { names: ['מודיעין', 'מודיעין מכבים רעות', 'מכבים', 'רעות'], lat: 31.8903, lng: 35.0104, label: 'מודיעין', region: 'jerusalem', regionLabel: 'ירושלים והשפלה' },
 
   // Sharon & Coastal Plain
-  { names: ['נתניה', 'השרון', 'שרון', 'עמק חפר', 'כפר יונה'], lat: 32.3215, lng: 34.8532, label: 'נתניה', region: 'center', regionLabel: 'מרכז והשרון' },
+  { names: ['נתניה', 'עמק חפר', 'כפר יונה'], lat: 32.3215, lng: 34.8532, label: 'נתניה', region: 'center', regionLabel: 'מרכז והשרון' },
   { names: ['חדרה', 'אור עקיבא', 'פרדס חנה', 'כרכור'], lat: 32.4340, lng: 34.9197, label: 'חדרה/פרדס חנה', region: 'center', regionLabel: 'השרון הצפוני' },
   { names: ['קיסריה'], lat: 32.5000, lng: 34.9000, label: 'קיסריה', region: 'haifa_carmel', regionLabel: 'חוף הכרמל' },
   { names: ['זכרון יעקב', 'זיכרון יעקב', 'זכרון', 'בנימינה', 'גבעת עדה'], lat: 32.5707, lng: 34.9525, label: 'זכרון יעקב/בנימינה', region: 'haifa_carmel', regionLabel: 'חוף הכרמל ורמת מנשה' },
@@ -36,24 +37,24 @@ export const KNOWN_ORIGIN_CITIES = [
   { names: ['כרמיאל', 'משגב', 'סכנין', 'מעלות'], lat: 32.9199, lng: 35.2957, label: 'כרמיאל', region: 'north', regionLabel: 'צפון (גליל מרכזי)' },
   { names: ['נצרת', 'נוף הגליל', 'מגדל העמק'], lat: 32.6996, lng: 35.3035, label: 'נצרת', region: 'north', regionLabel: 'צפון (עמקים וגליל תחתון)' },
   { names: ['עפולה', 'עמק יזרעאל', 'יזרעאל', 'בית שאן'], lat: 32.6078, lng: 35.2894, label: 'עפולה/עמקים', region: 'north', regionLabel: 'צפון (עמק יזרעאל ובית שאן)' },
-  { names: ['טבריה', 'הכנרת', 'כנרת', 'סובב כנרת'], lat: 32.7922, lng: 35.5312, label: 'טבריה/כנרת', region: 'north', regionLabel: 'צפון (טבריה וסובב כנרת)' },
+  { names: ['טבריה', 'סובב כנרת'], lat: 32.7922, lng: 35.5312, label: 'טבריה/כנרת', region: 'north', regionLabel: 'צפון (טבריה וסובב כנרת)' },
   { names: ['צפת', 'ראש פינה', 'חצור הגלילית', 'מירון'], lat: 32.9646, lng: 35.4960, label: 'צפת/גליל עליון', region: 'north', regionLabel: 'צפון (גליל עליון)' },
-  { names: ['קריית שמונה', 'קרית שמונה', 'גליל עליון', 'אצבע הגליל', 'מטולה', 'דפנה'], lat: 33.2073, lng: 35.5721, label: 'קריית שמונה', region: 'north', regionLabel: 'צפון (אצבע הגליל)' },
-  { names: ['קצרין', 'רמת הגולן', 'הגולן', 'מג\'דל שמס', 'מגדל שמס'], lat: 32.9934, lng: 35.6908, label: 'קצרין/גולן', region: 'north', regionLabel: 'צפון (רמת הגולן)' },
+  { names: ['קריית שמונה', 'קרית שמונה', 'אצבע הגליל', 'מטולה', 'דפנה'], lat: 33.2073, lng: 35.5721, label: 'קריית שמונה', region: 'north', regionLabel: 'צפון (אצבע הגליל)' },
+  { names: ['קצרין', 'מג\'דל שמס', 'מגדל שמס'], lat: 32.9934, lng: 35.6908, label: 'קצרין', region: 'north', regionLabel: 'צפון (רמת הגולן)' },
 
   // Jerusalem & Judea
   { names: ['ירושלים', 'בירה', 'מבשרת ציון', 'מעלה אדומים'], lat: 31.7683, lng: 35.2137, label: 'ירושלים', region: 'jerusalem', regionLabel: 'ירושלים והסביבה' },
   { names: ['בית שמש', 'מטה יהודה', 'שפלת יהודה'], lat: 31.7470, lng: 34.9881, label: 'בית שמש/שפלה', region: 'jerusalem', regionLabel: 'ירושלים ושפלת יהודה' },
-  { names: ['אריאל', 'שומרון'], lat: 32.1044, lng: 35.1744, label: 'אריאל/שומרון', region: 'center', regionLabel: 'מרכז ושומרון' },
+  { names: ['אריאל'], lat: 32.1044, lng: 35.1744, label: 'אריאל', region: 'center', regionLabel: 'מרכז ושומרון' },
   { names: ['גוש עציון', 'אפרת'], lat: 31.6500, lng: 35.1500, label: 'גוש עציון', region: 'jerusalem', regionLabel: 'ירושלים וגוש עציון' },
 
   // South & Negev
   { names: ['אשדוד'], lat: 31.8044, lng: 34.6553, label: 'אשדוד', region: 'center', regionLabel: 'מישור החוף הדרומי' },
   { names: ['אשקלון'], lat: 31.6688, lng: 34.5743, label: 'אשקלון', region: 'south', regionLabel: 'דרום (מישור החוף הדרומי)' },
   { names: ['קריית גת', 'קרית גת', 'שדרות', 'נתיבות', 'אופקים', 'עוטף עזה'], lat: 31.6100, lng: 34.7600, label: 'קריית גת/צפון הנגב', region: 'south', regionLabel: 'דרום (צפון הנגב)' },
-  { names: ['באר שבע', 'באר-שבע', 'ב"ש', 'ב״ש', 'הנגב'], lat: 31.2529, lng: 34.7915, label: 'באר שבע', region: 'south', regionLabel: 'דרום ומרכז הנגב' },
+  { names: ['באר שבע', 'באר-שבע', 'ב"ש', 'ב״ש'], lat: 31.2529, lng: 34.7915, label: 'באר שבע', region: 'south', regionLabel: 'דרום ומרכז הנגב' },
   { names: ['דימונה', 'ירוחם'], lat: 31.0700, lng: 35.0300, label: 'דימונה/ירוחם', region: 'south', regionLabel: 'דרום (מרכז הנגב)' },
-  { names: ['ערד', 'ים המלח'], lat: 31.2589, lng: 35.2128, label: 'ערד', region: 'south', regionLabel: 'דרום (ערד וים המלח)' },
+  { names: ['ערד'], lat: 31.2589, lng: 35.2128, label: 'ערד', region: 'south', regionLabel: 'דרום (ערד וים המלח)' },
   { names: ['מצפה רמון', 'רמון'], lat: 30.6100, lng: 34.8015, label: 'מצפה רמון', region: 'south', regionLabel: 'דרום (הר הנגב ומכתש רמון)' },
   { names: ['אילת'], lat: 29.5577, lng: 34.9519, label: 'אילת', region: 'south', regionLabel: 'דרום (אילת והערבה הדרומית)' },
 ];
