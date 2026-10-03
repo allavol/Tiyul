@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Compass, Sparkles, Map, Mountain, Settings, Search, Sun, Moon, ShieldAlert } from 'lucide-react';
+import { Compass, Sparkles, Map, Mountain, Settings, Search, Sun, Moon, ShieldAlert, Activity } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
 import TacticalSidebar from './components/TacticalSidebar';
 import TacticalMap from './components/TacticalMap';
 import MapErrorBoundary from './components/MapErrorBoundary';
 import AgentOperationsModal from './components/AgentOperationsModal';
 import AgentChatBot from './components/AgentChatBot';
+import AgentObservabilityDashboard from './components/AgentObservabilityDashboard';
 import { AgentService } from './services/AgentService';
 import { getDefaultDayIndex } from './utils/weatherUtils';
 
@@ -33,6 +34,8 @@ export default function App() {
   const [showNationalRadar, setShowNationalRadar] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const [isChatBotOpen, setIsChatBotOpen] = useState(false);
+  const [isObservabilityOpen, setIsObservabilityOpen] = useState(false);
+  const [observabilityTraceId, setObservabilityTraceId] = useState(null);
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
   const [chatBotQueryTrigger, setChatBotQueryTrigger] = useState(null);
   const [activeRailTab, setActiveRailTab] = useState('trails'); // 'trails' | 'map' | 'settings'
@@ -43,7 +46,9 @@ export default function App() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (isAgentModalOpen) {
+        if (isObservabilityOpen) {
+          setIsObservabilityOpen(false);
+        } else if (isAgentModalOpen) {
           setIsAgentModalOpen(false);
         } else if (isChatBotOpen) {
           setIsChatBotOpen(false);
@@ -58,7 +63,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAgentModalOpen, isChatBotOpen, isSidebarOpen, selectedAssetId, showNationalRadar]);
+  }, [isObservabilityOpen, isAgentModalOpen, isChatBotOpen, isSidebarOpen, selectedAssetId, showNationalRadar]);
 
   // Trigger conversational agent briefing for a specific site
   const handleAskAgentAboutSite = (asset) => {
@@ -332,6 +337,27 @@ export default function App() {
             <span className="inline">מוח</span>
           </button>
 
+          {/* Agent Observability Dashboard Trigger */}
+          <button
+            onClick={() => {
+              setObservabilityTraceId(null);
+              setIsObservabilityOpen(true);
+            }}
+            title="חמ''ל טלמטריה וצפיות סוכן BAAL (OpenTelemetry Tracing)"
+            aria-label="פתח חמ''ל טלמטריה וצפיות"
+            className={`h-[52px] px-3 sm:px-4 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
+              isLightMode
+                ? 'text-cyan-800 border-cyan-300 bg-white/80 hover:bg-cyan-50/80 shadow-cyan-900/10'
+                : 'text-cyan-400 border-cyan-500/40 bg-brand-deep/80 hover:bg-white/10 hover:border-cyan-400'
+            }`}
+          >
+            <div className="relative">
+              <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
+              <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-ping ${isLightMode ? 'bg-cyan-500' : 'bg-cyan-400'}`} />
+            </div>
+            <span className="hidden sm:inline">טלמטריה</span>
+          </button>
+
           {/* Theme Toggle Button */}
           <button
             onClick={() => setIsLightMode(!isLightMode)}
@@ -429,6 +455,17 @@ export default function App() {
         assets={assets}
         queryTrigger={chatBotQueryTrigger}
         onClearQueryTrigger={() => setChatBotQueryTrigger(null)}
+        onOpenObservability={(traceId) => {
+          setObservabilityTraceId(traceId);
+          setIsObservabilityOpen(true);
+        }}
+      />
+
+      {/* Popup 3: OpenTelemetry GenAI Observability & Debugging Dashboard */}
+      <AgentObservabilityDashboard
+        isOpen={isObservabilityOpen}
+        onClose={() => setIsObservabilityOpen(false)}
+        initialTraceId={observabilityTraceId}
       />
     </div>
   );

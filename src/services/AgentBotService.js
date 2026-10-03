@@ -41,8 +41,10 @@ import {
   buildRationale 
 } from './agent/AgentRulesEngine.js';
 
+import { AgentTelemetryService } from './agent/AgentTelemetryService.js';
+
 // Public re-exports for complete backward compatibility
-export { KNOWN_ORIGIN_CITIES, geocodeCity, calculateHaversineDistanceKm, getSiteHazardScenario };
+export { KNOWN_ORIGIN_CITIES, geocodeCity, calculateHaversineDistanceKm, getSiteHazardScenario, AgentTelemetryService };
 
 export class AgentBotService {
   /**
@@ -123,19 +125,61 @@ export class AgentBotService {
    * Process a user turn in conversation (strictly strips any markdown bold/italic asterisks from user-facing text)
    * @param {string} message - Raw user input text in Hebrew
    * @param {Object} [sessionState=null] - Persistent session state (or null to initialize)
-   * @returns {Promise<{text: string, state: Object, options: Array<{label: string, value: string}>, proposals: Array<Object>, toolActivity: Object | null}>}
+   * @returns {Promise<{text: string, state: Object, options: Array<{label: string, value: string}>, proposals: Array<Object>, toolActivity: Object | null, traceId?: string}>}
    */
   static async processUserMessage(message, sessionState = null) {
-    const res = await this._processUserMessageInternal(message, sessionState);
-    if (res && typeof res.text === 'string') {
-      res.text = res.text.replace(/\*{1,2}/g, '');
+    const { traceId, rootSpanId } = AgentTelemetryService.startTrace('invoke_agent', {
+      query: message,
+      sessionStep: sessionState?.step || 'init'
+    });
+
+    try {
+      const res = await this._processUserMessageInternal(message, sessionState, { traceId, rootSpanId });
+      if (res && typeof res.text === 'string') {
+        res.text = res.text.replace(/\*{1,2}/g, '');
+      }
+      if (res) {
+        res.traceId = traceId;
+      }
+
+      const promptTokens = Math.max(1, Math.round((message || '').length / 3));
+      const completionTokens = Math.max(1, Math.round((res?.text || '').length / 3));
+
+      AgentTelemetryService.endSpan(rootSpanId, 'OK', {
+        output: res?.text,
+        attributes: {
+          'agent.proposals.count': (res?.proposals || []).length,
+          'agent.options.count': (res?.options || []).length,
+          'agent.step': res?.state?.step || 'unknown'
+        },
+        tokens: { promptTokens, completionTokens }
+      });
+
+      return res;
+    } catch (err) {
+      AgentTelemetryService.endSpan(rootSpanId, 'ERROR', {
+        statusMessage: err.message,
+      });
+      throw err;
     }
-    return res;
   }
 
-  static async _processUserMessageInternal(message, sessionState = null) {
+  static async _processUserMessageInternal(message, sessionState = null, traceContext = {}) {
+    const { traceId, rootSpanId } = traceContext;
+
     // 1. Guardrails Check
+    let guardrailSpanId = null;
+    if (traceId) {
+      guardrailSpanId = AgentTelemetryService.startSpan('guardrails_check', traceId, rootSpanId, 'internal', { input: message });
+    }
     const guardrail = this.checkGuardrails(message);
+    if (guardrailSpanId) {
+      AgentTelemetryService.endSpan(guardrailSpanId, guardrail.safe ? 'OK' : 'ERROR', {
+        statusMessage: guardrail.safe ? 'Passed guardrails' : 'Guardrail refusal triggered',
+        output: guardrail.safe ? 'PASSED' : guardrail.refusal
+      });
+    }
+
     if (!guardrail.safe) {
       return {
         text: guardrail.refusal,
@@ -299,6 +343,12 @@ export class AgentBotService {
       }
 
       if (matchedSite) {
+        let lookupSpanId = null;
+        if (traceId) {
+          lookupSpanId = AgentTelemetryService.startSpan('execute_tool:directSiteLookup', traceId, rootSpanId, 'execute_tool', {
+            input: { query: text, site: matchedSite.name, id: matchedSite.id }
+          });
+        }
         let weather = null;
         try { weather = await WeatherService.fetchSiteWeather(matchedSite, 0); } catch (e) { /* fallback */ }
         const advisory = getWaterAdvisory(matchedSite);
@@ -334,6 +384,11 @@ export class AgentBotService {
           waterAdvisory: advisory,
           matchRationale: `אתר ${matchedSite.name} באזור ${matchedSite.region}`,
         };
+        if (lookupSpanId) {
+          AgentTelemetryService.endSpan(lookupSpanId, 'OK', {
+            attributes: { 'site.name': matchedSite.name, 'site.authority_id': matchedSite.authority_id }
+          });
+        }
         const updatedState = { ...currentState, lastProposals: [proposal] };
         return {
           text: `הנה מידע על **${matchedSite.name}** 🌿:\n\n📍 **אזור:** ${matchedSite.region}\n👶 **גיל מינימלי:** ${matchedSite.min_age}+\n${matchedSite.stroller_accessible ? '♿ **נגיש לעגלות**\n' : ''}🏷️ **סוג:** ${(matchedSite.type || []).join(', ')}\n\nלחצו על הכרטיסייה למטה להצגה על המפה, או תכננו טיול לאתר הזה!`,
@@ -350,10 +405,33 @@ export class AgentBotService {
 
     // 1.6 Interactive What-If Crisis Scenario
     if (text.includes('מה אם') || text.includes('what if') || text.includes('תרחיש') || text.includes('שיטפון') || text.includes('44°c') || text.includes('חום קיצוני') || text.includes('זיהום')) {
-      return this.handleWhatIfScenario(message, sessionState);
+      let whatIfSpanId = null;
+      if (traceId) {
+        whatIfSpanId = AgentTelemetryService.startSpan('execute_tool:handleWhatIfScenario', traceId, rootSpanId, 'execute_tool', { input: message });
+      }
+      const whatIfRes = this.handleWhatIfScenario(message, sessionState);
+      if (whatIfSpanId) {
+        AgentTelemetryService.endSpan(whatIfSpanId, 'OK', { output: whatIfRes.toolActivity || 'What-If Crisis Handled' });
+      }
+      return whatIfRes;
     }
 
+    let nluSpanId = null;
+    if (traceId) {
+      nluSpanId = AgentTelemetryService.startSpan('parse_nlu', traceId, rootSpanId, 'parse_nlu', { input: message });
+    }
     const state = this.extractParameters(message, currentState);
+    if (nluSpanId) {
+      AgentTelemetryService.endSpan(nluSpanId, 'OK', {
+        attributes: {
+          'nlu.timing': state.timing || 'unset',
+          'nlu.region': state.region || 'unset',
+          'nlu.minAge': state.minAge !== null && state.minAge !== undefined ? state.minAge : 'unset',
+          'nlu.feature': state.feature || 'unset',
+          'nlu.excludeWater': Boolean(state.excludeWater),
+        }
+      });
+    }
 
     // Dynamic 50km Geocoding for any Israeli town (Finding A2)
     if (!state.originCoords) {
@@ -362,7 +440,16 @@ export class AgentBotService {
         const candidateName = cityMatch[1].trim();
         const STOPWORDS = ['הצפון', 'הדרום', 'המרכז', 'השרון', 'השפלה', 'הגולן', 'הגליל', 'המים', 'עגלות', 'ילדים', 'הבוקר', 'הצהריים', 'הערב', 'השבת', 'מחר', 'הבית', 'שם'];
         if (!STOPWORDS.includes(candidateName)) {
+          let geoSpanId = null;
+          if (traceId) {
+            geoSpanId = AgentTelemetryService.startSpan('geocode_city', traceId, rootSpanId, 'execute_tool', { input: candidateName });
+          }
           const geo = await geocodeCity(candidateName);
+          if (geoSpanId) {
+            AgentTelemetryService.endSpan(geoSpanId, geo ? 'OK' : 'ERROR', {
+              output: geo ? `${geo.label} (${geo.lat}, ${geo.lng})` : 'Not found'
+            });
+          }
           if (geo) {
             state.originCoords = [geo.lat, geo.lng];
             state.originCity = geo.label;
@@ -390,17 +477,21 @@ export class AgentBotService {
 
     if (missing.length > 0) {
       const nextMissing = missing[0];
+      if (traceId) {
+        AgentTelemetryService.log('INFO', `Clarification requested for parameter: ${nextMissing}`, { traceId, missing });
+      }
       return this.generateClarificationResponse(nextMissing, state, missing);
     }
 
     // 3. All parameters present! Run Tool Execution & Recommendation Flow
-    return await this.generateRecommendations(state, message);
+    return await this.generateRecommendations(state, message, traceContext);
   }
 
   /**
    * Search, filter, query weather and build rich recommendations
    */
-  static async generateRecommendations(state, rawMessage = '') {
+  static async generateRecommendations(state, rawMessage = '', traceContext = {}) {
+    const { traceId, rootSpanId } = traceContext;
     const dayIndex = state.dayIndex || 0;
     const targetAge = Number(state.minAge) || 4;
     const rawText = (rawMessage || '').toLowerCase();
@@ -411,6 +502,19 @@ export class AgentBotService {
       : JSON.parse(JSON.stringify(assetsData));
 
     // 1. Filter candidates by geography / distance, age, stroller, and water exclusion
+    let filterSpanId = null;
+    if (traceId) {
+      filterSpanId = AgentTelemetryService.startSpan('geo_filter', traceId, rootSpanId, 'execute_tool', {
+        input: {
+          region: state.region,
+          originName: state.originName,
+          maxDistanceKm: state.maxDistanceKm,
+          targetAge,
+          excludeWater: Boolean(state.excludeWater)
+        }
+      });
+    }
+
     let candidates = filterCandidatesByGeo(clonedAssets, state).filter((site) => {
       if (site.min_age > targetAge) return false;
       if (targetAge === 0 && !site.stroller_accessible && site.min_age > 0) return false;
@@ -430,6 +534,12 @@ export class AgentBotService {
       }
       return true;
     });
+
+    if (filterSpanId) {
+      AgentTelemetryService.endSpan(filterSpanId, 'OK', {
+        attributes: { 'geo.matched_candidates_count': candidates.length }
+      });
+    }
 
     // 1.1 Zero Results Check
     if (candidates.length === 0) {
@@ -471,10 +581,28 @@ export class AgentBotService {
     }
 
     // 2. Multi-factor ranking & sub-regional cluster diversity (RulesEngine)
+    let rankSpanId = null;
+    if (traceId) {
+      rankSpanId = AgentTelemetryService.startSpan('rank_candidates', traceId, rootSpanId, 'internal', {
+        input: { candidatesPoolSize: candidates.length }
+      });
+    }
     rankCandidates(candidates, state, rawText);
     const topSites = selectDiverseTopCandidates(candidates, state, rawText, 3);
+    if (rankSpanId) {
+      AgentTelemetryService.endSpan(rankSpanId, 'OK', {
+        attributes: { 'ranking.top_sites': topSites.map((s) => s.name).join(', ') }
+      });
+    }
 
     // 3. Query weather for each candidate
+    let weatherSpanId = null;
+    if (traceId) {
+      weatherSpanId = AgentTelemetryService.startSpan('fetch_weather_batch', traceId, rootSpanId, 'execute_tool', {
+        input: { sites: topSites.map((s) => s.name), dayIndex }
+      });
+    }
+
     const proposals = [];
     for (const site of topSites) {
       let weather = null;
@@ -518,6 +646,12 @@ export class AgentBotService {
         safetyBadge: isSafe ? 'בטוח ומומלץ לטיול 🛡️' : 'נדרשת תשומת לב ⚠️',
         waterAdvisory: advisory,
         matchRationale: this.buildRationale(site, state, weather),
+      });
+    }
+
+    if (weatherSpanId) {
+      AgentTelemetryService.endSpan(weatherSpanId, 'OK', {
+        attributes: { 'weather.proposals_count': proposals.length }
       });
     }
 

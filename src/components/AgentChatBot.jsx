@@ -23,7 +23,8 @@ import {
   Copy,
   Check,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Activity
 } from 'lucide-react';
 import { AgentBotService } from '../services/AgentBotService';
 import { getCategoryIconChar, getAgeBadge } from '../utils/weatherUtils';
@@ -89,6 +90,7 @@ export default function AgentChatBot({
   assets = [],
   queryTrigger = null,
   onClearQueryTrigger = null,
+  onOpenObservability = null,
 }) {
   const CHAT_STORAGE_KEY = 'tiyul_agent_chat_messages_v1';
   const SESSION_STORAGE_KEY = 'tiyul_agent_session_state_v1';
@@ -230,6 +232,7 @@ export default function AgentChatBot({
         options: response.options || [],
         proposals: response.proposals || [],
         toolActivity: response.toolActivity,
+        traceId: response.traceId || null,
       };
 
       setMessages((prev) => [...prev, botMsg]);
@@ -394,11 +397,25 @@ export default function AgentChatBot({
                     {renderFormattedText(msg.text)}
                   </div>
 
-                  {/* Tool Execution Badge */}
-                  {msg.toolActivity && (
-                    <div className="mt-2.5 pt-2 border-t border-white/[0.06] text-xs text-accent font-mono flex items-center gap-1.5">
-                      <Radio className="w-3 h-3 animate-pulse" />
-                      <span>{msg.toolActivity}</span>
+                  {/* Tool Execution Badge & Telemetry Link */}
+                  {(msg.toolActivity || (msg.traceId && onOpenObservability)) && (
+                    <div className="mt-2.5 pt-2 border-t border-white/[0.06] text-xs font-mono flex items-center justify-between gap-2 flex-wrap">
+                      {msg.toolActivity && (
+                        <div className="text-accent flex items-center gap-1.5">
+                          <Radio className="w-3 h-3 animate-pulse" />
+                          <span>{msg.toolActivity}</span>
+                        </div>
+                      )}
+                      {msg.traceId && onOpenObservability && (
+                        <button
+                          onClick={() => onOpenObservability(msg.traceId)}
+                          title="צפה ב-Trace המלא ובשרשרת הפירוק בחמ''ל טלמטריה"
+                          className="px-2 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-400 border border-cyan-700/50 flex items-center gap-1 transition active:scale-95 text-[10px]"
+                        >
+                          <Activity className="w-3 h-3" />
+                          <span>עקבות (Trace)</span>
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
