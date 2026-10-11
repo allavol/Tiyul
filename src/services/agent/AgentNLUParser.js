@@ -21,15 +21,24 @@ export const PROHIBITED_KEYWORDS = [
 export const FOREIGN_COUNTRIES_KEYWORDS = [
   'חו"ל', 'חול', 'חו״ל', 'בחו"ל', 'בחול', 'בחו״ל', 'חוץ לארץ', 'בחוץ לארץ', 'מחוץ לישראל',
   'מדינה אחרת', 'מדינות אחרות', 'באירופה', 'אירופה', 'ארה"ב', 'ארצות הברית', 'ארה״ב',
-  'יוון', 'קפריסין', 'איטליה', 'צרפת', 'ספרד', 'גרמניה', 'שוויץ', 'אוסטריה', 'הולנד', 'לונדון', 'פריז',
+  'יוון', 'קפריסין', 'איטליה', 'צרפת', 'ספרד', 'גרמניה', 'שוויץ', 'שווייץ', 'אוסטריה', 'הולנד', 'לונדון', 'פריז',
   'תאילנד', 'הודו', 'יפן', 'סיני', 'מצרים', 'ירדן', 'פטרה', 'גיאורגיה', 'גאורגיה', 'טורקיה', 'תורכיה',
-  'דובאי', 'אבו דאבי', 'מונטנגרו', 'אלפים', 'דולומיטים', 'רומא'
+  'דובאי', 'אבו דאבי', 'מונטנגרו', 'אלפים', 'האלפים', 'דולומיטים', 'הדולומיטים', 'רומא', 'ברלין', 'ברצלונה',
+  'מדריד', 'פראג', 'בודפשט', 'אמסטרדם', 'טוקיו', 'בנגקוק', 'זנזיבר', 'סיישל', 'מרוקו', 'נורווגיה', 'איסלנד',
+  'אנגליה', 'בריטניה', 'קנדה', 'אוסטרליה', 'ניו יורק', 'לוס אנגלס', 'מיאמי', 'שארם', 'טאבה', 'רודוס', 'כרתים', 'אתונה',
+  'חידקל', 'החידקל', 'נחל החידקל', 'נהר החידקל',
+  'פרת', 'הפרת', 'נהר הפרת',
+  'עיראק', 'עירק', 'סוריה', 'לבנון', 'נילוס', 'הנילוס',
+  'אוורסט', 'האוורסט', 'הימלאיה', 'ילוסטון', 'יוסמיטי', 'קניון אנטילופ', 'גרנד קניון', 'מפלי הניאגרה', 'ניאגרה',
+  'דנובה', 'נהר הדנובה', 'ריין', 'נהר הריין', 'תמזה', 'סיין', 'אמזונס', 'נהר האמזונס', 'קילימנגרו', 'קילימנג\'רו', 'פוג\'י',
+  'גיזה', 'בגיזה', 'קהיר', 'בקהיר', 'אלכסנדריה', 'פירמידות', 'הפירמידות', 'בפירמידות', 'עקבה', 'בעקבה', 'עמאן', 'בירות', 'ביירות', 'דמשק'
 ];
 
 // Dog / pet keywords for safety warning (nature reserves prohibit dogs)
 export const DOG_KEYWORDS = [
   'כלב', 'כלבה', 'כלבים', 'כלבלב', 'גור כלבים', 'גורים',
-  'חיית מחמד', 'חיות מחמד', 'dog', 'dogs', 'pet'
+  'חיית מחמד', 'חיות מחמד', 'dog', 'dogs', 'pet',
+  'חבר על ארבע', 'חברים על ארבע', 'הולך על ארבע', 'הולכים על ארבע', 'ידידותי לכלבים'
 ];
 
 // Hebrew month names for calendar date parsing
@@ -205,7 +214,7 @@ export function checkGuardrails(message) {
       }
       return {
         safe: false,
-        refusal: 'שלום! 🌿 המומחיות שלי כסוכן טיולים ממוקדת כולה בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה המרהיבים **בישראל** 🇮🇱 בלבד.\n\nאינני מספק מידע או המלצות למדינות אחרות או לחו"ל.\n\nאשמח מאוד לעזור לכם לתכנן טיול קסום ובטוח בארץ! לאיזה אזור בישראל תרצו לטייל (צפון, מרכז, ירושלים או דרום) ומתי?',
+        refusal: 'שלום! 🌿 אני לא ממליץ על טיולים בחו"ל, בינתיים... 😉✈️ המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ!',
       };
     }
   }
@@ -215,7 +224,7 @@ export function checkGuardrails(message) {
     if (lower.includes(kw)) {
       return {
         safe: false,
-        refusal: 'שלום! אני סוכן הטיולים החכם של "לאן נטייל?" 🧭, ומטרתי הבלעדית היא לעזור לכם לתכנן טיולים וחוויות בטוחות ומהנות בטבע בישראל 🌿.\n\nאשמח מאוד לעזור לכם למצוא את המסלול המושלם! לאיזה אזור בארץ תרצו לטייל ומתי?',
+        refusal: 'שלום! אני סוכן הטיולים החכם של "לאן נטייל?" 🧭, ומטרתי הבלעדית היא לעזור לכם לתכנן טיולים וחוויות בטוחות ומהנות בטבע בישראל 🌿.\n\n💡 **אנא נסחו שוב את שאלתכם** בנושאי מסלולים, שמורות טבע או גנים לאומיים בישראל, ולאיזה אזור בארץ תרצו לטייל ומתי.',
       };
     }
   }
@@ -337,8 +346,15 @@ export function extractParameters(message, currentState) {
     updated.featureLabel = text.includes('גם וגם') ? 'גם וגם (שילוב סגנונות)' : 'כל סגנונות המסלול';
   }
 
-  // Surprise Me shortcut
-  if (text.includes('הפתע אותי') || text.includes('הפתעה') || text.includes('תפתיע אותי')) {
+  // Surprise Me / Spontaneity shortcut (Scenario 13)
+  const isSurpriseIntent = (
+    text.includes('הפתע אותי') || text.includes('הפתעה') || text.includes('תפתיע אותי') ||
+    text.includes('תחליט אתה') || text.includes('תבחר אתה') || text.includes('תבחר לי') ||
+    text.includes('זרוק רעיון') || text.includes('איפה שיפה היום') || text.includes('משהו שווה') ||
+    text.includes('מה הכי מומלץ') || (text.includes('לא יודע') && (text.includes('תחליט') || text.includes('תבחר') || text.includes('רעיון')))
+  );
+  if (isSurpriseIntent) {
+    updated.concept = 'surprise';
     updated.timing = updated.timing || 'today';
     updated.timingLabel = updated.timingLabel || 'היום';
     updated.dayIndex = updated.dayIndex !== undefined ? updated.dayIndex : 0;
@@ -810,6 +826,7 @@ export function extractParameters(message, currentState) {
     updated.feature = 'view';
     updated.featureLabel = 'פינות חמד שקטות ותצפיות נוף';
   } else if (isCasualWalkIntent) {
+    updated.concept = 'easy';
     updated.feature = 'stroller';
     updated.featureLabel = 'מסלול קליל וקצר';
     if (updated.minAge === null) {
@@ -894,3 +911,125 @@ export function extractParameters(message, currentState) {
 
   return updated;
 }
+
+/**
+ * Detect impossible climate or geographic contradictions
+ * e.g., Snow in Eilat / Desert, Skiing in the desert, etc.
+ */
+export function checkClimateContradictions(message) {
+  if (!message || typeof message !== 'string') return null;
+  const lower = message.toLowerCase();
+
+  const mentionsSnow = (
+    lower.includes('שלג') || lower.includes('סקי') || lower.includes('מזחלות שלג') || lower.includes('בובסליי')
+  );
+
+  const mentionsDesertOrEilat = (
+    lower.includes('באילת') || lower.includes('לאילת') || lower.includes('אילת') ||
+    lower.includes('במדבר') || lower.includes('מדבר') ||
+    lower.includes('בערבה') || lower.includes('ערבה') ||
+    lower.includes('בים המלח') || lower.includes('ים המלח') ||
+    lower.includes('בנגב') || lower.includes('נגב') ||
+    lower.includes('בדרום') || lower.includes('דרום')
+  );
+
+  if (mentionsSnow && mentionsDesertOrEilat) {
+    const isEilat = lower.includes('אילת');
+    const regionName = isEilat ? 'אילת' : 'אזור הדרום והמדבר';
+
+    const hasFifty = lower.includes('50') || lower.includes('חמישים');
+    const fiftyNote = hasFifty ? '\n\n💡 בנוסף, גיל 50 הוא גיל בוגר ומנוסה ולא "ילד" 😉 — כל דרגות הקושי פתוחות בפניכם!' : '';
+
+    return {
+      contradiction: true,
+      text: `❄️🚫 **אין שלג ב${regionName}!**\n\n${regionName} מאופיין באקלים מדברי, חם ויבש לאורך כל ימות השנה. בישראל, שלג יורד אך ורק ב**הר החרמון ובצפון רמת הגולן** במהלך חודשי החורף (דצמבר–מרץ).${fiftyNote}\n\n💡 **אנא נסחו שוב את שאלתכם:**\n• אם אתם מחפשים **שלג וקור** — כדאי לבחור באזור **הצפון (חרמון וגולן)** בעונת החורף.\n• אם אתם רוצים לטייל ב**אילת והדרום** — נסחו מחדש מסלול מדברי מתאים (למשל: הרי אילת, קניון שחורת, פארק תמנע או עין עבדת).\n• או בחרו באחת האפשרויות למטה:`,
+      options: [
+        { label: '🏔️ חפש שלג בצפון (חרמון וגולן)', value: 'מחפש מסלול שלג בחרמון ובצפון' },
+        { label: '🏜️ מסלול מדברי באילת והדרום', value: 'מחפש מסלול מדברי יפה באזור אילת והדרום' },
+        { label: '🔄 איפוס והתחלה מחדש', value: 'התחל מחדש' },
+      ],
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract candidate site / stream entity mentioned by user
+ * e.g., "לטייל לנחל כזיב" -> "נחל כזיב", "בנחל החידקל" -> "נחל החידקל"
+ */
+export function extractRequestedSiteEntity(text) {
+  if (!text || typeof text !== 'string') return null;
+  const lower = text.toLowerCase().trim();
+
+  // Pattern matching: "נחל X", "לנחל X", "בנחל X", "נהר X", "שמורת X", "עין X", "מעיין X"
+  const streamMatch = lower.match(/(?:(?:לטייל|טיול|מסלול|לנסוע|ללכת)\s+(?:ל|ב)?)?\s*(?:ל|ב)?(נחל|נהר|מעיין|עין|שמורת|יער|מבצר|פארק)\s+([א-ת"״'-]{3,20}(?:\s+[א-ת"״'-]{3,20})?)/);
+  if (!streamMatch) return null;
+
+  const prefix = streamMatch[1];
+  const name = streamMatch[2] ? streamMatch[2].trim() : '';
+  if (!name) return null;
+
+  // Exclude generic terms / adjectives
+  const GENERIC_EXCLUSIONS = [
+    'מים', 'זורם', 'יבש', 'קצר', 'מעגלי', 'אתגרי', 'יפה', 'קריר', 'מוצל',
+    'טבע', 'הליכה', 'משפחתי', 'עגלות', 'סלול', 'נוף', 'פריחה', 'ארכיאולוגיה',
+    'הצפון', 'הדרום', 'המרכז', 'השרון', 'ירושלים', 'מחר', 'היום', 'שבת', 'השבוע',
+    'נעים', 'רטוב', 'עתיק', 'עתיקה', 'עתיקים', 'עתיקות', 'מורשת', 'היסטורי', 'היסטורית',
+    'רומי', 'צלבני', 'לאומי', 'גדול', 'קטן', 'עמוק', 'ארוך', 'בצפון', 'בדרום', 'במרכז', 'בירושלים',
+    'קרוב', 'רחוק', 'קל', 'קשה', 'שקט', 'רגוע', 'פסטורלי'
+  ];
+
+  const words = name.split(/\s+/).filter(Boolean);
+  if (words.some((w) => GENERIC_EXCLUSIONS.includes(w)) || GENERIC_EXCLUSIONS.includes(name)) {
+    return null;
+  }
+
+  return `${prefix} ${name}`.trim();
+}
+
+/**
+ * Detect gibberish, symbol spam, emoji noise, or random non-words
+ */
+export function isGibberishOrNoise(message) {
+  if (!message || typeof message !== 'string') return true;
+  const trimmed = message.trim();
+  if (trimmed.length === 0) return true;
+
+  // Standalone numbers 0-18 (could be an age response)
+  if (/^\d{1,2}$/.test(trimmed)) {
+    const num = parseInt(trimmed, 10);
+    if (num >= 0 && num <= 18) return false;
+  }
+
+  // 1. Punctuation, symbols, emojis, or numbers only (e.g. "????", "😀😀", "!@#$%")
+  const textChars = trimmed.replace(/[\s\p{P}\p{S}\p{N}]/gu, '');
+  if (textChars.length === 0) {
+    return true;
+  }
+
+  // 2. Only Latin characters with random consonants / keyboard smash (e.g. "asdfghjkl")
+  const latinLetters = (trimmed.match(/[a-zA-Z]/g) || []).length;
+  const hebrewLetters = (trimmed.match(/[\u0590-\u05FF]/g) || []).length;
+  if (hebrewLetters === 0 && latinLetters > 3) {
+    const isCommonWord = ['reset', 'restart', 'help', 'start', 'hello', 'hi'].includes(trimmed.toLowerCase());
+    if (!isCommonWord) return true;
+  }
+
+  // 3. Repeated same character 4+ times (e.g. "ששששששש", "אאאאאאא", "חחחחחחח")
+  if (/(.)\1{3,}/.test(trimmed)) {
+    return true;
+  }
+
+  // 4. Hebrew keyboard rows mashing without vowels/words
+  const hebrewSmashPatterns = [
+    /^[שדגכעיחלךף,]{4,}$/,
+    /^[זסבהנמצתץ.]{4,}$/
+  ];
+  if (hebrewSmashPatterns.some((p) => p.test(textChars))) {
+    return true;
+  }
+
+  return false;
+}
+

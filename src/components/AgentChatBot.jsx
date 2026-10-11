@@ -241,6 +241,13 @@ export default function AgentChatBot({
       if (response.proposals && response.proposals.length > 0 && onProposalsUpdate) {
         onProposalsUpdate(response.proposals);
       }
+
+      // If a single site was directly requested/returned, automatically select and pop it up on the map!
+      if (response.proposals && response.proposals.length === 1 && onSelectSite) {
+        const singleSite = response.proposals[0];
+        const fullAsset = assets.find((a) => a.id === singleSite.id) || singleSite;
+        onSelectSite(fullAsset);
+      }
     } catch (err) {
       console.error('Agent bot processing error:', err);
       setMessages((prev) => [
@@ -397,25 +404,13 @@ export default function AgentChatBot({
                     {renderFormattedText(msg.text)}
                   </div>
 
-                  {/* Tool Execution Badge & Telemetry Link */}
-                  {(msg.toolActivity || (msg.traceId && onOpenObservability)) && (
+                  {/* Tool Execution Badge */}
+                  {msg.toolActivity && (
                     <div className="mt-2.5 pt-2 border-t border-white/[0.06] text-xs font-mono flex items-center justify-between gap-2 flex-wrap">
-                      {msg.toolActivity && (
-                        <div className="text-accent flex items-center gap-1.5">
-                          <Radio className="w-3 h-3 animate-pulse" />
-                          <span>{msg.toolActivity}</span>
-                        </div>
-                      )}
-                      {msg.traceId && onOpenObservability && (
-                        <button
-                          onClick={() => onOpenObservability(msg.traceId)}
-                          title="צפה ב-Trace המלא ובשרשרת הפירוק בחמ''ל טלמטריה"
-                          className="px-2 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-400 border border-cyan-700/50 flex items-center gap-1 transition active:scale-95 text-[10px]"
-                        >
-                          <Activity className="w-3 h-3" />
-                          <span>עקבות (Trace)</span>
-                        </button>
-                      )}
+                      <div className="text-accent flex items-center gap-1.5">
+                        <Radio className="w-3 h-3 animate-pulse" />
+                        <span>{msg.toolActivity}</span>
+                      </div>
                     </div>
                   )}
                 </div>

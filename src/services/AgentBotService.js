@@ -26,6 +26,9 @@ import {
   extractParameters, 
   parseAgeFromText, 
   applyTypoCorrections,
+  checkClimateContradictions,
+  extractRequestedSiteEntity,
+  isGibberishOrNoise,
   DOG_KEYWORDS 
 } from './agent/AgentNLUParser.js';
 
@@ -197,6 +200,35 @@ export class AgentBotService {
     const text = (message || '').toLowerCase();
     const currentState = sessionState || this.getInitialState();
 
+    // 1.03 Gibberish & Noise Check
+    if (isGibberishOrNoise(message)) {
+      return {
+        text: 'לא הצלחתי לפענח את ההודעה (נראה כמו טקסט לא ברור או ג\'יבריש) 🌿.\n\n💡 **אנא נסחו שוב את שאלתכם בצורה ברורה:**\nספרו לי לאיזה אזור בארץ תרצו לטייל ומתי (לדוגמה: *"רוצים טיול מים בצפון למחר עם ילד בן 4"*), או בחרו באחת האפשרויות למטה:',
+        state: currentState,
+        options: [
+          { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+          { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
+          { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
+          { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
+          { label: '🎲 כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
+        ],
+        proposals: [],
+        toolActivity: '❓ זיהוי ג\'יבריש / טקסט לא קריא • בקשת הבהרה מפורשת',
+      };
+    }
+
+    // 1.05 Climate & Geographic Contradiction Check (e.g. Snow in Eilat / Desert)
+    const climateCheck = checkClimateContradictions(message);
+    if (climateCheck && climateCheck.contradiction) {
+      return {
+        text: climateCheck.text,
+        state: currentState,
+        options: climateCheck.options,
+        proposals: [],
+        toolActivity: '❄️ זיהוי סתירה אקלימית: אין שלג באילת/במדבר • הוצגו הנחיות לניסוח מחדש',
+      };
+    }
+
     // 1.1 Handle Full Conversation Reset
     if (
       text.includes('התחל מחדש') ||
@@ -302,10 +334,56 @@ export class AgentBotService {
       };
     }
 
+    // 1.48 Check for explicit requested site / stream entity
+    const requestedEntity = extractRequestedSiteEntity(message);
+    if (requestedEntity) {
+      const matchedByEntity = assetsData.find((s) => 
+        text.includes(s.name.toLowerCase()) || 
+        s.name.toLowerCase().includes(requestedEntity.toLowerCase()) ||
+        requestedEntity.toLowerCase().includes(s.name.toLowerCase())
+      );
+      if (matchedByEntity) {
+        if (!currentState.region) {
+          currentState.region = matchedByEntity.region_group;
+          currentState.regionLabel = matchedByEntity.region;
+        }
+      } else {
+        const matchesCity = KNOWN_ORIGIN_CITIES.some((c) => c.names.some((n) => text.includes(n)));
+        const lookupIntents = [
+          'ספר לי על', 'מה יש ב', 'מידע על', 'תגיד לי על', 'מכיר את', 'איך מגיעים ל', 'איך להגיע ל',
+          'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר'
+        ];
+        const hasLookup = lookupIntents.some((intent) => text.includes(intent));
+        const hasOtherCriteria = (
+          text.includes('צפון') || text.includes('דרום') || text.includes('מרכז') || text.includes('ירושלים') ||
+          text.includes('מחר') || text.includes('היום') || text.includes('שבת') || text.includes('סופש') ||
+          text.includes('ילד') || text.includes('גיל') || text.includes('עגלה')
+        );
+
+        if (!matchesCity && !hasLookup && !hasOtherCriteria) {
+          return {
+            text: `לא הצלחתי לאתר את האתר או הנחל **${requestedEntity}** במאגר שמורות הטבע והמסלולים המאומתים בישראל 🌿.\n\nאם התכוונתם לאתר או מסלול מחוץ לישראל – אני לא ממליץ על טיולים בחו"ל, בינתיים... 😉\n\n💡 **אנא נסחו שוב את שאלתכם:**\n• נסו לחפש לפי אזור בארץ (צפון, מרכז, ירושלים, דרום).\n• או לציין סגנון מסלול מבוקש (מסלול מים, מעיין, יער מוצל, נגיש לעגלות).\n• או לבחור באחת האפשרויות המומלצות להלן:`,
+            state: currentState,
+            options: [
+              { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+              { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
+              { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
+              { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
+              { label: '🎲 כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
+            ],
+            proposals: [],
+            toolActivity: `🔍 אתר לא מוכר: ${requestedEntity} • בקשת ניסוח מחדש`,
+          };
+        }
+      }
+    }
+
     // 1.5 Direct site name lookup
     const directLookupIntents = [
       'ספר לי על', 'מה יש ב', 'מידע על', 'תגיד לי על', 'מכיר את', 'איך מגיעים ל', 'איך להגיע ל',
-      'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר'
+      'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר',
+      'מה מזג האוויר ב', 'מה מזג האויר ב', 'איך מזג האוויר ב', 'איך מזג האויר ב',
+      'מה התחזית ב', 'תחזית ב', 'מזג אוויר ב', 'מזג אויר ב'
     ];
     const hasLookupIntent = directLookupIntents.some((intent) => text.includes(intent));
     if (hasLookupIntent) {
@@ -400,6 +478,37 @@ export class AgentBotService {
           proposals: [proposal],
           toolActivity: `🔍 חיפוש ישיר: ${matchedSite.name} (${matchedSite.authority_id})`,
         };
+      } else {
+        // Direct lookup intent present but site not matched in Israel database
+        const isWeatherInquiry = (
+          text.includes('מה מזג האוויר') || text.includes('מה מזג האויר') ||
+          text.includes('איך מזג האוויר') || text.includes('איך מזג האויר') ||
+          text.includes('מה התחזית') || text.includes('מזג אוויר ב') || text.includes('מזג האוויר ב') ||
+          text.includes('מזג אויר ב') || text.includes('תחזית ב')
+        );
+        const hasIsraeliRegion = (
+          text.includes('צפון') || text.includes('גליל') || text.includes('גולן') ||
+          text.includes('מרכז') || text.includes('שרון') || text.includes('ירושלים') ||
+          text.includes('שפלה') || text.includes('דרום') || text.includes('נגב') ||
+          text.includes('ערבה') || text.includes('אילת') || text.includes('ים המלח')
+        );
+        const matchesCity = KNOWN_ORIGIN_CITIES.some((c) => c.names.some((n) => text.includes(n)));
+
+        if (isWeatherInquiry && !hasIsraeliRegion && !matchesCity) {
+          return {
+            text: 'לא הצלחתי לאתר את האתר או היעד המבוקש במאגר שמורות הטבע והמסלולים בישראל 🌿.\n\nאם התכוונתם לאתר או יעד מחוץ לישראל – אני לא ממליץ על טיולים בחו"ל, בינתיים... 😉✈️ המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ!\n\n💡 בישראל תוכלו לבדוק מזג אוויר ותחזית לפי אזור (צפון, מרכז, ירושלים, דרום) או לפי שם שמורה ומסלול ספציפי (למשל: *"מה מזג האוויר בעין גדי"*).',
+            state: currentState,
+            options: [
+              { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+              { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
+              { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
+              { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
+              { label: '🎲 כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
+            ],
+            proposals: [],
+            toolActivity: '🌤️ בדיקת מזג אוויר: יעד לא מוכר בישראל • הפניה לאתרים בארץ',
+          };
+        }
       }
     }
 
@@ -438,7 +547,7 @@ export class AgentBotService {
       const cityMatch = text.match(/(?:יוצאים מ|מאיזור|מאזור|ליד|קרוב ל|במרחק\s*(?:\d+\s*ק["״]?מ\s*)?מ|ברדיוס\s*(?:\d+\s*ק["״]?מ\s*)?מ|גרים ב|אנחנו מ|אני מ)\s*([א-ת]{3,15}(?:\s+[א-ת]{3,15})?)/);
       if (cityMatch && cityMatch[1]) {
         const candidateName = cityMatch[1].trim();
-        const STOPWORDS = ['הצפון', 'הדרום', 'המרכז', 'השרון', 'השפלה', 'הגולן', 'הגליל', 'המים', 'עגלות', 'ילדים', 'הבוקר', 'הצהריים', 'הערב', 'השבת', 'מחר', 'הבית', 'שם'];
+        const STOPWORDS = ['הצפון', 'הדרום', 'המרכז', 'השרון', 'השפלה', 'הגולן', 'הגליל', 'המים', 'עגלות', 'ילדים', 'הבוקר', 'הצהריים', 'הערב', 'השבת', 'מחר', 'הבית', 'שם', 'אוטו', 'האוטו', 'רכב', 'הרכב', 'חניה', 'החניה'];
         if (!STOPWORDS.includes(candidateName)) {
           let geoSpanId = null;
           if (traceId) {
@@ -475,12 +584,94 @@ export class AgentBotService {
     if (state.minAge === null || state.minAge === undefined) missing.push('minAge');
     if (!state.feature) missing.push('feature');
 
+    // Smart Defaults Strategy for Rich Experiential Concepts (Table ג'):
+    // When the user specifies an experiential concept, feature, water negation, dog, or age constraint,
+    // do not stall with multi-turn interrogations! Apply intelligent defaults:
+    // - Default timing: 'today' (current weather)
+    // - Default region: 'all' (all of Israel)
+    // - Default minAge: appropriate for the concept
+    // And immediately return 3 top proposals on the map with follow-up filter pills!
+    const isCityOriginQuery = Boolean(state.originCity || state.originCoords);
+    const hasRichIntent = Boolean(
+      state.concept ||
+      state.excludeWater ||
+      state.dogWarning ||
+      (state.feature && !isCityOriginQuery)
+    );
+
+    if (hasRichIntent && !isCityOriginQuery && missing.length > 0) {
+      if (!state.timing) {
+        state.timing = 'today';
+        state.timingLabel = 'היום';
+        state.dayIndex = 0;
+      }
+      if (!state.region) {
+        state.region = 'all';
+        state.regionLabel = 'כל הארץ';
+      }
+      if (state.minAge === null || state.minAge === undefined) {
+        if (state.concept === 'picnic' || state.concept === 'senior' || state.concept === 'easy' || state.feature === 'stroller') {
+          state.minAge = 0;
+          state.minAgeLabel = 'מתאים לכולם (0+)';
+        } else if (state.feature === 'adventure' || state.concept === 'adventure') {
+          state.minAge = 10;
+          state.minAgeLabel = '10+ (נוער ומבוגרים)';
+        } else {
+          state.minAge = 4;
+          state.minAgeLabel = '4+ (ילדים קטנים)';
+        }
+      }
+      if (!state.feature) {
+        state.feature = 'any';
+        state.featureLabel = 'כל הסגנונות';
+      }
+      missing.length = 0; // Fulfilled by Smart Defaults!
+    }
+
     if (missing.length > 0) {
       const nextMissing = missing[0];
       if (traceId) {
         AgentTelemetryService.log('INFO', `Clarification requested for parameter: ${nextMissing}`, { traceId, missing });
       }
       return this.generateClarificationResponse(nextMissing, state, missing);
+    }
+
+    // Multi-turn State Stagnation Guard:
+    // If the conversation already had recommendations delivered in previous turn,
+    // and this turn's message did NOT provide any updated parameter or navigation intent,
+    // do not blindly repeat previous proposals. Prompt for clarification or parameter update!
+    const hadProposalsBefore = Boolean(currentState.lastProposals && currentState.lastProposals.length > 0);
+    if (hadProposalsBefore) {
+      const freshExtraction = extractParameters(message, this.getInitialState());
+      const hasAnyNewParameter = Boolean(
+        freshExtraction.timing ||
+        freshExtraction.region ||
+        (freshExtraction.minAge !== null && freshExtraction.minAge !== undefined) ||
+        freshExtraction.feature ||
+        freshExtraction.concept ||
+        freshExtraction.excludeWater ||
+        (state.originCoords && state.originCoords !== currentState.originCoords)
+      );
+      const hasMoreIntent = (
+        text.includes('עוד') || text.includes('הבא') || text.includes('נוספים') ||
+        text.includes('אחרים') || text.includes('החלף') || text.includes('רענן') ||
+        text.includes('אפשרויות נוספות')
+      );
+      if (!hasAnyNewParameter && !hasMoreIntent) {
+        return {
+          text: 'המסלולים שהוצעו למעלה מותאמים להעדפות שבחרתם 🌿.\n\nהאם תרצו לשנות משהו בהעדפות (אזור, מועד, גילאי הילדים או סגנון המסלול), או שתרצו שאציג אפשרויות נוספות?',
+          state: currentState,
+          options: [
+            { label: '🔄 עוד אפשרויות למסלול זה', value: 'עוד אפשרויות' },
+            { label: '🏞️ שנה אזור בארץ', value: 'שנה אזור' },
+            { label: '📅 שנה מועד / תאריך', value: 'שנה תאריך' },
+            { label: '👶 שנה גיל מטיילים', value: 'רוצה לשנות את גילאי הילדים' },
+            { label: '🔄 התחל מחדש', value: 'התחל מחדש' },
+          ],
+          proposals: currentState.lastProposals || [],
+          toolActivity: '💡 שיחה מתמשכת: נדרש עדכון פרמטרים או בקשה להצעות נוספות',
+        };
+      }
     }
 
     // 3. All parameters present! Run Tool Execution & Recommendation Flow
@@ -723,6 +914,14 @@ export class AgentBotService {
       { label: '📅 בדוק תאריך אחר', value: 'איך יהיה מזג האוויר ביום אחר?' },
       { label: '👶 שנה גיל מטיילים', value: 'רוצה לשנות את גילאי הילדים' },
     ];
+    if (state.region === 'all') {
+      resultOptions.unshift(
+        { label: '🏞️ בצפון', value: 'באזור הצפון', field: 'region' },
+        { label: '🌾 במרכז', value: 'באזור המרכז והשרון', field: 'region' },
+        { label: '🏰 בירושלים', value: 'באזור ירושלים והשפלה', field: 'region' },
+        { label: '🏜️ בדרום', value: 'באזור הדרום וים המלח', field: 'region' }
+      );
+    }
     if (rainWarning) {
       resultOptions.push({ label: '🌲 הצע מסלול מוצל במקום', value: 'מעדיפים יער מוצל ושבילי הליכה' });
     }

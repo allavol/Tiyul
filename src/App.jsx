@@ -1,12 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Compass, Sparkles, Map, Mountain, Settings, Search, Sun, Moon, ShieldAlert, Activity } from 'lucide-react';
+import { Compass, Sparkles, Map, Settings, Search, Sun, Moon, ShieldAlert } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
-import TacticalSidebar from './components/TacticalSidebar';
 import TacticalMap from './components/TacticalMap';
 import MapErrorBoundary from './components/MapErrorBoundary';
 import AgentOperationsModal from './components/AgentOperationsModal';
 import AgentChatBot from './components/AgentChatBot';
-import AgentObservabilityDashboard from './components/AgentObservabilityDashboard';
 import { AgentService } from './services/AgentService';
 import { getDefaultDayIndex } from './utils/weatherUtils';
 
@@ -34,26 +32,18 @@ export default function App() {
   const [showNationalRadar, setShowNationalRadar] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const [isChatBotOpen, setIsChatBotOpen] = useState(false);
-  const [isObservabilityOpen, setIsObservabilityOpen] = useState(false);
-  const [observabilityTraceId, setObservabilityTraceId] = useState(null);
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
   const [chatBotQueryTrigger, setChatBotQueryTrigger] = useState(null);
-  const [activeRailTab, setActiveRailTab] = useState('trails'); // 'trails' | 'map' | 'settings'
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLightMode, setIsLightMode] = useState(true);
 
   // Finding H5: Full keyboard navigation (Escape closes topmost modal/drawer)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (isObservabilityOpen) {
-          setIsObservabilityOpen(false);
-        } else if (isAgentModalOpen) {
+        if (isAgentModalOpen) {
           setIsAgentModalOpen(false);
         } else if (isChatBotOpen) {
           setIsChatBotOpen(false);
-        } else if (isSidebarOpen) {
-          setIsSidebarOpen(false);
         } else if (selectedAssetId) {
           setSelectedAssetId(null);
         } else if (showNationalRadar) {
@@ -63,7 +53,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isObservabilityOpen, isAgentModalOpen, isChatBotOpen, isSidebarOpen, selectedAssetId, showNationalRadar]);
+  }, [isAgentModalOpen, isChatBotOpen, selectedAssetId, showNationalRadar]);
 
   // Trigger conversational agent briefing for a specific site
   const handleAskAgentAboutSite = (asset) => {
@@ -285,21 +275,6 @@ export default function App() {
 
         {/* Floating AI Agent & Operations Controls (Bottom-Right on Map - Mobile Responsive Hebrew RTL) */}
         <div className="absolute bottom-4 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-[1000] flex items-center justify-between sm:justify-end gap-2.5 pointer-events-auto">
-          {/* Catalog Drawer Trigger (Finding H2) */}
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            title="סייר בקטלוג האתרים והשמורות"
-            aria-label="פתח קטלוג אתרים ושמורות"
-            className={`h-[52px] px-4 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
-              isLightMode
-                ? 'text-teal-800 border-teal-300 bg-white/90 hover:bg-teal-50/90 shadow-teal-900/10'
-                : 'text-emerald-400 border-emerald-500/40 bg-brand-deep/80 hover:bg-white/10 hover:border-emerald-400'
-            }`}
-          >
-            <Mountain className="w-5 h-5 text-emerald-400" />
-            <span className="hidden sm:inline">קטלוג אתרים</span>
-          </button>
-
           {/* Main Chatbot Trigger */}
           <button
             onClick={() => setIsChatBotOpen(true)}
@@ -337,27 +312,6 @@ export default function App() {
             <span className="inline">מוח</span>
           </button>
 
-          {/* Agent Observability Dashboard Trigger */}
-          <button
-            onClick={() => {
-              setObservabilityTraceId(null);
-              setIsObservabilityOpen(true);
-            }}
-            title="חמ''ל טלמטריה וצפיות סוכן BAAL (OpenTelemetry Tracing)"
-            aria-label="פתח חמ''ל טלמטריה וצפיות"
-            className={`h-[52px] px-3 sm:px-4 rounded-2xl glass-panel flex items-center gap-2 border shadow-2xl transition active:scale-95 text-xs font-bold ${
-              isLightMode
-                ? 'text-cyan-800 border-cyan-300 bg-white/80 hover:bg-cyan-50/80 shadow-cyan-900/10'
-                : 'text-cyan-400 border-cyan-500/40 bg-brand-deep/80 hover:bg-white/10 hover:border-cyan-400'
-            }`}
-          >
-            <div className="relative">
-              <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
-              <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-ping ${isLightMode ? 'bg-cyan-500' : 'bg-cyan-400'}`} />
-            </div>
-            <span className="hidden sm:inline">טלמטריה</span>
-          </button>
-
           {/* Theme Toggle Button */}
           <button
             onClick={() => setIsLightMode(!isLightMode)}
@@ -373,56 +327,6 @@ export default function App() {
           </button>
         </div>
       </div>
-
-      {/* Slide-out Catalog Drawer (Finding H2 & H5) */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-[1100] flex justify-start bg-black/40 sm:bg-black/10 backdrop-blur-sm sm:backdrop-blur-none transition-opacity"
-          onClick={() => setIsSidebarOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="קטלוג אתרים ומסלולים"
-        >
-          <div 
-            className={`w-full sm:w-[420px] max-w-full h-full shadow-2xl flex flex-col transition-colors ${
-              isLightMode 
-                ? 'bg-[#fcfdfd] border-r border-zinc-200 text-zinc-900' 
-                : 'bg-[#1c1c21] border-r border-white/10 text-zinc-100'
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TacticalSidebar
-              assets={filteredAssets}
-              selectedAssetId={selectedAssetId}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              selectedAgeFilter={selectedAgeFilter}
-              onAgeFilterChange={setSelectedAgeFilter}
-              onSelectAsset={(id) => {
-                setSelectedAssetId(id);
-                setShowNationalRadar(false);
-                setIsSidebarOpen(false);
-              }}
-              isProcessing={isProcessing}
-              agentStatus={agentStatus}
-              selectedDayIndex={selectedDayIndex}
-              onSelectDayIndex={setSelectedDayIndex}
-              onOpenAgentModal={() => {
-                setIsSidebarOpen(false);
-                setIsAgentModalOpen(true);
-              }}
-              onOpenChatBot={() => {
-                setIsSidebarOpen(false);
-                setIsChatBotOpen(true);
-              }}
-              onCloseSidebar={() => setIsSidebarOpen(false)}
-              isLightMode={isLightMode}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Popup 1: Agent Intelligence & Operations Modal */}
       <AgentOperationsModal
@@ -455,17 +359,6 @@ export default function App() {
         assets={assets}
         queryTrigger={chatBotQueryTrigger}
         onClearQueryTrigger={() => setChatBotQueryTrigger(null)}
-        onOpenObservability={(traceId) => {
-          setObservabilityTraceId(traceId);
-          setIsObservabilityOpen(true);
-        }}
-      />
-
-      {/* Popup 3: OpenTelemetry GenAI Observability & Debugging Dashboard */}
-      <AgentObservabilityDashboard
-        isOpen={isObservabilityOpen}
-        onClose={() => setIsObservabilityOpen(false)}
-        initialTraceId={observabilityTraceId}
       />
     </div>
   );
