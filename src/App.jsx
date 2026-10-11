@@ -242,11 +242,6 @@ export default function App() {
     setAgentLastDecision(`כל ${initialAssetsData.length} השמורות והמסלולים נסרקו ונמצאו בטוחים לפעילות ללא סיכוני מזג אוויר.`);
   };
 
-  const RAIL_TABS = [
-    { id: 'trails', icon: Mountain, label: 'מסלולים' },
-    { id: 'map', icon: Map, label: 'מפה' },
-    { id: 'settings', icon: Settings, label: 'הגדרות' },
-  ];
 
   return (
     <div className={`fixed inset-0 flex flex-col bg-brand-deep text-[var(--text-primary)] overflow-hidden font-body select-none ${isLightMode ? 'light' : ''}`}>
