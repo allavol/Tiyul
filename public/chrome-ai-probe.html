@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>בדיקת היתכנות: מודל השפה המובנה של Chrome</title>
+  <meta name="description" content="דף בדיקה פנימי לבדיקת Prompt API של Chrome בעברית" />
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f1b1a; color: #e6f2ef; max-width: 860px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-size: 20px; }
+    button { background: #1fa38a; color: #04211c; border: 0; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+    pre { background: #16302c; padding: 12px; border-radius: 8px; white-space: pre-wrap; direction: ltr; text-align: left; }
+    .ok { color: #6ee7b7; } .bad { color: #fca5a5; }
+    .row { border-top: 1px solid #28514b; padding: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>בדיקת היתכנות: Prompt API של Chrome (Gemini Nano)</h1>
+  <p id="status">בודק זמינות...</p>
+  <button id="run" disabled>הרץ את כל השאילתות</button>
+  <div id="out"></div>
+
+  <script>
+    const QUERIES = [
+      'לא תצפיות, מסלול הליכה עם ילד בן 10',
+      'בלי מים, מחר בצפון עם ילד בן 5',
+      'מחפשים משהו קריר עם סבתא בכיסא גלגלים',
+      'רוצה מעיין אבל לא בדרום',
+      'סבא וסבתא ותינוק בעגלה, והילדים הגדולים רוצים סולמות',
+      'משהו שקט לשבת, לא רחוק מתל אביב',
+    ];
+
+    const SCHEMA = {
+      type: 'object',
+      properties: {
+        region: { type: 'string', enum: ['north', 'center', 'jerusalem', 'south', 'any'] },
+        feature: { type: 'string', enum: ['water', 'spring', 'shade', 'view', 'adventure', 'stroller', 'dry', 'any'] },
+        excludedFeatures: { type: 'array', items: { type: 'string', enum: ['water', 'spring', 'shade', 'view', 'adventure', 'stroller'] } },
+        excludedRegions: { type: 'array', items: { type: 'string', enum: ['north', 'center', 'jerusalem', 'south'] } },
+        youngestAge: { type: ['number', 'null'] },
+        timing: { type: 'string', enum: ['today', 'tomorrow', 'weekend', 'unspecified'] },
+      },
+      required: ['region', 'feature', 'excludedFeatures', 'excludedRegions', 'youngestAge', 'timing'],
+    };
+
+    const SYSTEM = 'You extract hiking-trip parameters from Hebrew text. Respect negations: "לא X" or "בלי X" means X goes into the excluded lists, never into feature or region. Use "any" or "unspecified" when the user did not say. Return JSON only.';
+
+    const $ = (id) => document.getElementById(id);
+    const log = (html) => { $('out').insertAdjacentHTML('beforeend', html); };
+
+    async function init() {
+      if (!('LanguageModel' in self)) {
+        $('status').innerHTML = '<span class="bad">LanguageModel API לא קיים בדפדפן הזה. יש להפעיל chrome://flags/#prompt-api-for-gemini-nano ולהפעיל מחדש.</span>';
+        return;
+      }
+      const availability = await LanguageModel.availability({ expectedOutputs: [{ type: 'text', languages: ['en'] }] });
+      $('status').innerHTML = 'availability: <b>' + availability + '</b>';
+      if (availability === 'unavailable') {
+        $('status').innerHTML += ' <span class="bad">(החומרה או ההגדרות לא תומכות)</span>';
+        return;
+      }
+      $('run').disabled = false;
+    }
+
+    async function runAll() {
+      $('run').disabled = true;
+      $('out').innerHTML = '';
+      const session = await LanguageModel.create({
+        initialPrompts: [{ role: 'system', content: SYSTEM }],
+        expectedOutputs: [{ type: 'text', languages: ['en'] }],
+        monitor(m) { m.addEventListener('downloadprogress', (e) => { $('status').textContent = 'מוריד מודל: ' + Math.round(e.loaded * 100) + '%'; }); },
+      });
+      for (const q of QUERIES) {
+        const t0 = performance.now();
+        try {
+          const raw = await session.prompt(q, { responseConstraint: SCHEMA });
+          const ms = Math.round(performance.now() - t0);
+          log('<div class="row"><b>' + q + '</b> <small>(' + ms + 'ms)</small><pre>' + raw + '</pre></div>');
+        } catch (err) {
+          log('<div class="row bad"><b>' + q + '</b><pre>' + err.message + '</pre></div>');
+        }
+      }
+      session.destroy();
+      $('status').textContent = 'הסתיים. יש לבדוק ידנית כל תוצאה מול הכוונה במשפט.';
+      $('run').disabled = false;
+    }
+
+    $('run').addEventListener('click', runAll);
+    init();
+  </script>
+</body>
+</html>

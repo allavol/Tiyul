@@ -77,6 +77,8 @@ describe('AgentNLUParser Unit Tests', () => {
     expect(parseAgeFromText('תינוק בן שנתיים וחצי')).toBe(2.5);
     expect(parseAgeFromText('עגלת תינוק 0+')).toBe(0);
     expect(parseAgeFromText('ילדים בני 4 ו-8')).toBe(4);
+    expect(parseAgeFromText('ילד בן תשעים')).toBe(90);
+    expect(parseAgeFromText('ילד בן 90')).toBe(90);
   });
 
   it('applies typo corrections on common Hebrew terms', () => {

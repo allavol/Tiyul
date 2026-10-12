@@ -40,6 +40,18 @@
 4. **אכיפת תנאי הסף**:
    - $0 עלות תפעולית.
    - 100% בדיקות עוברות ו-0 שגיאות Build לפני מיזוג ל-`main`.
+5. **חובת עדכון ותחזוקה אוטונומית של כל סוויטות הבדיקות (Mandatory Autonomous Test Maintenance)**:
+   - **חוק ברזל**: לאחר כל שינוי קוד, הוספת תכונה, עדכון לוגיקה או שינוי עיצובי ב-UI, סוכן BAAL מחויב לעדכן מיד ואוטומטית את כל הבדיקות הרלוונטיות, ללא צורך בהנחיה, בקשה או תזכורת מהמשתמשת!
+   - חל איסור מוחלט להשאיר טסטים לא מעודכנים או סלקטורים ישנים.
+
+### מיפוי 4 סוויטות הבדיקות במערכת (The 4 Test Suites Architecture):
+
+| סוויטה | קבצים | מנוע הרצה (Runner) | פקודת הרצה נכונה | מה נבדק ומדוע נכשל בהרצת `node` ידנית? |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. בדיקות יחידה ואינטגרציה (Vitest)** | `tests/agent_modules.test.js`<br>`tests/agent_telemetry.test.js`<br>`tests/golden_dataset_eval.test.js` | **Vitest** (JSDOM / Node ESM) | `npm test`<br>או `npx vitest run` | • **מה נבדק**: מודולי הבנת שפה, טלמטריה מלאה, ובנצ'מרק של 50 שאילתות זהב (70 בדיקות).<br>• **סיבת כשל ידני**: הקבצים משתמשים ב-`describe/it/expect` של Vitest. הרצה ישירה ב-`node` זורקת שגיאת `Cannot read properties of undefined (reading 'config')`. |
+| **2. עמידות סוכן ומניעת לולאות (Resilience)** | `tests/test_agent_bot_resilience.js` | **Node.js** (Standalone Script) | `npm run test:resilience`<br>או `node tests/test_agent_bot_resilience.js` | • **מה נבדק**: 46 מבחני עמידות קיצוניים (קונפליקטים דמוגרפיים, נוהל חירום SOS, סתירות עונתיות כדרום אדום וקטיף דובדבנים, איסור טיול לילה בנחלים, שטחי אש ומטווחים סגורים, הנחיות מנגל, ג'יילברייקס, זמן תגובה <500ms).<br>• **ריצה תקינה**: רץ בהצלחה ב-Node (46/46 ירוק). |
+| **3. סקילים טקטיים ואבטחת GIS (Python)** | `tests/test_skills.py` | **Python Unittest** | `python -m unittest tests/test_skills.py` | • **מה נבדק**: 19 בדיקות של מנועי הסיכון האקלימיים, גיל מינימום, מניעת הזיות, תיחום גיאוגרפי של ישראל, וניתוב טקטי C4I ל-Safe Haven.<br>• **סיבת כשל ידני**: קובץ Python. הרצה ב-`node` תיכשל בשגיאת תחביר (SyntaxError). |
+| **4. בדיקות דפדפן ו-UI קצה לקצה (Playwright E2E)** | `tests/chat_resilience.spec.js`<br>`tests/visual.spec.js` | **Playwright Test** (Chromium) | `npx playwright test tests/chat_resilience.spec.js` | • **מה נבדק**: ריצה בדפדפן אמיתי — פתיחה ומזעור של הצ'אט, כפתור "הצג במפה", פתיחת פרטים נוספים, קישור Waze והעתקה ללוח.<br>• **סיבת כשל ידני**: (א) הרצה ב-`node` נכשלת כי פליירייט מחייב את ה-Runner שלו (`npx playwright test`). (ב) סלקטורים ישנים שלא עודכנו לאחר עיצוב כרטיסיות ה-UI החדשות. עודכן אוטונומית וכעת 2/2 עובר. |
 
 ---
 

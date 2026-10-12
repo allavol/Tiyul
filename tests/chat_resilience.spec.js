@@ -37,12 +37,12 @@ test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
     }
 
     // After the last message (with 4 valid parameters), verify that 3 proposal cards appear!
-    await page.waitForSelector('button:has-text("הצג מסלול ונתונים במפה")', { timeout: 15000 });
-    const proposalButtons = page.locator('button:has-text("הצג מסלול ונתונים במפה")');
+    await page.waitForSelector('button:has-text("הצג במפה")', { timeout: 15000 });
+    const proposalButtons = page.locator('button:has-text("הצג במפה")');
     const count = await proposalButtons.count();
     expect(count).toBeGreaterThanOrEqual(1);
 
-    // Click "הצג מסלול ונתונים במפה" on the first proposal
+    // Click "הצג במפה" on the first proposal
     await proposalButtons.first().click();
 
     // Verify chat drawer closes / docks and map displays the selected site!
@@ -77,12 +77,17 @@ test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
     const sendBtn = page.locator('button:has(svg.lucide-send)').last();
     await sendBtn.click();
 
-    // 6. Verify Waze navigation link appears on the proposal card
+    // 6. Click "פרטים נוספים" to expand details
+    const expandBtn = page.locator('button:has-text("פרטים נוספים")').first();
+    await expect(expandBtn).toBeVisible({ timeout: 10000 });
+    await expandBtn.click();
+
+    // 7. Verify Waze navigation link appears on the proposal card
     const wazeLink = page.locator('a[href*="waze.com"]').first();
     await expect(wazeLink).toBeVisible({ timeout: 10000 });
 
-    // 7. Verify Copy recommendation button appears
-    const copyBtn = page.locator('button:has-text("העתק המלצה")').first();
+    // 8. Verify Copy recommendation button appears
+    const copyBtn = page.locator('button:has-text("העתק פרטים")').first();
     await expect(copyBtn).toBeVisible();
     await copyBtn.click();
     await expect(page.locator('text=הועתק ללוח!')).toBeVisible();

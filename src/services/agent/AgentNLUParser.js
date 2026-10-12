@@ -23,7 +23,10 @@ export const ABROAD_STANDARD_REFUSAL = 'שלום! 🌿 אני לא ממליץ ע
 // Standard unified refusal for all destinations outside safe borders of Israel
 export const UNSAFE_BORDER_REFUSAL = 'שלום! 🌿 היעד המבוקש נמצא מחוץ לגבולות ישראל הבטוחים... 😉 המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה הבטוחים והמאושרים בישראל 🇮🇱 בלבד... בואו נטייל בבטחה בארץ!';
 
-// Unsafe border territories, hostile areas, and fictional / fantasy destinations
+// Standard refusal for closed military firing zones and active military areas
+export const MILITARY_ZONE_REFUSAL = '⚠️🚫 שטח צבאי סגור / שטח אש פעיל!\n\nהכניסה לשטחי אש, מטווחים צבאיים ואזורי גבול אסורה ומסכנת חיים ללא תיאום צבאי ואישור מוסמך מצה"ל. הסוכן המטייל ממליץ אך ורק על שמורות טבע, גנים לאומיים ויערות פתוחים ובטוחים למטיילים בישראל 🇮🇱.\n\nבאיזה אזור בטוח תרצו לטייל?';
+
+// Unsafe border territories, hostile areas, cross-border heritage, military firing zones, and fictional destinations
 export const UNSAFE_BORDER_KEYWORDS = [
   // Gaza Strip
   'עזה', 'בעזה', 'רצועת עזה', 'ברצועת עזה', 'חאן יונס', 'בחאן יונס', 'רפיח', 'ברפיח',
@@ -33,6 +36,15 @@ export const UNSAFE_BORDER_KEYWORDS = [
   'שטח a', 'בשטח a', 'שטחי a', 'שטח א', 'בשטח א', 'שטחי א',
   'שכם', 'בשכם', 'ג\'נין', 'בג\'נין', 'גנין', 'בגנין',
   'רמאללה', 'ברמאללה', 'טול כרם', 'בטול כרם', 'קלקיליה', 'בקלקיליה', 'טובאס',
+  'יריחו', 'ביריחו', 'ארמונות החשמונאים ביריחו', 'ארמונות החשמונאים', 'קבר יוסף', 'סבסטיה',
+
+  // Cross-Border Biblical / Heritage Sites in Jordan & Sinai
+  'נחל ארנון', 'בנחל ארנון', 'הר נבו', 'בהר נבו', 'הר סיני', 'בהר סיני',
+  'ואדי ראם', 'בואדי ראם', 'ואדי רם', 'בואדי רם', 'ראס א-שטן', 'בראס א-שטן',
+
+  // Military Closed Firing Zones & Bases
+  'שטח אש', 'בשטח אש', 'שטחי אש', 'בשטחי אש', 'שטח אש 918', 'מטווח 24', 'במטווח 24',
+  'בסיס צאלים', 'הר דב', 'בהר דב', 'מעבר לגדר המערכת', 'גדר המערכת',
 
   // Hostile Middle East / Gulf countries
   'תימן', 'בתימן', 'צנעא',
@@ -210,6 +222,19 @@ export const HEBREW_DAYS = [
 
 // Hebrew number words mapping for textual age parsing
 export const HEBREW_AGE_WORDS = [
+  { word: 'מאה', age: 100 },
+  { word: 'תשעים וחמש', age: 95 },
+  { word: 'תשעים', age: 90 },
+  { word: 'שמונים וחמש', age: 85 },
+  { word: 'שמונים', age: 80 },
+  { word: 'שבעים וחמש', age: 75 },
+  { word: 'שבעים', age: 70 },
+  { word: 'שישים וחמש', age: 65 },
+  { word: 'שישים', age: 60 },
+  { word: 'חמישים', age: 50 },
+  { word: 'ארבעים', age: 40 },
+  { word: 'שלושים', age: 30 },
+  { word: 'עשרים', age: 20 },
   { word: 'שמונה עשרה', age: 18 },
   { word: 'שמונה עשר', age: 18 },
   { word: 'שבע עשרה', age: 17 },
@@ -417,10 +442,15 @@ export function checkGuardrails(message) {
     }
 
     if (matched) {
+      const isMilitary = (
+        lower.includes('שטח אש') || lower.includes('שטחי אש') || lower.includes('מטווח 24') ||
+        lower.includes('צאלים') || lower.includes('הר דב') || lower.includes('גדר המערכת')
+      );
       return {
         safe: false,
-        isAbroad: true,
-        refusal: UNSAFE_BORDER_REFUSAL,
+        isAbroad: !isMilitary,
+        isMilitary,
+        refusal: isMilitary ? MILITARY_ZONE_REFUSAL : UNSAFE_BORDER_REFUSAL,
       };
     }
   }
@@ -509,10 +539,71 @@ export function checkGuardrails(message) {
 }
 
 /**
+ * Detect emergency distress situations in the field (lost, out of water, snake bite, cliff fall, flash flood)
+ */
+export function detectEmergencyDistress(message) {
+  if (!message || typeof message !== 'string') return null;
+  const lower = message.toLowerCase().trim();
+
+  const SOS_PATTERNS = [
+    'איבדנו את הדרך', 'הלכנו לאיבוד', 'הלך לאיבוד', 'אבדנו בדרך', 'תעזרו לנו הלכנו לאיבוד',
+    'נגמרו לנו המים', 'נגמר לנו המים', 'אין לנו מים ואנחנו', 'מתייבשים', 'סכנת התייבשות',
+    'עקיצת עקרב', 'נעקץ מעקרב', 'הכשת נחש', 'הוכש מנחש', 'הכיש אותו נחש',
+    'נפילה מצוק', 'נפל ממצוק', 'נפלנו מצוק', 'שבר ברגל', 'שבר את הרגל',
+    'מישהו נפצע', 'פציעה קשה', 'זקוקים לחילוץ', 'חילוץ דחוף',
+    'תקועים בשטח', 'תקועים על מצוק', 'תקועים בנחל',
+    'שיטפון עולה', 'שיטפון מתקרב', 'מים בוציים בנחל', 'זרם חזק בנחל', 'נסחפים בזרם',
+    'הצילו אנחנו', 'סכנת חיים בשטח'
+  ];
+
+  for (const pat of SOS_PATTERNS) {
+    if (lower.includes(pat)) {
+      return {
+        isEmergency: true,
+        text: `🚨🆘 מצב חירום ומצוקה בשטח! 🆘🚨\n\nאם אתם או מישהו מסביבכם נמצא בסכנה — פעלו מיד על פי ההנחיות מצילות החיים הבאות:\n\n📞 מספרי חירום לחיוג מיידי:\n• 🚔 100 — משטרת ישראל ויחידות חילוץ והצלה\n• 🚑 101 — מגן דוד אדום (מד"א)\n• 🚒 102 — כבאות והצלה לישראל\n\n🧭 הנחיות בטיחות מצילות חיים:\n1. הישארו יחד במקום בטוח ואל תנסו להמשיך ללכת בחושך או בתוואי לא מוכר.\n2. אם מדובר בשיטפון או זרימה עולה — עלו מיד למקום הגבוה ביותר מחוץ לערוץ הנחל! חל איסור מוחלט לחצות זרם מים.\n3. שתפו מיקום GPS מדויק בשיחה עם מוקד 100 של המשטרה.\n4. שמרו על סוללת הטלפון — הנמיכו בהירות, סגרו אפליקציות מיותרות והשאירו קו פנוי לכוחות החילוץ.`,
+        options: [
+          { label: '📞 חיוג למשטרה ויחידות חילוץ (100)', value: 'tel:100' },
+          { label: '🚑 חיוג למד"א (101)', value: 'tel:101' },
+          { label: '🚒 חיוג לכבאות והצלה (102)', value: 'tel:102' },
+          { label: '🌿 חזרה לצ\'אט הטיולים הרגיל', value: 'התחל מחדש' }
+        ],
+        toolActivity: '🚨 הפעלת נוהל חירום SOS בשטח • הוצגו מספרי חיוג והנחיות מצילות חיים'
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Ages from this value up (and up to SENIOR_MAX_AGE) are treated as senior travelers
+ * who need accessible, paved, no-stairs routes - NOT as '10+ youth and adults'.
+ */
+export const SENIOR_MIN_AGE = 65;
+export const SENIOR_MAX_AGE = 120;
+
+/**
  * Parse and extract youngest hiker age from Hebrew text (numeric and textual phrases)
  */
 export function parseAgeFromText(text) {
-  if (!text || typeof text !== 'string') return null;
+  const ages = collectAgesFromText(text);
+  return ages.length > 0 ? Math.min(...ages) : null;
+}
+
+/**
+ * Returns the oldest plausible senior age mentioned (65-120), or null.
+ * e.g. "ילד בן 90" -> 90 (a senior, even if phrased as "child")
+ */
+export function detectSeniorAge(text) {
+  const seniors = collectAgesFromText(text).filter(a => a >= SENIOR_MIN_AGE && a <= SENIOR_MAX_AGE);
+  return seniors.length > 0 ? Math.max(...seniors) : null;
+}
+
+/**
+ * Collect every age mentioned in the text (numeric, textual and categorical)
+ */
+function collectAgesFromText(text) {
+  if (!text || typeof text !== 'string') return [];
 
   const foundAges = [];
 
@@ -537,7 +628,7 @@ export function parseAgeFromText(text) {
     if (item.word === 'שנה' && (text.includes('שנה וחצי') || text.includes('חצי שנה'))) continue;
     const escapedWord = item.word.replace(/\s+/g, '\\s+');
     const prefixRegex = new RegExp(
-      `(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\\s+בן|ילדה\\s+בת|ילדים\\s+בני|תינוק\\s+בן|פעוט\\s+בן|הילד(?:\\s+שלי)?\\s+בן|הילדה(?:\\s+שלי)?\\s+בת)\\s+(?:ה-?|ה)?${escapedWord}(?:\\s+וחצי|\\s+שנים|\\s+שנה)?`,
+      `(?:בן|בת|בני|בנות|בגיל|בגילאי|לגיל|לגילאי|גיל|גילאי|כיל|יד|מגיל|ילד\\s+בן|ילדה\\s+בת|ילדים\\s+בני|תינוק\\s+בן|פעוט\\s+בן|הילד(?:\\s+שלי)?\\s+בן|הילדה(?:\\s+שלי)?\\s+בת)\\s+(?:ה-?|ה)?${escapedWord}(?![\\u0590-\\u05fe])(?:\\s+וחצי|\\s+שנים|\\s+שנה)?`,
       'gi'
     );
     if (prefixRegex.test(text)) {
@@ -590,11 +681,7 @@ export function parseAgeFromText(text) {
     }
   }
 
-  if (foundAges.length > 0) {
-    return Math.min(...foundAges);
-  }
-
-  return null;
+  return foundAges;
 }
 
 /**
@@ -982,6 +1069,39 @@ export function extractParameters(message, currentState) {
     updated.excludeWater = true;
   }
 
+  // Negated style phrases: "לא תצפיות", "בלי נוף", "ללא סנפלינג" must NOT select that style.
+  // The negated phrase is removed from the text before any feature/concept detection runs.
+  const NEGATABLE_FEATURES = [
+    { key: 'view', label: 'תצפיות ונוף', words: ['תצפיות', 'תצפית', 'נופים', 'נוף', 'פריחה', 'מבצרים', 'מבצר', 'עתיקות'] },
+    { key: 'shade', label: 'יער וצל', words: ['מוצל', 'צל', 'יער', 'חורש', 'עצים'] },
+    { key: 'adventure', label: 'אתגר', words: ['סנפלינג', 'אתגרי', 'אתגר', 'סולמות', 'יתדות', 'מצוקים', 'מצוק'] },
+  ];
+  const negatedFeatures = new Set();
+  const negatedLabels = [];
+  for (const group of NEGATABLE_FEATURES) {
+    const negationRegex = new RegExp(
+      `(^|[^\\u0590-\\u05fe])(?:ו)?(?:לא|בלי|ללא)\\s+(?:(?:רוצה|רוצים|צריך|צריכים|מחפש|מחפשים|מעוניין|מעוניינים)\\s+)?(?:ב|ל)?(?:${group.words.join('|')})(?![\\u0590-\\u05fe])`,
+      'g'
+    );
+    const scrubbed = text.replace(negationRegex, '$1 ');
+    if (scrubbed !== text) {
+      negatedFeatures.add(group.key);
+      negatedLabels.push(group.label);
+      text = scrubbed;
+    }
+  }
+
+  // A style carried over from a previous turn is dropped if the user now rejects it
+  for (const key of negatedFeatures) {
+    if (updated.feature === key) {
+      updated.feature = null;
+      updated.featureLabel = null;
+    }
+  }
+  if (negatedFeatures.has('view') && ['blooming', 'sunset', 'history', 'quiet', 'wildlife'].includes(updated.concept)) {
+    updated.concept = null;
+  }
+
   // Conceptual Intent Mapping (Slang & Metaphors)
   const isPicnicIntent = (
     text.includes('פקל קפה') || text.includes('פק"ל קפה') || text.includes('פק״ל קפה') ||
@@ -1016,10 +1136,17 @@ export function extractParameters(message, currentState) {
     text.includes('קרוב לאוטו') || text.includes('קרוב לרכב') || text.includes('בלי מאמץ פיזי')
   );
 
+  // A traveler aged 65-120 is a senior (accessible route needed), even if phrased as "ילד בן 90"
+  const seniorAge = detectSeniorAge(text);
+
   const isSeniorIntent = (
-    text.includes('סבא') || text.includes('סבתא') || text.includes('הורים מבוגרים') ||
-    text.includes('קשיש') || text.includes('גיל הזהב') || text.includes('קשה ללכת') ||
-    text.includes('בלי מדרגות') || text.includes('שביל נוח למבוגרים') ||
+    seniorAge !== null ||
+    text.includes('סבא') || text.includes('סבתא') || text.includes('סבים') || text.includes('סבתות') ||
+    text.includes('הורים מבוגרים') ||
+    text.includes('קשיש') || text.includes('קשישה') || text.includes('קשישים') ||
+    text.includes('גיל הזהב') || text.includes('הגיל השלישי') ||
+    text.includes('פנסיונר') || text.includes('פנסיונרים') || text.includes('פנסיונרית') ||
+    text.includes('קשה ללכת') || text.includes('בלי מדרגות') || text.includes('שביל נוח למבוגרים') ||
     text.includes('ישיבה קרובה לרכב') || text.includes('בלי אבנים')
   );
 
@@ -1061,11 +1188,49 @@ export function extractParameters(message, currentState) {
     text.includes('טעינת מצברים') || text.includes('בלי רעש')
   );
 
-  if (isSeniorIntent) {
+  // BBQ / Picnic Intent
+  const isBbqIntent = (
+    text.includes('מנגל') || text.includes('על האש') || text.includes('ברביקיו') || text.includes('נפנף')
+  );
+
+  // Demographic Indicators & Conflicts: "בוחר את האוכלוסייה עם המגבלות הגדולות ביותר"
+  const hasWheelchairOrSenior = (
+    isSeniorIntent ||
+    text.includes('כיסא גלגלים') || text.includes('כסא גלגלים') || text.includes('קשיש') || text.includes('קשישים') ||
+    text.includes('הליכון') || text.includes('מוגבל בהליכה') || text.includes('מוגבלות')
+  );
+  const hasBabyOrStroller = (
+    text.includes('0+') || text.includes('תינוק') || text.includes('תינוקת') || text.includes('פעוט') ||
+    ((text.includes('עגלה') || text.includes('עגלות') || text.includes('טיולון')) && !text.includes('בלי עגלה') && !text.includes('ללא עגלה') && !text.includes('בלי עגלות') && !text.includes('ללא עגלות'))
+  );
+  const hasHighlyRestrictedPopulation = hasWheelchairOrSenior || hasBabyOrStroller;
+
+  const hasAdventureKeywords = (
+    text.includes('סולמות') || text.includes('יתדות') || text.includes('סנפלינג') ||
+    text.includes('אתגרי') || text.includes('לקרוע את השרירים') || text.includes('לשרוף שרירים') ||
+    text.includes('שחורים') || text.includes('מיטיבי לכת') || text.includes('טיפוס בולדרים') || text.includes('מסלול שחור')
+  );
+
+  if (hasHighlyRestrictedPopulation && hasAdventureKeywords) {
+    // Conflict resolution: The population with the greatest limitations strictly dictates the trail criteria!
+    updated.demographicConflictResolved = true;
     updated.feature = 'stroller';
-    updated.featureLabel = 'שביל סלול / נגיש ונוח להליכה';
+    updated.featureLabel = 'שביל סלול ונגיש (עדיפות בטיחותית למגבלות נגישות)';
     updated.minAge = 0;
-    updated.minAgeLabel = 'שבילים סלולים ונוחים';
+    updated.minAgeLabel = '0+ (נגיש ומיושר לכולם)';
+    updated.wheelchairNote = true;
+  } else if (isBbqIntent) {
+    updated.concept = 'bbq';
+    updated.feature = 'shade';
+    updated.featureLabel = 'חניון נופש ופיקניק (מותר למנגל)';
+    updated.bbqDisclaimer = true;
+  } else if (isSeniorIntent) {
+    updated.isSenior = true;
+    if (seniorAge !== null) updated.seniorAge = seniorAge;
+    updated.feature = 'stroller';
+    updated.featureLabel = 'שביל סלול / נגיש ונוח להליכה (מותאם לקשישים ומבוגרים)';
+    updated.minAge = 0;
+    updated.minAgeLabel = 'גיל הזהב / קשישים (שבילים נגישים ונוחים)';
     updated.wheelchairNote = true;
   } else if (isIntenseHikeIntent) {
     updated.feature = 'adventure';
@@ -1149,9 +1314,27 @@ export function extractParameters(message, currentState) {
 
   // 4. Youngest age extraction
   const extractedAge = parseAgeFromText(text);
-  if (extractedAge !== null) {
+  const allParsedAges = collectAgesFromText(text);
+  const nonSeniorAges = allParsedAges.filter(a => a < SENIOR_MIN_AGE);
+  const youngestChildAge = nonSeniorAges.length > 0 ? Math.min(...nonSeniorAges) : null;
+
+  if (isSeniorIntent || seniorAge !== null) {
+    updated.isSenior = true;
+    if (seniorAge !== null) updated.seniorAge = seniorAge;
+    updated.minAge = 0;
+    updated.wheelchairNote = true;
+    if (hasBabyOrStroller) {
+      updated.minAgeLabel = 'עגלות תינוק וגיל הזהב (נגיש ומישורי לכולם)';
+    } else if (youngestChildAge !== null) {
+      updated.exactAge = youngestChildAge;
+      updated.minAgeLabel = 'משפחה משולבת עם גיל הזהב (שבילים נוחים ונגישים לכולם)';
+    } else {
+      if (seniorAge !== null) updated.exactAge = seniorAge;
+      updated.minAgeLabel = 'גיל הזהב / קשישים (שבילים נגישים ונוחים)';
+    }
+  } else if (extractedAge !== null) {
     updated.exactAge = extractedAge;
-    if (extractedAge <= 2.5) {
+    if (hasHighlyRestrictedPopulation || extractedAge <= 2.5) {
       updated.minAge = 0;
       updated.minAgeLabel = '0+ (תינוקות ועגלות)';
     } else if (extractedAge <= 6) {
@@ -1164,6 +1347,9 @@ export function extractParameters(message, currentState) {
       updated.minAge = 10;
       updated.minAgeLabel = '10+ (נוער ומבוגרים)';
     }
+  } else if (hasHighlyRestrictedPopulation) {
+    updated.minAge = 0;
+    updated.minAgeLabel = 'מתאים לכולם (0+)';
   }
 
   // 5. Subregion / destination keyword tracking
@@ -1261,6 +1447,82 @@ export function checkClimateContradictions(message) {
         { label: '🏔️ חפש שלג בצפון (חרמון וגולן)', value: 'מחפש מסלול שלג בחרמון ובצפון' },
         { label: '💧 מסלול מים קריר בצפון', value: 'מחפש מסלול מים מוצל בצפון' },
         { label: '🏰 מערה קרירה בבית גוברין', value: 'ספר לי על בית גוברין' },
+      ],
+    };
+  }
+
+  // 3. Cherry Picking (קטיף דובדבנים) - Exclusively May-June
+  const mentionsCherryPicking = (
+    lower.includes('קטיף דובדבנים') || lower.includes('דובדבנים') || lower.includes('קטיף דובדבן')
+  );
+  const currentMonth = new Date().getMonth() + 1;
+  const isCherrySeason = currentMonth === 5 || currentMonth === 6;
+  const mentionsCherryMonths = lower.includes('מאי') || lower.includes('יוני') || lower.includes('באביב');
+  if (mentionsCherryPicking && !isCherrySeason && !mentionsCherryMonths) {
+    return {
+      contradiction: true,
+      text: `🍒🚫 עונת קטיף הדובדבנים בצפון וברמת הגולן מתקיימת בחודשי מאי ויוני בלבד!\n\nכעת המטעים סגורים לקטיף. בעונה הנוכחית מומלץ ליהנות ממסלולי מים זורמים, מעיינות קרירים או יערות מוצלים בצפון.\n\n💡 אנא נסחו שוב את שאלתכם או בחרו באחת האפשרויות למטה:`,
+      options: [
+        { label: '💧 מסלול מים מוצל בצפון', value: 'מחפש מסלול מים מוצל בצפון' },
+        { label: '🌲 יער מוצל ושבילי הליכה', value: 'מחפש יער מוצל בצפון' },
+        { label: '🔄 התחל מחדש', value: 'התחל מחדש' },
+      ],
+    };
+  }
+
+  // 4. Red Anemones / Blooming (דרום אדום / כלניות) - Exclusively Winter/Spring (Jan-March)
+  const mentionsAnemones = (
+    lower.includes('כלניות') || lower.includes('שדה כלניות') || lower.includes('שדות כלניות') ||
+    lower.includes('דרום אדום') || lower.includes('מרבדי כלניות') || lower.includes('תורמוסים')
+  );
+  const isBloomingSeason = currentMonth === 12 || currentMonth === 1 || currentMonth === 2 || currentMonth === 3;
+  const mentionsWinterMonth = lower.includes('ינואר') || lower.includes('פברואר') || lower.includes('מרץ') || lower.includes('דצמבר') || lower.includes('בחורף');
+  if (mentionsAnemones && !isBloomingSeason && !mentionsWinterMonth) {
+    return {
+      contradiction: true,
+      text: `🌸🚫 עונת פריחת הכלניות (פסטיבל "דרום אדום") מתרחשת בחודשי החורף והאביב בלבד (ינואר–מרץ)!\n\nבעונה הנוכחית השדות בדרום יבשים וצהובים ואין פריחה כלל. אם אתם מעוניינים לטייל בדרום כעת, מומלץ לבחור במסלולי מדבר וקניונים נעימים (כמו מכתש רמון או עין עבדת), או ליהנות מבריכות ומעיינות בצפון ובמרכז.\n\n💡 אנא נסחו שוב את שאלתכם או בחרו באחת האפשרויות למטה:`,
+      options: [
+        { label: '🏜️ מסלול מדברי במכתש רמון', value: 'מחפש מסלול במכתש רמון' },
+        { label: '💧 מעיין מוצל במרכז או בצפון', value: 'מחפש מעיין מוצל' },
+        { label: '🔄 התחל מחדש', value: 'התחל מחדש' },
+      ],
+    };
+  }
+
+  // 5. Autumn Foliage (שלכת) in Spring/Summer
+  const mentionsAutumnFoliage = lower.includes('שלכת') && !lower.includes('בשלכת');
+  const isAutumnSeason = currentMonth >= 10 && currentMonth <= 12;
+  const mentionsSpringOrSummer = lower.includes('בקיץ') || lower.includes('באביב') || lower.includes('יולי') || lower.includes('אוגוסט') || lower.includes('יוני') || lower.includes('אפריל') || lower.includes('מאי');
+  if (mentionsAutumnFoliage && (mentionsSpringOrSummer || (!isAutumnSeason && !lower.includes('בסתיו')))) {
+    return {
+      contradiction: true,
+      text: `🍁🚫 עונת השלכת בישראל מתרחשת בסתיו ובחורף בלבד (אוקטובר–דצמבר)!\n\nבעונות האביב והקיץ הטבע בישראל ירוק או יבש, ואין נשירת עלים צבעונית. מומלץ לבחור במסלולי מים קרירים או יערות מוצלים.\n\n💡 אנא נסחו שוב את שאלתכם או בחרו באחת האפשרויות למטה:`,
+      options: [
+        { label: '💧 מסלול מים מוצל', value: 'מחפש מסלול מים מוצל' },
+        { label: '🌲 יער מוצל להליכה', value: 'מחפש יער מוצל להליכה' },
+        { label: '🔄 התחל מחדש', value: 'התחל מחדש' },
+      ],
+    };
+  }
+
+  // 6. Night Hiking in Canyon Streams & Cliffs
+  const isNightHike = (
+    lower.includes('טיול לילה') || lower.includes('בלילה') || lower.includes('אחרי החשיכה') ||
+    lower.includes('בחושך') || lower.includes('שעות הלילה')
+  );
+  const isCanyonOrStream = (
+    lower.includes('נחל') || lower.includes('מצוק') || lower.includes('סנפלינג') ||
+    lower.includes('דרגה') || lower.includes('ערוגות') || lower.includes('זוויתן') ||
+    lower.includes('יהודיה') || lower.includes('עין גדי') || lower.includes('קניון')
+  );
+  if (isNightHike && isCanyonOrStream) {
+    return {
+      contradiction: true,
+      text: `🌙⚠️ טיול לילה בנחלי מצוקים ושמורות טבע סגורות אסור על פי חוק ומסכן חיים!\n\nשמורות הטבע וערוצי הנחלים בישראל נסגרים עם שקיעת החמה (16:00–17:00). הליכה לילית בנחלי מצוקים ובריכות אסורה בהחלט עקב סכנת נפילה חמורה לתהום ופגיעה בחיי הבר המדבריים.\n\n💡 אם אתם רוצים חוויה לילית בטוחה בטבע:\n• בחרו בחניון לילה מוסדר של קק"ל או רט"ג.\n• לתצפית כוכבים מרהיבה — סעו למצפורי הכוכבים במכתש רמון (שמורת אור כוכבים בינלאומית).`,
+      options: [
+        { label: '🌌 תצפית כוכבים במכתש רמון', value: 'תצפית כוכבים במכתש רמון' },
+        { label: '🏕️ חניון לילה מוסדר', value: 'מחפש חניון לילה מוסדר' },
+        { label: '☀️ טיול יום רגיל', value: 'מעדיף טיול ביום' },
       ],
     };
   }

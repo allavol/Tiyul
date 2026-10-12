@@ -326,10 +326,20 @@ await runTest('Edge Case 17: Wheelchair Detection & Caveat (B2 — "מסלול �
   assert.strictEqual(state.wheelchairNote, true, 'wheelchairNote flag should be set');
   assert.ok(state.featureLabel.includes('כיסא גלגלים'), 'featureLabel should mention wheelchair');
 
-  // Also test "קשיש" keyword
+  // Also test "קשיש" keyword and "ילד בן 90" / "ילד בן תשעים" senior classification
   const state2 = AgentBotService.extractParameters('מסלול לקשישים', AgentBotService.getInitialState());
   assert.strictEqual(state2.feature, 'stroller', 'Feature for "קשישים" should be stroller');
   assert.strictEqual(state2.wheelchairNote, true, 'wheelchairNote for "קשישים" should be set');
+  assert.strictEqual(state2.isSenior, true, 'isSenior should be true for "קשישים"');
+
+  const stateSenior90 = AgentBotService.extractParameters('ילד בן 90 בצפון', AgentBotService.getInitialState());
+  assert.strictEqual(stateSenior90.isSenior, true, 'isSenior should be true for "ילד בן 90"');
+  assert.strictEqual(stateSenior90.minAge, 0, 'minAge for 90yo senior should be 0 (flat/accessible)');
+  assert.ok(stateSenior90.minAgeLabel.includes('קשישים'), 'minAgeLabel should specify seniors');
+
+  const stateSeniorWord = AgentBotService.extractParameters('טיול לילד בן תשעים', AgentBotService.getInitialState());
+  assert.strictEqual(stateSeniorWord.isSenior, true, 'isSenior should be true for "ילד בן תשעים"');
+  assert.strictEqual(stateSeniorWord.minAge, 0, 'minAge for textual תשעים senior should be 0');
 });
 
 // ── Test 18: A2 Rainy Water Warning ──────────────────────────────
@@ -635,6 +645,78 @@ await runTest('Edge Case 40: Solitude & Quiet Nature ("פינה שקטה בלי 
   assert.strictEqual(res.state.concept, 'quiet', 'Concept must be quiet');
   assert.strictEqual(res.state.feature, 'view', 'Feature must be view');
   assert.ok(res.proposals.length > 0, 'Should return quiet nature proposals');
+});
+
+// ── Test 41: Demographic Conflict Resolution ─────────────────────────
+await runTest('Edge Case 41: Demographic Conflict Resolution ("סבתא בכיסא גלגלים וילדים בני 13 שרוצים יתדות וסולמות")', async () => {
+  const conflictPrompt = 'אנחנו עם סבתא בכיסא גלגלים וילדים בני 13 שרוצים לקרוע את השרירים עם יתדות וסולמות בצפון מחר';
+  const res = await AgentBotService.processUserMessage(conflictPrompt);
+
+  assert.strictEqual(res.state.minAge, 0, 'Most restricted population must set minAge to 0');
+  assert.strictEqual(res.state.feature, 'stroller', 'Feature must prioritize stroller/accessible over adventure');
+  assert.strictEqual(res.state.demographicConflictResolved, true, 'demographicConflictResolved flag must be true');
+  assert.ok(res.text.includes('התחשבות בבטיחות') || res.text.includes('המגבלות הגדולות ביותר'), 'Must explain restriction prioritization in response');
+  assert.ok(res.proposals.length > 0, 'Should return safe accessible proposals');
+  for (const prop of res.proposals) {
+    assert.strictEqual(prop.min_age, 0, `Site ${prop.name} must be accessible (min_age 0)`);
+    assert.strictEqual(prop.stroller_accessible, true, `Site ${prop.name} must be stroller/wheelchair accessible`);
+  }
+});
+
+// ── Test 42: SOS Emergency Distress Trapdoor ─────────────────────────
+await runTest('Edge Case 42: SOS Emergency Distress Trapdoor ("הלכנו לאיבוד ונגמרו לנו המים בנחל ערוגות")', async () => {
+  const sosPrompt = 'איבדנו את הדרך ונגמרו לנו המים בנחל ערוגות ויורדת חשיכה';
+  const res = await AgentBotService.processUserMessage(sosPrompt);
+
+  assert.strictEqual(res.isEmergency, true, 'isEmergency flag must be true');
+  assert.strictEqual(res.proposals.length, 0, 'Must NOT recommend hikes during emergency SOS');
+  assert.ok(res.text.includes('100'), 'Must include Police / Search & Rescue 100 number');
+  assert.ok(res.text.includes('101'), 'Must include MADA 101 number');
+  assert.ok(res.text.includes('102'), 'Must include Fire & Rescue 102 number');
+  assert.ok(res.text.includes('הנחיות בטיחות מצילות חיים'), 'Must provide immediate life-saving guidelines');
+});
+
+// ── Test 43: Seasonal Contradictions (Anemones & Cherry Picking) ──────
+await runTest('Edge Case 43: Seasonal Contradictions ("דרום אדום ומרבדי כלניות בדרום" & "קטיף דובדבנים")', async () => {
+  // Query 1: Red anemones
+  const anemonesRes = await AgentBotService.processUserMessage('רוצים לראות מחר את פסטיבל דרום אדום ומרבדי כלניות בדרום');
+  assert.ok(anemonesRes.text.includes('דרום אדום') || anemonesRes.text.includes('כלניות'), 'Must explain seasonal anemones constraint');
+  assert.ok(anemonesRes.text.includes('ינואר–מרץ') || anemonesRes.text.includes('חורף'), 'Must explain bloom occurs in winter/spring');
+  assert.strictEqual(anemonesRes.proposals.length, 0, 'Must not return dry summer/autumn fields as blooming');
+
+  // Query 2: Cherry picking
+  const cherryRes = await AgentBotService.processUserMessage('מחפש קטיף דובדבנים בצפון לילד בן 5');
+  assert.ok(cherryRes.text.includes('קטיף הדובדבנים'), 'Must explain cherry harvest constraint');
+  assert.ok(cherryRes.text.includes('מאי') && cherryRes.text.includes('יוני'), 'Must state May-June harvest window');
+  assert.strictEqual(cherryRes.proposals.length, 0, 'Must not hallucinate closed cherry orchards');
+});
+
+// ── Test 44: Night Canyon Hiking Prohibition ─────────────────────────
+await runTest('Edge Case 44: Night Canyon Hiking Prohibition ("טיול לילה בנחל דרגה ובמצוקים")', async () => {
+  const nightRes = await AgentBotService.processUserMessage('רוצה לצאת לטיול לילה בנחל דרגה ובמצוקים');
+  assert.ok(nightRes.text.includes('טיול לילה') && nightRes.text.includes('אסור על פי חוק'), 'Must forbid night hiking in canyon reserves');
+  assert.ok(nightRes.text.includes('מכתש רמון') || nightRes.text.includes('חניון לילה'), 'Must propose stargazing or designated night camp alternatives');
+  assert.strictEqual(nightRes.proposals.length, 0, 'Must not propose night stream hikes');
+});
+
+// ── Test 45: Closed Military Firing Zones & Cross-Border Heritage ───
+await runTest('Edge Case 45: Closed Military Firing Zones & Cross-Border Heritage ("שטח אש 918" & "נחל ארנון")', async () => {
+  // Query 1: Military firing zone
+  const milRes = await AgentBotService.processUserMessage('איך מטיילים בתוך שטח אש 918');
+  assert.ok(milRes.text.includes('שטח אש פעיל') || milRes.text.includes('שטח צבאי סגור'), 'Must refuse closed military firing zone');
+
+  // Query 2: Cross-border Jordan/Sinai heritage
+  const borderRes = await AgentBotService.processUserMessage('רוצה לטייל בנחל ארנון ובהר נבו מחר');
+  assert.ok(borderRes.text.includes('מחוץ לגבולות ישראל'), 'Must refuse Jordan stream Arnon / Mount Nebo');
+});
+
+// ── Test 46: BBQ / Open Fire Regulations ("לעשות על האש ומנגל ביער בצפון") ───
+await runTest('Edge Case 46: BBQ & Open Fire Regulations ("לעשות על האש ומנגל ביער בצפון")', async () => {
+  const bbqRes = await AgentBotService.processUserMessage('רוצה לעשות על האש ומנגל ביער בצפון מחר לילד בן 5');
+  assert.strictEqual(bbqRes.state.bbqDisclaimer, true, 'bbqDisclaimer flag must be true');
+  assert.strictEqual(bbqRes.state.concept, 'bbq', 'Concept must be bbq');
+  assert.ok(bbqRes.text.includes('הנחיית מנגל ובטיחות אש') || bbqRes.text.includes('הבערת אש'), 'Response must include BBQ safety banner');
+  assert.ok(bbqRes.proposals.length > 0, 'Must recommend valid picnic/forest grounds');
 });
 
 console.log(`\n==================================================`);

@@ -27,11 +27,13 @@ import {
   parseAgeFromText, 
   applyTypoCorrections,
   checkClimateContradictions,
+  detectEmergencyDistress,
   extractRequestedSiteEntity,
   isGibberishOrNoise,
   DOG_KEYWORDS,
   ABROAD_STANDARD_REFUSAL,
-  UNSAFE_BORDER_REFUSAL
+  UNSAFE_BORDER_REFUSAL,
+  MILITARY_ZONE_REFUSAL
 } from './agent/AgentNLUParser.js';
 
 import { 
@@ -172,6 +174,19 @@ export class AgentBotService {
   static async _processUserMessageInternal(message, sessionState = null, traceContext = {}) {
     const { traceId, rootSpanId } = traceContext;
 
+    // 0. SOS Emergency Distress Trapdoor (Immediate safety bypass)
+    const emergencySos = detectEmergencyDistress(message);
+    if (emergencySos && emergencySos.isEmergency) {
+      return {
+        text: emergencySos.text,
+        state: sessionState || this.getInitialState(),
+        options: emergencySos.options,
+        proposals: [],
+        toolActivity: emergencySos.toolActivity,
+        isEmergency: true,
+      };
+    }
+
     // 1. Guardrails Check
     let guardrailSpanId = null;
     if (traceId) {
@@ -193,6 +208,11 @@ export class AgentBotService {
           { label: '☀️ בקעת תמנע שטופת שמש', value: 'מחפש מסלול מדברי שטוף שמש בבקעת תמנע' },
           { label: '🏜️ נוף ירחי במכתש רמון', value: 'מחפש מסלול עם נוף ירחי מיוחד במכתש רמון' },
           { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
+        ] : guardrail.isMilitary ? [
+          { label: '🏞️ שמורות טבע בצפון', value: 'באזור הצפון', field: 'region' },
+          { label: '🌾 יערות במרכז', value: 'באזור המרכז והשרון', field: 'region' },
+          { label: '🏰 אתרים בירושלים', value: 'באזור ירושלים והשפלה', field: 'region' },
+          { label: '🏜️ פארקים בדרום', value: 'באזור הדרום וים המלח', field: 'region' },
         ] : [
           { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
           { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
@@ -773,7 +793,11 @@ export class AgentBotService {
         explanation += ` בסגנון **${state.featureLabel}**`;
       }
       if (state.minAge !== null && state.minAge !== undefined) {
-        explanation += ` למטיילים בגיל **${state.minAgeLabel || state.minAge + '+'}**`;
+        if (state.isSenior || state.minAgeLabel?.includes('קשיש') || state.minAgeLabel?.includes('גיל הזהב')) {
+          explanation += ` עבור **${state.minAgeLabel}**`;
+        } else {
+          explanation += ` למטיילים בגיל **${state.minAgeLabel || state.minAge + '+'}**`;
+        }
       }
       explanation += '.\n\n💡 **נשמח לנסות שוב יחד!** נסו להרחיב מעט את החיפוש באמצעות אחת מהאפשרויות הבאות:';
 
@@ -897,10 +921,14 @@ export class AgentBotService {
       dogBanner = '\n\n🐕 **שימו לב:** רוב שמורות הטבע והגנים הלאומיים **אוסרים כניסת כלבים**. מומלץ לוודא מול רשות הטבע והגנים (INPA) לפני היציאה.';
     }
 
-    // B2: Wheelchair disclaimer
+    // B2: Wheelchair / Senior disclaimer
     let wheelchairBanner = '';
     if (state.wheelchairNote) {
-      wheelchairBanner = '\n\n♿ **הערה חשובה:** סיננתי מסלולים סלולים ונגישים לעגלות. עם זאת, **נגישות לכיסא גלגלים עשויה להיות שונה** (שיפוע, רוחב שביל, סוג משטח). מומלץ לבדוק ישירות מול רשות הטבע והגנים.';
+      if (state.isSenior) {
+        wheelchairBanner = '\n\n♿ **הערה חשובה:** סיננתי מסלולים סלולים ונוחים להליכה, המותאמים במיוחד לגיל הזהב וקשישים (ללא מדרגות, ללא סולמות, ועם תוואי מישורי ונוח).';
+      } else {
+        wheelchairBanner = '\n\n♿ **הערה חשובה:** סיננתי מסלולים סלולים ונגישים לעגלות. עם זאת, **נגישות לכיסא גלגלים עשויה להיות שונה** (שיפוע, רוחב שביל, סוג משטח). מומלץ לבדוק ישירות מול רשות הטבע והגנים.';
+      }
     }
 
     let cityNotice = '';
@@ -930,7 +958,16 @@ export class AgentBotService {
     }
 
     const weatherSource = proposals[0]?.weather?.source || 'Open-Meteo Live';
-    const introText = `${cityNotice}מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (מותאם לגילאי **${state.minAgeLabel}**):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **${weatherSource}** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}`;
+    const conflictBanner = state.demographicConflictResolved
+      ? '\n\n💡 **התחשבות בבטיחות:** זוהה שילוב בין מטיילים עם צרכי נגישות (סבתא/עגלה/כיסא גלגלים) לרצון באתגר. בהתאם לכללי הבטיחות, נבחרה האוכלוסייה עם המגבלות הגדולות ביותר והוצעו שבילים סלולים, מישוריים ובטוחים לכולם (ללא סולמות, מצוקים או סכנת החלקה).'
+      : '';
+    const bbqBanner = state.bbqDisclaimer
+      ? '\n\n🥩🔥 **הנחיית מנגל ובטיחות אש:** הבערת אש ומנגל אסורה בהחלט בתוך שמורות טבע סגורות ונחלים! האתרים שהוצעו כוללים חניוני נופש ופיקניק מוסדרים של קק"ל המאפשרים הדלקת אש במתקנים ייעודיים בלבד.'
+      : '';
+    const audienceAdapted = state.isSenior || state.minAgeLabel?.includes('קשיש') || state.minAgeLabel?.includes('גיל הזהב')
+      ? `מותאם עבור **${state.minAgeLabel}**`
+      : `מותאם לגילאי **${state.minAgeLabel}**`;
+    const introText = `${cityNotice}מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (${audienceAdapted}):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **${weatherSource}** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}${conflictBanner}${bbqBanner}`;
 
     // Store proposals in state for follow-up questions
     state.lastProposals = proposals;
