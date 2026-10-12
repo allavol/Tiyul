@@ -390,7 +390,10 @@ export class AgentBotService {
         const matchesCity = KNOWN_ORIGIN_CITIES.some((c) => c.names.some((n) => text.includes(n)));
         const lookupIntents = [
           'ספר לי על', 'מה יש ב', 'מידע על', 'תגיד לי על', 'מכיר את', 'איך מגיעים ל', 'איך להגיע ל',
-          'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר'
+          'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר',
+          'מה מזג האוויר', 'מה מזג האויר', 'איך מזג האוויר', 'איך מזג האויר',
+          'מה התחזית', 'תחזית ב', 'מזג אוויר ב', 'מזג אויר ב',
+          'יש גשם', 'ירד גשם', 'יורד גשם', 'צפוי גשם', 'גשם ב', 'גשם', 'גשום'
         ];
         const hasLookup = lookupIntents.some((intent) => text.includes(intent));
         if (!matchesCity && !hasLookup) {
@@ -409,20 +412,52 @@ export class AgentBotService {
       }
     }
 
-    // 1.5 Direct site name lookup
-    const directLookupIntents = [
-      'ספר לי על', 'מה יש ב', 'מידע על', 'תגיד לי על', 'מכיר את', 'איך מגיעים ל', 'איך להגיע ל',
-      'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר',
-      'מה מזג האוויר ב', 'מה מזג האויר ב', 'איך מזג האוויר ב', 'איך מזג האויר ב',
-      'מה התחזית ב', 'תחזית ב', 'מזג אוויר ב', 'מזג אויר ב'
-    ];
-    const hasLookupIntent = directLookupIntents.some((intent) => text.includes(intent));
-    if (hasLookupIntent) {
-      // 1. Exact full name match across all sites (prioritizing longest match)
-      let matchedSite = assetsData
-        .filter((s) => text.includes(s.name.toLowerCase()))
-        .sort((a, b) => b.name.length - a.name.length)[0];
+    // 1.5 Direct site name lookup & Weather/Rain inquiries
+    const isRainInquiry = (
+      text.includes('האם יש גשם') || text.includes('אם יש גשם') || text.includes('יש גשם') ||
+      text.includes('יהיה גשם') || text.includes('ירד גשם') || text.includes('יורד גשם') ||
+      text.includes('צפוי גשם') || text.includes('סיכוי לגשם') || text.includes('סיכוי למשקעים') ||
+      text.includes('גשם ב') || text.includes('גשם ל') || text.includes('האם גשום') ||
+      text.includes('גשום ב') || text.includes('גשום') || text.includes('סוער ב') ||
+      text.includes('מבול') || text.includes('תחזית גשם') ||
+      /\bגשם\b/.test(text)
+    );
+    const isWeatherInquiry = (
+      isRainInquiry ||
+      text.includes('מה מזג האוויר') || text.includes('מה מזג האויר') ||
+      text.includes('איך מזג האוויר') || text.includes('איך מזג האויר') ||
+      text.includes('איך המזג אוויר') || text.includes('איך המזג אויר') ||
+      text.includes('מה התחזית') || text.includes('תחזית ב') || text.includes('תחזית ל') ||
+      text.includes('מזג אוויר ב') || text.includes('מזג אויר ב') ||
+      text.includes('מזג האוויר ב') || text.includes('מזג האויר ב') ||
+      text.includes('מזג אוויר ל') || text.includes('מזג אויר ל') ||
+      text.includes('האם חם') || text.includes('כמה חם ב') || text.includes('האם חם ב') || (text.includes('חם ב') && !text.includes('חם בחוץ')) || text.includes('טמפרטורה ב') || text.includes('מה הטמפרטורה')
+    );
+    const isInfoLookupIntent = [
+      'ספר לי על', 'ספרי לי על', 'מה יש ב', 'מידע על', 'תגיד לי על', 'מכיר את', 'מכירה את',
+      'איך מגיעים ל', 'איך להגיע ל', 'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר'
+    ].some((intent) => text.includes(intent));
 
+    const hasLookupIntent = isWeatherInquiry || isInfoLookupIntent;
+    if (hasLookupIntent) {
+      // 1. First check if requestedEntity directly mapped to an asset
+      let matchedSite = null;
+      if (requestedEntity && !['שמורת טבע', 'גן לאומי', 'בית ספר שדה', 'חניון לילה', 'מסלול הליכה', 'שביל הליכה'].includes(requestedEntity.trim())) {
+        matchedSite = assetsData.find((s) => 
+          s.name.toLowerCase() === requestedEntity.toLowerCase() ||
+          s.name.toLowerCase().startsWith(requestedEntity.toLowerCase()) ||
+          s.name.toLowerCase().includes(requestedEntity.toLowerCase())
+        );
+      }
+
+      // 2. Exact full name match across all sites (prioritizing longest match)
+      if (!matchedSite) {
+        matchedSite = assetsData
+          .filter((s) => text.includes(s.name.toLowerCase()))
+          .sort((a, b) => b.name.length - a.name.length)[0];
+      }
+
+      // 3. Fallback distinctive phrase and words matching
       if (!matchedSite) {
         const GENERIC_PREFIXES = [
           'עין', 'נחל', 'פארק', 'שמורת', 'גן', 'יער', 'הר', 'תל', 'חוף', 'דרך', 'בית', 'ספר', 'שדה', 'מצפור', 'מצפה', 'חורבת',
@@ -447,7 +482,7 @@ export class AgentBotService {
             }
           }
           const distinctiveWords = words.filter((w) => w.length >= 3 && !GENERIC_PREFIXES.includes(w));
-          return distinctiveWords.some((w) => inputWords.includes(w));
+          return distinctiveWords.some((w) => inputWords.includes(w) || inputWords.some((iw) => iw.endsWith(w) || iw.includes(w)));
         });
       }
 
@@ -458,8 +493,20 @@ export class AgentBotService {
             input: { query: text, site: matchedSite.name, id: matchedSite.id }
           });
         }
+
+        const timingParams = extractParameters(message, currentState);
+        const dayIdx = timingParams.dayIndex || 0;
+        const dayLabel = timingParams.timingLabel || 'היום';
+
         let weather = null;
-        try { weather = await WeatherService.fetchSiteWeather(matchedSite, 0); } catch (e) { /* fallback */ }
+        try {
+          if (timingParams.isFarFutureDate) {
+            weather = WeatherService.getSeasonalHistoricalForecast(matchedSite, timingParams.targetMonth || 12);
+          } else {
+            weather = await WeatherService.fetchSiteWeather(matchedSite, dayIdx);
+          }
+        } catch (e) { /* fallback */ }
+
         const advisory = getWaterAdvisory(matchedSite);
         const proposal = {
           id: matchedSite.id,
@@ -488,7 +535,7 @@ export class AgentBotService {
             wind: '15 קמ"ש', 
             rain: '0 מ"מ', 
             isLive: false, 
-            isEstimateOnly: true,
+            isEstimateOnly: true, 
             source: 'הערכה בלבד (Offline)' 
           },
           safetyBadge: !advisory ? 'בטוח ומומלץ לטיול 🛡️' : 'נדרשת תשומת לב ⚠️',
@@ -500,34 +547,86 @@ export class AgentBotService {
             attributes: { 'site.name': matchedSite.name, 'site.authority_id': matchedSite.authority_id }
           });
         }
+
+        let responseText = '';
+        if (isRainInquiry) {
+          const precipNum = weather?.precipProb !== undefined 
+            ? weather.precipProb 
+            : (parseFloat(String(weather?.rain).replace(/[^\d.]/g, '')) || 0);
+
+          if (precipNum < 20) {
+            responseText = `☀️ לא, לא צפוי גשם ב${matchedSite.name} עבור ${dayLabel} (סיכוי למשקעים: ${precipNum}%).\n\n🌡️ מזג האוויר הצפוי: ${weather.temp}, ${weather.conditions}.\n💨 רוח: ${weather.wind}\n🛡️ עומס חום: ${weather.heatLoad}\n\nהתנאים מצוינים ובטוחים לטיול! לחצו על הכרטיסייה למטה לצפייה באתר על גבי המפה 🗺️.`;
+          } else if (precipNum < 50) {
+            responseText = `🌦️ ייתכן גשם מקומי/קל ב${matchedSite.name} עבור ${dayLabel} (סיכוי למשקעים: ${precipNum}%).\n\n🌡️ טמפרטורה ומצב: ${weather.temp}, ${weather.conditions}.\n💨 רוח: ${weather.wind}\n\nמומלץ להצטייד במטריה או עליונית מתאימה. לחצו על הכרטיסייה למטה לצפייה באתר על גבי המפה 🗺️.`;
+          } else {
+            responseText = `🌧️ כן, צפוי גשם ב${matchedSite.name} עבור ${dayLabel} (סיכוי למשקעים: ${precipNum}%, ${weather.conditions}).\n\n🌡️ טמפרטורה: ${weather.temp}\n⚠️ שימו לב: יש להיערך למזג אוויר רטוב ולהיזהר מהחלקה בשבילים! לחצו על הכרטיסייה למטה לצפייה באתר על גבי המפה 🗺️.`;
+          }
+        } else if (isWeatherInquiry) {
+          responseText = `הנה תחזית מזג האוויר עבור ${matchedSite.name} ל${dayLabel} 🌤️:\n\n🌡️ טמפרטורה: ${weather.temp} (${weather.conditions})\n💧 משקעים: ${weather.rain}\n💨 רוח: ${weather.wind}\n🛡️ עומס חום: ${weather.heatLoad}\n\nלחצו על הכרטיסייה למטה להצגה על המפה! 🗺️`;
+        } else {
+          responseText = `הנה מידע על ${matchedSite.name} 🌿:\n\n📍 אזור: ${matchedSite.region}\n👶 גיל מינימלי: ${matchedSite.min_age}+\n${matchedSite.stroller_accessible ? '♿ נגיש לעגלות\n' : ''}🏷️ סוג: ${(matchedSite.type || []).join(', ')}\n\nלחצו על הכרטיסייה למטה להצגה על המפה, או תכננו טיול לאתר הזה!`;
+        }
+
         const updatedState = { ...currentState, lastProposals: [proposal] };
         return {
-          text: `הנה מידע על **${matchedSite.name}** 🌿:\n\n📍 **אזור:** ${matchedSite.region}\n👶 **גיל מינימלי:** ${matchedSite.min_age}+\n${matchedSite.stroller_accessible ? '♿ **נגיש לעגלות**\n' : ''}🏷️ **סוג:** ${(matchedSite.type || []).join(', ')}\n\nלחצו על הכרטיסייה למטה להצגה על המפה, או תכננו טיול לאתר הזה!`,
+          text: responseText,
           state: updatedState,
           options: [
             { label: '🗺️ תכנן טיול לכאן', value: `רוצה לטייל ב${matchedSite.region} מחר` },
-            { label: '🔄 חפש מסלול אחר', value: 'בוא נחזור לתכנון מסלול רגיל' },
+            { label: '🔄 בדוק יום אחר', value: `מה מזג האוויר ב${matchedSite.name} ביום אחר?` },
+            { label: '🏞️ חפש מסלול אחר באזור', value: `מחפש מסלולים ב${matchedSite.region}` },
           ],
           proposals: [proposal],
-          toolActivity: `🔍 חיפוש ישיר: ${matchedSite.name} (${matchedSite.authority_id})`,
+          toolActivity: `🔍 ${isWeatherInquiry ? 'בדיקת מזג אוויר וגשם' : 'חיפוש ישיר'}: ${matchedSite.name} (${dayLabel})`,
         };
       } else {
         // Direct lookup intent present but site not matched in Israel database
-        const isWeatherInquiry = (
-          text.includes('מה מזג האוויר') || text.includes('מה מזג האויר') ||
-          text.includes('איך מזג האוויר') || text.includes('איך מזג האויר') ||
-          text.includes('מה התחזית') || text.includes('מזג אוויר ב') || text.includes('מזג האוויר ב') ||
-          text.includes('מזג אויר ב') || text.includes('תחזית ב')
-        );
         const hasIsraeliRegion = (
           text.includes('צפון') || text.includes('גליל') || text.includes('גולן') ||
           text.includes('מרכז') || text.includes('שרון') || text.includes('ירושלים') ||
           text.includes('שפלה') || text.includes('דרום') || text.includes('נגב') ||
           text.includes('ערבה') || text.includes('אילת') || text.includes('ים המלח')
         );
-        const matchesCity = KNOWN_ORIGIN_CITIES.some((c) => c.names.some((n) => text.includes(n)));
+        const matchedCity = KNOWN_ORIGIN_CITIES.find((c) => c.names.some((n) => text.includes(n)));
 
-        if (isWeatherInquiry && !hasIsraeliRegion && !matchesCity) {
+        if (matchedCity && isWeatherInquiry) {
+          const timingParams = extractParameters(message, currentState);
+          const dayIdx = timingParams.dayIndex || 0;
+          const dayLabel = timingParams.timingLabel || 'היום';
+          let cityWeather = null;
+          try {
+            cityWeather = await WeatherService.fetchSiteWeather({ lat: matchedCity.lat, lng: matchedCity.lng, name: matchedCity.label }, dayIdx);
+          } catch (e) {}
+
+          const precipNum = cityWeather?.precipProb !== undefined 
+            ? cityWeather.precipProb 
+            : (parseFloat(String(cityWeather?.rain).replace(/[^\d.]/g, '')) || 0);
+
+          let cityText = '';
+          if (isRainInquiry) {
+            if (precipNum < 20) {
+              cityText = `☀️ לא, לא צפוי גשם ב${matchedCity.label} עבור ${dayLabel} (סיכוי למשקעים: ${precipNum}%).\n\n🌡️ מזג האוויר הצפוי: ${cityWeather?.temp || '24°C'}, ${cityWeather?.conditions || 'בהיר ונוח'}.`;
+            } else {
+              cityText = `🌧️ צפוי גשם ב${matchedCity.label} עבור ${dayLabel} (סיכוי למשקעים: ${precipNum}%).\n\n🌡️ מזג האוויר: ${cityWeather?.temp || '20°C'}, ${cityWeather?.conditions || 'גשום'}.`;
+            }
+          } else {
+            cityText = `הנה תחזית מזג האוויר ב${matchedCity.label} ל${dayLabel} 🌤️:\n\n🌡️ טמפרטורה: ${cityWeather?.temp} (${cityWeather?.conditions})\n💧 משקעים: ${cityWeather?.rain}\n💨 רוח: ${cityWeather?.wind}`;
+          }
+
+          return {
+            text: cityText,
+            state: currentState,
+            options: [
+              { label: `🏞️ מסלולים ליד ${matchedCity.label}`, value: `רוצה מסלול ליד ${matchedCity.label} ${dayLabel}` },
+              { label: '🌲 טיול מוצל בצפון', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
+              { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש וקל לעגלות' },
+            ],
+            proposals: [],
+            toolActivity: `📡 בדיקת מזג אוויר עירוני: ${matchedCity.label} (${dayLabel})`,
+          };
+        }
+
+        if (isWeatherInquiry && !hasIsraeliRegion && !matchedCity) {
           return {
             text: ABROAD_STANDARD_REFUSAL,
             state: currentState,
@@ -549,7 +648,7 @@ export class AgentBotService {
           text.includes('האם פתוח') || text.includes('האם פתוחה')
         );
 
-        if (isExplicitSiteQuery && !hasIsraeliRegion && !matchesCity) {
+        if (isExplicitSiteQuery && !hasIsraeliRegion && !matchedCity) {
           const entity = extractRequestedSiteEntity(text) || '';
           const siteDisplay = entity ? `האתר "${entity}"` : 'האתר שציינתם';
           return {

@@ -747,6 +747,17 @@ await runTest('Edge Case 48: Far-Future Date (>14 days) Historical Weather Discl
   assert.ok(turn3.proposals[0].weather.source.includes('ממוצע היסטורי עונתי'), 'Weather source must be historical seasonal average');
 });
 
+// ── Test 49: Specific Site Rain & Weather Inquiry ("אם יש גשם בתל לכיש מחר") ───
+await runTest('Edge Case 49: Specific Site Rain & Weather Inquiry ("אם יש גשם בתל לכיש מחר")', async () => {
+  const res = await AgentBotService.processUserMessage('אם יש גשם בתל לכיש מחר');
+  assert.ok(res.proposals.length > 0, 'Must return proposal for Tel Lachish');
+  assert.strictEqual(res.proposals[0].id, 624, 'Proposal must match Tel Lachish (id 624)');
+  assert.ok(res.text.includes('לכיש'), 'Text must reference Lachish');
+  assert.ok(res.text.includes('גשם') && (res.text.includes('לא, לא צפוי גשם') || res.text.includes('צפוי גשם') || res.text.includes('סיכוי למשקעים')), 'Must directly answer rain inquiry');
+  assert.ok(res.text.includes('מחר'), 'Must resolve inquiry for tomorrow');
+  assert.strictEqual(res.text.includes('*'), false, 'Response must not contain asterisks');
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);

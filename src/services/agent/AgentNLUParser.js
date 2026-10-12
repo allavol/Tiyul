@@ -1565,19 +1565,6 @@ export function extractRequestedSiteEntity(text) {
     'אזור', 'איזור', 'ארץ', 'בארץ', 'ישראל', 'בישראל', 'כל הארץ', 'כל'
   ];
 
-  // 1. Pattern matching with site type prefix: "נחל X", "שמורת X", "עין X", etc.
-  const streamMatch = lower.match(/(?:(?:לטייל|טיול|מסלול|לנסוע|ללכת)\s+(?:ל|ב)?)?\s*(?:ל|ב)?(נחל|נהר|מעיין|עין|שמורת|יער|מבצר|פארק)\s+([א-ת"״'-]{3,20}(?:\s+[א-ת"״'-]{3,20})?)/);
-  if (streamMatch) {
-    const prefix = streamMatch[1];
-    const name = streamMatch[2] ? streamMatch[2].trim() : '';
-    if (name) {
-      const words = name.split(/\s+/).filter(Boolean);
-      if (!words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(name)) {
-        return `${prefix} ${name}`.trim();
-      }
-    }
-  }
-
   const isDateOrTimeOrNoise = (c) => {
     if (!c) return true;
     const trimmed = c.trim();
@@ -1591,6 +1578,31 @@ export function extractRequestedSiteEntity(text) {
     ];
     return dateWords.some((dw) => trimmed === dw || trimmed.startsWith(dw + ' ') || trimmed.endsWith(' ' + dw));
   };
+
+  // 1. Pattern matching with site type prefix: "שמורת טבע X", "גן לאומי X", "נחל X", "תל X", etc.
+  const streamMatch = lower.match(/(?:(?:לטייל|טיול|מסלול|לנסוע|ללכת|גשם|תחזית|מזג אוויר|מזג אויר|חם|קר|פתוח|יש גשם|ירד גשם|האם יש גשם|אם יש גשם)\s+(?:ל|ב)?)?\s*(?:ל|ב)?(שמורת טבע|גן לאומי|בית ספר שדה|חניון לילה|נחל|נהר|מעיין|עין|שמורת|יער|מבצר|פארק|תל|הר|מצדה|חורבת)\s+([א-ת"״'-]{3,20}(?:\s+[א-ת"״'-]{3,20})?)/);
+  if (streamMatch) {
+    let prefix = streamMatch[1];
+    const name = streamMatch[2] ? streamMatch[2].trim() : '';
+    if (name) {
+      let words = name.split(/\s+/).filter(Boolean);
+      if (prefix === 'שמורת' && words[0] === 'טבע') {
+        prefix = 'שמורת טבע';
+        words.shift();
+      }
+      if (prefix === 'גן' && words[0] === 'לאומי') {
+        prefix = 'גן לאומי';
+        words.shift();
+      }
+      while (words.length > 1 && (GENERIC_EXCLUSIONS.includes(words[words.length - 1]) || isDateOrTimeOrNoise(words[words.length - 1]))) {
+        words.pop();
+      }
+      const cleanName = words.join(' ');
+      if (cleanName && !words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(cleanName)) {
+        return `${prefix} ${cleanName}`.trim();
+      }
+    }
+  }
 
   // 2. Pattern matching general destination: "רוצה לטייל בעזה", "לנסוע לחאן יונס", "טיול בנרניה", "טיול לארץ האש"
   const destMatch = lower.match(/(?:רוצה|בא לי|מחפש|מתכנן|נוסע|נוסעים|הולכים|יוצאים)?\s*(?:לטייל|טיול|לנסוע|ללכת|חופשה|נופש|לטוס|טיסה)\s+(?:ב|ל|אל)\s*([א-תa-zA-Z0-9"״'-]{2,20}(?:\s+[א-תa-zA-Z0-9"״'-]{1,20})?)/);
