@@ -49,9 +49,10 @@ export const UNSAFE_BORDER_KEYWORDS = [
   // Hostile Middle East / Gulf countries
   'תימן', 'בתימן', 'צנעא',
 
-  // Fictional / Fantasy / Mythological locations
+  // Fictional / Fantasy / Mythological / Unapproved locations
   'אטלנטיס', 'באטלנטיס', 'נרניה', 'בנרניה', 'הוגוורטס', 'בהוגוורטס', 'גותהאם', 'בגותהאם',
-  'ארץ עוץ', 'אלדורדו', 'שנגרילה', 'ארץ לעולם לא'
+  'ארץ עוץ', 'אלדורדו', 'שנגרילה', 'ארץ לעולם לא',
+  'ארץ האש', 'בארץ האש', 'לארץ האש'
 ];
 
 // Foreign countries & abroad keywords
@@ -141,6 +142,7 @@ export const FOREIGN_COUNTRIES_KEYWORDS = [
   'גואטמלה', 'קוסטה ריקה', 'פנמה', 'קובה',
   'ברזיל', 'ריו דה ז\'ניירו', 'סאו פאולו', 'אמזונס', 'נהר האמזונס', 'מפלי איגואסו',
   'ארגנטינה', 'בואנוס איירס', 'פטגוניה',
+  'ארץ האש', 'לארץ האש', 'בארץ האש', 'טיירה דל פואגו', 'אושואיה', 'tierra del fuego',
   'צ\'ילה', 'סנטיאגו',
   'פרו', 'מאצ\'ו פיצ\'ו', 'לימה', 'קוסקו',
   'קולומביה', 'בוגוטה', 'מדיין',
@@ -831,6 +833,11 @@ export function extractParameters(message, currentState) {
         updated.dayIndex = Math.max(0, Math.min(diffDays, 4));
         updated.timing = `calendar_${day}_${month}`;
         updated.timingLabel = `${day}/${month}` + (diffDays === 0 ? ' (היום)' : diffDays === 1 ? ' (מחר)' : ` (בעוד ${diffDays} ימים)`);
+        if (diffDays > 14) {
+          updated.isFarFutureDate = true;
+          updated.diffDays = diffDays;
+          updated.targetMonth = month;
+        }
         calendarParsed = true;
       }
     }
@@ -849,6 +856,11 @@ export function extractParameters(message, currentState) {
               updated.dayIndex = Math.max(0, Math.min(diffDays, 4));
               updated.timing = `calendar_${day}_${hm.num}`;
               updated.timingLabel = `${day} ב${mName}` + (diffDays === 0 ? ' (היום)' : diffDays === 1 ? ' (מחר)' : ` (בעוד ${diffDays} ימים)`);
+              if (diffDays > 14) {
+                updated.isFarFutureDate = true;
+                updated.diffDays = diffDays;
+                updated.targetMonth = hm.num;
+              }
               calendarParsed = true;
               break;
             }
@@ -1566,12 +1578,33 @@ export function extractRequestedSiteEntity(text) {
     }
   }
 
-  // 2. Pattern matching general destination: "רוצה לטייל בעזה", "לנסוע לחאן יונס", "טיול בנרניה"
+  const isDateOrTimeOrNoise = (c) => {
+    if (!c) return true;
+    const trimmed = c.trim();
+    if (/^\d+([/.-]\d+)?$/.test(trimmed)) return true;
+    if (/^\d+$/.test(trimmed)) return true;
+    const dateWords = [
+      'ינואר', 'פברואר', 'מרץ', 'מרס', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
+      'ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת',
+      'קיץ', 'חורף', 'אביב', 'סתיו', 'עונה',
+      'היום', 'מחר', 'מחרתיים', 'סופש', 'סופ"ש', 'השבוע', 'החודש'
+    ];
+    return dateWords.some((dw) => trimmed === dw || trimmed.startsWith(dw + ' ') || trimmed.endsWith(' ' + dw));
+  };
+
+  // 2. Pattern matching general destination: "רוצה לטייל בעזה", "לנסוע לחאן יונס", "טיול בנרניה", "טיול לארץ האש"
   const destMatch = lower.match(/(?:רוצה|בא לי|מחפש|מתכנן|נוסע|נוסעים|הולכים|יוצאים)?\s*(?:לטייל|טיול|לנסוע|ללכת|חופשה|נופש|לטוס|טיסה)\s+(?:ב|ל|אל)\s*([א-תa-zA-Z0-9"״'-]{2,20}(?:\s+[א-תa-zA-Z0-9"״'-]{1,20})?)/);
   if (destMatch) {
-    const candidate = destMatch[1].trim();
-    const words = candidate.split(/\s+/).filter(Boolean);
-    if (!words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(candidate)) {
+    let candidate = destMatch[1].trim();
+    let words = candidate.split(/\s+/).filter(Boolean);
+    // Strip trailing prepositions (e.g. "מלפפון ב" -> "מלפפון")
+    if (words.length > 1 && ['ב', 'ל', 'עם', 'של'].includes(words[words.length - 1])) {
+      words.pop();
+      candidate = words.join(' ');
+    }
+    const isGeneric = GENERIC_EXCLUSIONS.includes(candidate) || 
+      (words.length > 0 && GENERIC_EXCLUSIONS.includes(words[0]) && words[0] !== 'ארץ');
+    if (!isGeneric && !isDateOrTimeOrNoise(candidate) && candidate.length >= 2) {
       return candidate;
     }
   }
@@ -1579,9 +1612,15 @@ export function extractRequestedSiteEntity(text) {
   // 3. Direct inquiry matching: "ספר לי על X", "מידע על X", "מכיר את X", "מה יש ב-X"
   const infoMatch = lower.match(/(?:ספר לי על|ספרי לי על|מידע על|מכיר את|מכירה את|תגיד לי על|מה יש ב|איך מגיעים ל|איך להגיע ל)\s+(?:ה)?([א-תa-zA-Z0-9"״'-]{2,25}(?:\s+[א-תa-zA-Z0-9"״'-]{1,25})?)/);
   if (infoMatch) {
-    const candidate = infoMatch[1].trim();
-    const words = candidate.split(/\s+/).filter(Boolean);
-    if (!words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(candidate)) {
+    let candidate = infoMatch[1].trim();
+    let words = candidate.split(/\s+/).filter(Boolean);
+    if (words.length > 1 && ['ב', 'ל', 'עם', 'של'].includes(words[words.length - 1])) {
+      words.pop();
+      candidate = words.join(' ');
+    }
+    const isGeneric = GENERIC_EXCLUSIONS.includes(candidate) || 
+      (words.length > 0 && GENERIC_EXCLUSIONS.includes(words[0]) && words[0] !== 'ארץ');
+    if (!isGeneric && !isDateOrTimeOrNoise(candidate) && candidate.length >= 2) {
       return candidate;
     }
   }

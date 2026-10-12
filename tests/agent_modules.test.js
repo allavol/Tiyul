@@ -25,6 +25,7 @@ import {
 } from '../src/services/agent/AgentRulesEngine.js';
 
 import assetsData from '../assets_db.json' with { type: 'json' };
+import { WeatherService } from '../src/services/WeatherService.js';
 
 describe('AgentGeoEngine Unit Tests', () => {
   it('correctly resolves known origin cities', async () => {
@@ -157,6 +158,31 @@ describe('AgentNLUParser Unit Tests', () => {
     // 9. Quiet & Solitude
     const quiet = extractParameters('פינה שקטה בלי הרבה אנשים ובלי המונים', {});
     expect(quiet.concept).toBe('quiet');
+  });
+
+  it('strictly rejects unapproved foreign destinations like Tierra del Fuego', () => {
+    const check1 = checkGuardrails('טיול לארץ האש ב 25.12');
+    expect(check1.safe).toBe(false);
+    expect(check1.isAbroad).toBe(true);
+    expect(check1.refusal).toContain('מחוץ לגבולות ישראל');
+
+    const check2 = checkGuardrails('בארץ האש');
+    expect(check2.safe).toBe(false);
+  });
+
+  it('correctly flags far-future dates beyond 14 days and extracts target month', () => {
+    const params = extractParameters('טיול בצפון ב 25.12 עם ילד בן 6', {});
+    expect(params.isFarFutureDate).toBe(true);
+    expect(params.diffDays).toBeGreaterThan(14);
+    expect(params.targetMonth).toBe(12);
+
+    // WeatherService seasonal model returns historical estimate
+    const site = assetsData[0];
+    const seasonalWeather = WeatherService.getSeasonalHistoricalForecast(site, 12);
+    expect(seasonalWeather.isLive).toBe(false);
+    expect(seasonalWeather.isEstimateOnly).toBe(true);
+    expect(seasonalWeather.source).toContain('ממוצע היסטורי עונתי');
+    expect(seasonalWeather.disclaimer).toContain('ממוצעים עונתיים');
   });
 });
 

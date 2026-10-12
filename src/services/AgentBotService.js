@@ -76,6 +76,10 @@ export class AgentBotService {
       lastProposals: [],   // stored proposals for follow-up questions
       wheelchairNote: false, // wheelchair caveat flag
       dogWarning: false,     // dog/pet warning flag
+      isFarFutureDate: false,
+      farFutureConfirmed: false,
+      diffDays: null,
+      targetMonth: null,
     };
   }
 
@@ -293,7 +297,16 @@ export class AgentBotService {
       return this.generateClarificationResponse('region', resetState, ['region']);
     }
     if (text.includes('תאריך אחר') || text.includes('שנה תאריך') || text.includes('יום אחר') || text.includes('שנה מועד') || text.includes('בדוק תאריך')) {
-      const resetState = { ...currentState, timing: null, timingLabel: null, dayIndex: 0 };
+      const resetState = { 
+        ...currentState, 
+        timing: null, 
+        timingLabel: null, 
+        dayIndex: 0,
+        isFarFutureDate: false,
+        farFutureConfirmed: false,
+        diffDays: null,
+        targetMonth: null,
+      };
       return this.generateClarificationResponse('timing', resetState, ['timing']);
     }
     if (text.includes('שנה גיל') || text.includes('גיל אחר') || text.includes('גילאי הילדים') || text.includes('שנה גילאי')) {
@@ -380,13 +393,7 @@ export class AgentBotService {
           'האם פתוח', 'האם פתוחה', 'האם שמורת', 'האם גן לאומי', 'האם האתר'
         ];
         const hasLookup = lookupIntents.some((intent) => text.includes(intent));
-        const hasOtherCriteria = (
-          text.includes('צפון') || text.includes('דרום') || text.includes('מרכז') || text.includes('ירושלים') ||
-          text.includes('מחר') || text.includes('היום') || text.includes('שבת') || text.includes('סופש') ||
-          text.includes('ילד') || text.includes('גיל') || text.includes('עגלה')
-        );
-
-        if (!matchesCity && !hasLookup && !hasOtherCriteria) {
+        if (!matchesCity && !hasLookup) {
           return {
             text: UNSAFE_BORDER_REFUSAL,
             state: currentState,
@@ -589,6 +596,47 @@ export class AgentBotService {
           'nlu.excludeWater': Boolean(state.excludeWater),
         }
       });
+    }
+
+    // 1.95 Check Far-Future Date (>14 days) confirmation & historical weather disclaimer
+    const isFarFutureConfirm = (
+      text === 'כן' ||
+      text === 'כן תודה' ||
+      text === 'כן בטח' ||
+      text === 'בטח' ||
+      text === 'אחלה' ||
+      text === 'יאללה' ||
+      text === 'אשמח' ||
+      text === 'מעוניין' ||
+      text.includes('כן, אני רוצה הצעות') ||
+      text.includes('כן אני רוצה הצעות') ||
+      text.includes('כן, אשמח להצעות') ||
+      text.includes('כן אשמח להצעות') ||
+      text.includes('אשמח להצעות') ||
+      text.includes('הצעות בכל מקרה') ||
+      text.includes('בכל מקרה') ||
+      text.includes('רוצה הצעות') ||
+      text.includes('תן הצעות') ||
+      text.includes('תציע בכל מקרה')
+    );
+
+    if (state.isFarFutureDate && isFarFutureConfirm) {
+      state.farFutureConfirmed = true;
+    }
+
+    if (state.isFarFutureDate && !state.farFutureConfirmed) {
+      const daysText = state.diffDays ? `בעוד ${state.diffDays} ימים` : 'מעבר ל-14 ימים מהיום';
+      const dateText = state.timingLabel || 'התאריך המבוקש';
+      return {
+        text: `שימו לב: התאריך המבוקש (${dateText}) הוא ${daysText}, מעבר לטווח של תחזית מזג אוויר חיה (עד 14 ימים) 📅.\n\nנתוני מזג האוויר למועד זה אינם תחזית חיה אלא מבוססים על נתונים היסטוריים וממוצעים עונתיים (בגדול ובערבון מוגבל ⚠️).\n\nהאם תרצו הצעות למסלולים בכל מקרה?`,
+        state,
+        options: [
+          { label: '☀️ כן, אשמח להצעות בכל מקרה', value: 'כן, אני רוצה הצעות למסלולים בכל מקרה' },
+          { label: '📅 בחר תאריך קרוב יותר', value: 'שנה תאריך' },
+        ],
+        proposals: [],
+        toolActivity: '📅 בדיקת טווח תחזית: תאריך עתידי מעבר ל-14 ימים • מבוסס על נתונים היסטוריים וממוצעים עונתיים • ממתין לאישור המשתמש',
+      };
     }
 
     // Dynamic 50km Geocoding for any Israeli town (Finding A2)
@@ -851,7 +899,11 @@ export class AgentBotService {
     for (const site of topSites) {
       let weather = null;
       try {
-        weather = await WeatherService.fetchSiteWeather(site, dayIndex);
+        if (state.isFarFutureDate) {
+          weather = WeatherService.getSeasonalHistoricalForecast(site, state.targetMonth || 12);
+        } else {
+          weather = await WeatherService.fetchSiteWeather(site, dayIndex);
+        }
       } catch (e) {
         // Fallback gracefully
       }
@@ -957,7 +1009,7 @@ export class AgentBotService {
       }
     }
 
-    const weatherSource = proposals[0]?.weather?.source || 'Open-Meteo Live';
+    const weatherSource = proposals[0]?.weather?.source || (state.isFarFutureDate ? 'ממוצע היסטורי עונתי ⚠️' : 'Open-Meteo Live');
     const conflictBanner = state.demographicConflictResolved
       ? '\n\n💡 **התחשבות בבטיחות:** זוהה שילוב בין מטיילים עם צרכי נגישות (סבתא/עגלה/כיסא גלגלים) לרצון באתגר. בהתאם לכללי הבטיחות, נבחרה האוכלוסייה עם המגבלות הגדולות ביותר והוצעו שבילים סלולים, מישוריים ובטוחים לכולם (ללא סולמות, מצוקים או סכנת החלקה).'
       : '';
@@ -967,7 +1019,12 @@ export class AgentBotService {
     const audienceAdapted = state.isSenior || state.minAgeLabel?.includes('קשיש') || state.minAgeLabel?.includes('גיל הזהב')
       ? `מותאם עבור **${state.minAgeLabel}**`
       : `מותאם לגילאי **${state.minAgeLabel}**`;
-    const introText = `${cityNotice}מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (${audienceAdapted}):\n\nהצלבת הנתונים המטאורולוגיים בוצעה מול **${weatherSource}** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️${rainWarning}${dogBanner}${wheelchairBanner}${conflictBanner}${bbqBanner}`;
+
+    const weatherNotice = state.isFarFutureDate
+      ? `📅 **שימו לב:** מועד הטיול הוא ${state.diffDays ? `בעוד ${state.diffDays} ימים` : 'מעבר ל-14 ימים'}, מעבר לטווח תחזית חיה. נתוני מזג האוויר המוצגים מבוססים על ממוצעים עונתיים ונתונים היסטוריים (**הערכה עונתית בערבון מוגבל ⚠️** ולא על תחזית חיה). מומלץ להתעדכן בתחזית חיה בימים הסמוכים ליציאה! 🗺️`
+      : `הצלבת הנתונים המטאורולוגיים בוצעה מול **${weatherSource}** ונבדקו כל אזהרות הבטיחות. בחרו מסלול כדי לצפות בו על גבי המפה! 🗺️`;
+
+    const introText = `${cityNotice}מצאתי עבורכם **${proposals.length} מסלולים נהדרים** המתאימים בדיוק להעדפות שלכם עבור **${state.timingLabel}** ב**${state.regionLabel}** (${audienceAdapted}):\n\n${weatherNotice}${rainWarning}${dogBanner}${wheelchairBanner}${conflictBanner}${bbqBanner}`;
 
     // Store proposals in state for follow-up questions
     state.lastProposals = proposals;
@@ -1000,7 +1057,9 @@ export class AgentBotService {
       state,
       options: resultOptions,
       proposals,
-      toolActivity: `🤖 Agent BAAL Spatial Engine • 📡 נשלפה תחזית ${weatherSource} • 🛡️ Guardrails Passed`,
+      toolActivity: state.isFarFutureDate
+        ? `🤖 Agent BAAL Spatial Engine • 📡 הערכת מזג אוויר עונתית (היסטורית) • 🛡️ Guardrails Passed`
+        : `🤖 Agent BAAL Spatial Engine • 📡 נשלפה תחזית ${weatherSource} • 🛡️ Guardrails Passed`,
     };
   }
 }

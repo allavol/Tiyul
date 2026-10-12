@@ -193,6 +193,94 @@ export class WeatherService {
   }
 
   /**
+   * Deterministic seasonal historical weather forecast for dates > 14 days out
+   * Strictly adheres to $0 operating policy using historical Israeli climate models
+   * @param {Object} asset 
+   * @param {number} targetMonth (1-12)
+   */
+  static getSeasonalHistoricalForecast(asset, targetMonth = 12) {
+    const lat = asset?.lat || 32.0;
+    const lng = asset?.lng || 35.0;
+
+    let tempMax = 18;
+    let tempMin = 10;
+    let precipProb = 20;
+    let conditions = 'מעונן חלקית';
+    let humidity = 60;
+
+    const m = Number(targetMonth) || 12;
+
+    if ([12, 1, 2].includes(m)) {
+      // Winter
+      if (lat >= 33.0) { // Upper Galilee / Golan
+        tempMax = 14; tempMin = 7; precipProb = 35; conditions = 'קריר, ייתכן גשם חורפי';
+      } else if (31.7 <= lat && lat <= 32.0 && lng >= 35.1) { // Jerusalem Mountains
+        tempMax = 13; tempMin = 6; precipProb = 35; conditions = 'קר וקריר, ייתכן גשם';
+      } else if (lat < 30.5) { // Eilat / Arava
+        tempMax = 22; tempMin = 11; precipProb = 5; conditions = 'בהיר ונעים';
+      } else if (31.0 <= lat && lat <= 31.8 && lng >= 35.2) { // Dead Sea
+        tempMax = 21; tempMin = 12; precipProb = 10; conditions = 'נוח ובהיר';
+      } else { // Center / Coastal Plain
+        tempMax = 17; tempMin = 10; precipProb = 30; conditions = 'נוח עד קריר, עונתי';
+      }
+    } else if ([3, 4, 5].includes(m)) {
+      // Spring
+      if (lat >= 33.0) {
+        tempMax = 22; tempMin = 12; precipProb = 15; conditions = 'נעים ונוח';
+      } else if (lat < 30.5) {
+        tempMax = 29; tempMin = 17; precipProb = 0; conditions = 'חם ויבש';
+      } else {
+        tempMax = 24; tempMin = 15; precipProb = 10; conditions = 'בהיר ונעים';
+      }
+    } else if ([6, 7, 8].includes(m)) {
+      // Summer
+      if (lat >= 33.0) {
+        tempMax = 30; tempMin = 19; precipProb = 0; conditions = 'חם ושמשי';
+      } else if (lat < 30.5) {
+        tempMax = 40; tempMin = 26; precipProb = 0; conditions = 'עומס חום כבד';
+      } else {
+        tempMax = 31; tempMin = 23; precipProb = 0; conditions = 'חם ושמשי';
+      }
+    } else {
+      // Autumn (9, 10, 11)
+      if (lat >= 33.0) {
+        tempMax = 25; tempMin = 15; precipProb = 10; conditions = 'נעים ונוח';
+      } else if (lat < 30.5) {
+        tempMax = 31; tempMin = 19; precipProb = 5; conditions = 'חם ונעים';
+      } else {
+        tempMax = 26; tempMin = 18; precipProb = 10; conditions = 'נוח לטיול';
+      }
+    }
+
+    return {
+      isLive: false,
+      isSimulated: true,
+      isEstimateOnly: true,
+      isHistoricalAverage: true,
+      source: 'ממוצע היסטורי עונתי ⚠️',
+      badgeText: '⚠️ הערכה עונתית (נתונים היסטוריים)',
+      disclaimer: 'נתוני מזג האוויר מבוססים על ממוצעים עונתיים היסטוריים (בערבון מוגבל) ולא על תחזית חיה.',
+      dayIndex: 0,
+      temp: `${tempMax}° / ${tempMin}° (הערכה עונתית)`,
+      tempNum: tempMax,
+      tempMax,
+      tempMin,
+      humidity: `${humidity}%`,
+      wind: '12 קמ"ש',
+      windSpeedNum: 12,
+      rain: `ממוצע עונתי: ${precipProb}% סיכוי`,
+      precipProb,
+      conditions,
+      heatLoad: tempMax >= 38 ? 'עומס חום קיצוני' : tempMax >= 34 ? 'עומס חום כבד' : tempMax >= 30 ? 'חם' : tempMax <= 14 ? 'קר' : 'נוח לטיול',
+      isTempSafe: tempMax < 38,
+      isRainSafe: precipProb < 50,
+      fetchTime: 'ממוצע היסטורי',
+    };
+  }
+
+  /**
+   * Fetch site weather taking dayIndex and far-future constraints into account
+
    * Fetch 5-day forecast + realtime data for an asset
    * @param {Object} asset - Asset with lat and lng
    * @param {number} dayIndex - 0 for today, 1 for tomorrow, etc.

@@ -719,6 +719,34 @@ await runTest('Edge Case 46: BBQ & Open Fire Regulations ("לעשות על הא�
   assert.ok(bbqRes.proposals.length > 0, 'Must recommend valid picnic/forest grounds');
 });
 
+// ── Test 47: Unapproved Site & Abroad Refusal ("טיול לארץ האש ב 25.12") ───
+await runTest('Edge Case 47: Unapproved Site & Abroad Refusal ("טיול לארץ האש ב 25.12")', async () => {
+  const abroadRes = await AgentBotService.processUserMessage('טיול לארץ האש ב 25.12');
+  assert.ok(abroadRes.text.includes('מחוץ לגבולות ישראל') || abroadRes.text.includes('איני מכיר'), 'Must refuse unapproved destination Tierra del Fuego');
+  assert.strictEqual(abroadRes.proposals.length, 0, 'Must return 0 proposals for abroad query');
+});
+
+// ── Test 48: Far-Future Date Historical Weather Disclaimer & Confirmation ("25.12") ───
+await runTest('Edge Case 48: Far-Future Date (>14 days) Historical Weather Disclaimer & Confirmation', async () => {
+  // Turn 1: Initial query with far-future date
+  const turn1 = await AgentBotService.processUserMessage('טיול בצפון ב 25.12 עם ילד בן 6');
+  assert.ok(turn1.text.includes('מעבר לטווח') && turn1.text.includes('נתונים היסטוריים'), 'Must state historical seasonal weather disclaimer');
+  assert.ok(turn1.text.includes('האם תרצו הצעות') || turn1.text.includes('האם תרצה'), 'Must prompt whether user wants proposals anyway');
+  assert.strictEqual(turn1.proposals.length, 0, 'Turn 1 must not output proposals before confirmation');
+  assert.strictEqual(turn1.state.isFarFutureDate, true, 'isFarFutureDate must be true');
+  assert.strictEqual(turn1.state.farFutureConfirmed, false, 'farFutureConfirmed must be false');
+
+  // Turn 2: User confirms "כן, אשמח להצעות בכל מקרה"
+  const turn2 = await AgentBotService.processUserMessage('כן, אני רוצה הצעות למסלולים בכל מקרה', turn1.state);
+  assert.strictEqual(turn2.state.farFutureConfirmed, true, 'farFutureConfirmed must be set to true');
+
+  // Turn 3: User picks style -> proposals delivered with seasonal weather
+  const turn3 = await AgentBotService.processUserMessage('הכל מתאים, מה שהכי מומלץ', turn2.state);
+  assert.ok(turn3.proposals.length > 0, 'Must deliver proposals after confirmation');
+  assert.ok(turn3.text.includes('הערכה עונתית בערבון מוגבל') || turn3.text.includes('נתונים היסטוריים'), 'Must include seasonal disclaimer in recommendations');
+  assert.ok(turn3.proposals[0].weather.source.includes('ממוצע היסטורי עונתי'), 'Weather source must be historical seasonal average');
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);
