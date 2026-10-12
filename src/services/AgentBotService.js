@@ -190,9 +190,9 @@ export class AgentBotService {
         text: guardrail.refusal,
         state: sessionState || this.getInitialState(),
         options: guardrail.isCelestial ? [
+          { label: '☀️ בקעת תמנע שטופת שמש', value: 'מחפש מסלול מדברי שטוף שמש בבקעת תמנע' },
           { label: '🏜️ נוף ירחי במכתש רמון', value: 'מחפש מסלול עם נוף ירחי מיוחד במכתש רמון' },
           { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
-          { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
         ] : [
           { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
           { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
