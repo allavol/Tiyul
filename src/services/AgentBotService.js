@@ -513,6 +513,31 @@ export class AgentBotService {
             toolActivity: '🌍 בדיקת מזג אוויר מחוץ לישראל • סירוב חו"ל תקני',
           };
         }
+
+        const isExplicitSiteQuery = (
+          text.includes('ספר לי על') || text.includes('ספרי לי על') ||
+          text.includes('מידע על') || text.includes('מכיר את') || text.includes('מכירה את') ||
+          text.includes('תגיד לי על') || text.includes('מה יש ב') ||
+          text.includes('איך מגיעים ל') || text.includes('איך להגיע ל') ||
+          text.includes('האם פתוח') || text.includes('האם פתוחה')
+        );
+
+        if (isExplicitSiteQuery && !hasIsraeliRegion && !matchesCity) {
+          const entity = extractRequestedSiteEntity(text) || '';
+          const siteDisplay = entity ? `האתר "${entity}"` : 'האתר שציינתם';
+          return {
+            text: `איני מכיר את ${siteDisplay} במאגר שמורות הטבע, הגנים הלאומיים ומסלולי הטיול המאומתים של ישראל 🌿.\n\n💡 ייתכן שמדובר באתר שאינו שייך לרשות הטבע והגנים או לקק"ל, או בשם שנכתב עם שגיאה. בואו נמשיך לחפש מסלול באחד מאזורי הארץ:`,
+            state: currentState,
+            options: [
+              { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+              { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
+              { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
+              { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
+            ],
+            proposals: [],
+            toolActivity: `❓ חיפוש ישיר נכשל: ${siteDisplay} אינו מוכר במאגר`,
+          };
+        }
       }
     }
 

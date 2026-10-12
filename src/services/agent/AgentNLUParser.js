@@ -1197,6 +1197,28 @@ export function checkClimateContradictions(message) {
   if (!message || typeof message !== 'string') return null;
   const lower = message.toLowerCase();
 
+  const isIceCanteenOrCooler = (
+    lower.includes('מים עם קרח') ||
+    lower.includes('צידנית עם קרח') ||
+    lower.includes('קרח בבקבוק') ||
+    lower.includes('קרח בתרמוס') ||
+    lower.includes('ארטיק קרח')
+  );
+
+  const mentionsIce = !isIceCanteenOrCooler && (
+    lower.includes('טיול קרח') ||
+    lower.includes('מסלול קרח') ||
+    lower.includes('שביל קרח') ||
+    lower.includes('מערת קרח') ||
+    lower.includes('מערות קרח') ||
+    lower.includes('קרחון') ||
+    lower.includes('קרחונים') ||
+    lower.includes('החלקה על הקרח') ||
+    lower.includes('טיפוס קרח') ||
+    lower.includes('על הקרח') ||
+    /(?:^|[^\u0590-\u05FFa-zA-Z0-9])קרח(?:$|[^\u0590-\u05FFa-zA-Z0-9])/.test(lower)
+  );
+
   const mentionsSnow = (
     lower.includes('שלג') || lower.includes('סקי') || lower.includes('מזחלות שלג') || lower.includes('בובסליי')
   );
@@ -1210,20 +1232,35 @@ export function checkClimateContradictions(message) {
     lower.includes('בדרום') || lower.includes('דרום')
   );
 
-  if (mentionsSnow && mentionsDesertOrEilat) {
+  // 1. Ice or Snow in Desert / South / Eilat
+  if ((mentionsSnow || mentionsIce) && mentionsDesertOrEilat) {
     const isEilat = lower.includes('אילת');
     const regionName = isEilat ? 'אילת' : 'אזור הדרום והמדבר';
+    const hazardWord = mentionsIce && !mentionsSnow ? 'קרח' : (mentionsIce && mentionsSnow ? 'שלג או קרח' : 'שלג');
 
     const hasFifty = lower.includes('50') || lower.includes('חמישים');
     const fiftyNote = hasFifty ? '\n\n💡 בנוסף, גיל 50 הוא גיל בוגר ומנוסה ולא "ילד" 😉 — כל דרגות הקושי פתוחות בפניכם!' : '';
 
     return {
       contradiction: true,
-      text: `❄️🚫 **אין שלג ב${regionName}!**\n\n${regionName} מאופיין באקלים מדברי, חם ויבש לאורך כל ימות השנה. בישראל, שלג יורד אך ורק ב**הר החרמון ובצפון רמת הגולן** במהלך חודשי החורף (דצמבר–מרץ).${fiftyNote}\n\n💡 **אנא נסחו שוב את שאלתכם:**\n• אם אתם מחפשים **שלג וקור** — כדאי לבחור באזור **הצפון (חרמון וגולן)** בעונת החורף.\n• אם אתם רוצים לטייל ב**אילת והדרום** — נסחו מחדש מסלול מדברי מתאים (למשל: הרי אילת, קניון שחורת, פארק תמנע או עין עבדת).\n• או בחרו באחת האפשרויות למטה:`,
+      text: `❄️🚫 אין ${hazardWord} ב${regionName}!\n\n${regionName} מאופיין באקלים מדברי, חם ויבש לאורך כל ימות השנה. בישראל אין קרחונים או מסלולי קרח כלל, ושלג יורד אך ורק בהר החרמון ובצפון רמת הגולן במהלך חודשי החורף (דצמבר–מרץ).${fiftyNote}\n\n💡 אנא נסחו שוב את שאלתכם:\n• אם אתם מחפשים שלג וקור — כדאי לבחור באזור הצפון (חרמון וגולן) בעונת החורף.\n• אם אתם רוצים לטייל ב${regionName} — נסחו מחדש מסלול מדברי מתאים (למשל: בקעת תמנע, הרי אילת, עין עבדת או מכתש רמון).\n• או בחרו באחת האפשרויות למטה:`,
       options: [
         { label: '🏔️ חפש שלג בצפון (חרמון וגולן)', value: 'מחפש מסלול שלג בחרמון ובצפון' },
         { label: '🏜️ מסלול מדברי באילת והדרום', value: 'מחפש מסלול מדברי יפה באזור אילת והדרום' },
         { label: '🔄 איפוס והתחלה מחדש', value: 'התחל מחדש' },
+      ],
+    };
+  }
+
+  // 2. Ice or Glaciers anywhere in Israel
+  if (mentionsIce) {
+    return {
+      contradiction: true,
+      text: `❄️🚫 בישראל אין קרחונים או מסלולי קרח!\n\nאקלים ישראל הוא ים-תיכוני ומדברי, ולכן לא קיימים בארץ קרחונים, מערות קרח או מסלולי הליכה על קרח. שלג יורד אך ורק בהר החרמון ובצפון רמת הגולן במהלך חודשי החורף (דצמבר–מרץ).\n\n💡 אנא נסחו שוב את שאלתכם:\n• אם אתם מחפשים חוויה חורפית ומושלגת — כדאי לבחור באזור הצפון (אתר החרמון) בעונת החורף.\n• אם אתם מחפשים מקום קריר ומפלט מהחום — מומלץ לבחור במסלול מים זורמים בצפון או במערה קרירה (כמו מערות הפעמון בבית גוברין).\n• או בחרו באחת האפשרויות למטה:`,
+      options: [
+        { label: '🏔️ חפש שלג בצפון (חרמון וגולן)', value: 'מחפש מסלול שלג בחרמון ובצפון' },
+        { label: '💧 מסלול מים קריר בצפון', value: 'מחפש מסלול מים מוצל בצפון' },
+        { label: '🏰 מערה קרירה בבית גוברין', value: 'ספר לי על בית גוברין' },
       ],
     };
   }
@@ -1271,6 +1308,16 @@ export function extractRequestedSiteEntity(text) {
   const destMatch = lower.match(/(?:רוצה|בא לי|מחפש|מתכנן|נוסע|נוסעים|הולכים|יוצאים)?\s*(?:לטייל|טיול|לנסוע|ללכת|חופשה|נופש|לטוס|טיסה)\s+(?:ב|ל|אל)\s*([א-תa-zA-Z0-9"״'-]{2,20}(?:\s+[א-תa-zA-Z0-9"״'-]{1,20})?)/);
   if (destMatch) {
     const candidate = destMatch[1].trim();
+    const words = candidate.split(/\s+/).filter(Boolean);
+    if (!words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(candidate)) {
+      return candidate;
+    }
+  }
+
+  // 3. Direct inquiry matching: "ספר לי על X", "מידע על X", "מכיר את X", "מה יש ב-X"
+  const infoMatch = lower.match(/(?:ספר לי על|ספרי לי על|מידע על|מכיר את|מכירה את|תגיד לי על|מה יש ב|איך מגיעים ל|איך להגיע ל)\s+(?:ה)?([א-תa-zA-Z0-9"״'-]{2,25}(?:\s+[א-תa-zA-Z0-9"״'-]{1,25})?)/);
+  if (infoMatch) {
+    const candidate = infoMatch[1].trim();
     const words = candidate.split(/\s+/).filter(Boolean);
     if (!words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(candidate)) {
       return candidate;
