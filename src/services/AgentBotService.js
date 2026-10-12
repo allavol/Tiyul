@@ -188,7 +188,11 @@ export class AgentBotService {
       return {
         text: guardrail.refusal,
         state: sessionState || this.getInitialState(),
-        options: [
+        options: guardrail.isCelestial ? [
+          { label: '🏜️ נוף ירחי במכתש רמון', value: 'מחפש מסלול עם נוף ירחי מיוחד במכתש רמון' },
+          { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
+          { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
+        ] : [
           { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
           { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
           { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש וקל לעגלות' },

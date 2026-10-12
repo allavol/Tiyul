@@ -291,6 +291,63 @@ export function checkGuardrails(message) {
     };
   }
 
+  // 1.5 Celestial / Space / Moon travel
+  const isLunarColloquialOrIsraeli = (
+    lower.includes('ירח דבש') ||
+    lower.includes('לאור ירח') ||
+    lower.includes('אור ירח') ||
+    lower.includes('ליל ירח') ||
+    lower.includes('ירח מלא') ||
+    lower.includes('נוף ירחי') ||
+    lower.includes('בקעת הירח')
+  );
+
+  if (!isLunarColloquialOrIsraeli) {
+    const mentionsMoon = (
+      lower.includes('לירח') || lower.includes('על הירח') || lower.includes('בירח') ||
+      /(?:טיול|לנסוע|לטוס|לטייל|חופשה|נופש|טיסה|מזג האוויר|מזג אוויר|תחזית)\s+(?:ל|ב|על)?\s*ירח/.test(lower) ||
+      /(?:הירח|ירח)\s+(?:הוא יעד|מחוץ לכדור הארץ)/.test(lower)
+    );
+
+    const mentionsMars = (
+      lower.includes('למאדים') || lower.includes('במאדים') || lower.includes('על מאדים') ||
+      /(?:טיול|לנסוע|לטוס|לטייל|חופשה|נופש|טיסה|מזג האוויר|תחזית)\s+(?:ל|ב|על)?\s*מאדים/.test(lower)
+    );
+
+    const mentionsSpace = (
+      lower.includes('לחלל') || lower.includes('בחלל') || lower.includes('לטוס לחלל') ||
+      lower.includes('טיול בחלל') || lower.includes('תחנת החלל') || lower.includes('שביל החלב') ||
+      lower.includes('גלקסיה') || lower.includes('כוכב צדק') || lower.includes('כוכב שבתאי')
+    );
+
+    if (mentionsMoon) {
+      return {
+        safe: false,
+        isAbroad: true,
+        isCelestial: true,
+        refusal: 'שלום! 🌕🚀 הירח הוא בהחלט יעד מסקרן, אבל הוא לחלוטין מחוץ לגבולות ישראל... 😉 וזה בעייתי בשבילי להמליץ עליו כי אין לי נתונים על מזג האוויר שם! המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ! 💡 ואם אתם מחפשים נוף ירחי מרהיב כאן בארץ – מכתש רמון או הרי אילת הם המקום המושלם!',
+      };
+    }
+
+    if (mentionsMars) {
+      return {
+        safe: false,
+        isAbroad: true,
+        isCelestial: true,
+        refusal: 'שלום! 🪐🚀 מאדים הוא בהחלט יעד מסקרן, אבל הוא לחלוטין מחוץ לגבולות ישראל... 😉 וזה בעייתי בשבילי להמליץ עליו כי אין לי נתונים על מזג האוויר שם! המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ! 💡 ואם אתם מחפשים נוף מדברי אדמדם כמו במאדים כאן בארץ – בקעת תמנע והרי אילת הם המקום המושלם!',
+      };
+    }
+
+    if (mentionsSpace) {
+      return {
+        safe: false,
+        isAbroad: true,
+        isCelestial: true,
+        refusal: 'שלום! 🚀🌌 החלל הוא בהחלט מסע מסקרן, אבל הוא לחלוטין מחוץ לגבולות ישראל... 😉 וזה בעייתי בשבילי להמליץ עליו כי אין לי נתונים על מזג האוויר שם! המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ!',
+      };
+    }
+  }
+
   // 2. Foreign countries / travel abroad
   // Explicit Israeli exceptions that might contain abroad-sounding words
   const isIsraeliException = (
