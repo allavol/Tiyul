@@ -20,6 +20,28 @@ export const PROHIBITED_KEYWORDS = [
 // Standard unified refusal for all abroad inquiries
 export const ABROAD_STANDARD_REFUSAL = 'שלום! 🌿 אני לא ממליץ על טיולים בחו"ל, בינתיים... 😉✈️ המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ!';
 
+// Standard unified refusal for all destinations outside safe borders of Israel
+export const UNSAFE_BORDER_REFUSAL = 'שלום! 🌿 היעד המבוקש נמצא מחוץ לגבולות ישראל הבטוחים... 😉 המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה הבטוחים והמאושרים בישראל 🇮🇱 בלבד... בואו נטייל בבטחה בארץ!';
+
+// Unsafe border territories, hostile areas, and fictional / fantasy destinations
+export const UNSAFE_BORDER_KEYWORDS = [
+  // Gaza Strip
+  'עזה', 'בעזה', 'רצועת עזה', 'ברצועת עזה', 'חאן יונס', 'בחאן יונס', 'רפיח', 'ברפיח',
+  'דיר אל בלח', 'ג\'באליה', 'גבאליה', 'נוסייראת', 'בית חאנון', 'בית לאהיא',
+
+  // Area A & Unsafe West Bank cities (excluding safe Israeli heritage parks)
+  'שטח a', 'בשטח a', 'שטחי a', 'שטח א', 'בשטח א', 'שטחי א',
+  'שכם', 'בשכם', 'ג\'נין', 'בג\'נין', 'גנין', 'בגנין',
+  'רמאללה', 'ברמאללה', 'טול כרם', 'בטול כרם', 'קלקיליה', 'בקלקיליה', 'טובאס',
+
+  // Hostile Middle East / Gulf countries
+  'תימן', 'בתימן', 'צנעא',
+
+  // Fictional / Fantasy / Mythological locations
+  'אטלנטיס', 'באטלנטיס', 'נרניה', 'בנרניה', 'הוגוורטס', 'בהוגוורטס', 'גותהאם', 'בגותהאם',
+  'ארץ עוץ', 'אלדורדו', 'שנגרילה', 'ארץ לעולם לא'
+];
+
 // Foreign countries & abroad keywords
 export const FOREIGN_COUNTRIES_KEYWORDS = [
   // General abroad terms
@@ -344,6 +366,25 @@ export function checkGuardrails(message) {
         isAbroad: true,
         isCelestial: true,
         refusal: 'שלום! 🚀🌌 החלל הוא בהחלט מסע מסקרן, אבל הוא לחלוטין מחוץ לגבולות ישראל... 😉 וזה בעייתי בשבילי להמליץ עליו כי אין לי נתונים על מזג האוויר שם! המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ!',
+      };
+    }
+  }
+
+  // 1.8 Unsafe border territories & hostile or fictional destinations
+  for (const uKw of UNSAFE_BORDER_KEYWORDS) {
+    let matched = false;
+    if (uKw.includes(' ') || uKw.includes('"') || uKw.includes('״') || uKw.includes('-')) {
+      matched = lower.includes(uKw);
+    } else {
+      const pattern = new RegExp('(?:^|[^\\u0590-\\u05FFa-zA-Z0-9])(?:[בלמהוכשבד]{1,2})?' + uKw + '(?:$|[^\\u0590-\\u05FFa-zA-Z0-9])', 'i');
+      matched = pattern.test(lower);
+    }
+
+    if (matched) {
+      return {
+        safe: false,
+        isAbroad: true,
+        refusal: UNSAFE_BORDER_REFUSAL,
       };
     }
   }
@@ -1162,30 +1203,45 @@ export function extractRequestedSiteEntity(text) {
   if (!text || typeof text !== 'string') return null;
   const lower = text.toLowerCase().trim();
 
-  // Pattern matching: "נחל X", "לנחל X", "בנחל X", "נהר X", "שמורת X", "עין X", "מעיין X"
-  const streamMatch = lower.match(/(?:(?:לטייל|טיול|מסלול|לנסוע|ללכת)\s+(?:ל|ב)?)?\s*(?:ל|ב)?(נחל|נהר|מעיין|עין|שמורת|יער|מבצר|פארק)\s+([א-ת"״'-]{3,20}(?:\s+[א-ת"״'-]{3,20})?)/);
-  if (!streamMatch) return null;
-
-  const prefix = streamMatch[1];
-  const name = streamMatch[2] ? streamMatch[2].trim() : '';
-  if (!name) return null;
-
-  // Exclude generic terms / adjectives
+  // Exclude generic terms / adjectives / regions / dates
   const GENERIC_EXCLUSIONS = [
     'מים', 'זורם', 'יבש', 'קצר', 'מעגלי', 'אתגרי', 'יפה', 'קריר', 'מוצל',
     'טבע', 'הליכה', 'משפחתי', 'עגלות', 'סלול', 'נוף', 'פריחה', 'ארכיאולוגיה',
     'הצפון', 'הדרום', 'המרכז', 'השרון', 'ירושלים', 'מחר', 'היום', 'שבת', 'השבוע',
     'נעים', 'רטוב', 'עתיק', 'עתיקה', 'עתיקים', 'עתיקות', 'מורשת', 'היסטורי', 'היסטורית',
     'רומי', 'צלבני', 'לאומי', 'גדול', 'קטן', 'עמוק', 'ארוך', 'בצפון', 'בדרום', 'במרכז', 'בירושלים',
-    'קרוב', 'רחוק', 'קל', 'קשה', 'שקט', 'רגוע', 'פסטורלי'
+    'קרוב', 'רחוק', 'קל', 'קשה', 'שקט', 'רגוע', 'פסטורלי',
+    'ילד', 'ילדים', 'תינוק', 'תינוקות', 'עגלה', 'עגלות', 'משפחה', 'סבא', 'סבתא', 'הורים', 'נוער', 'מבוגרים',
+    'חברים', 'זוג', 'לבד', 'כולם', 'בחוץ', 'שמש', 'צל', 'יער', 'מסלול', 'שביל',
+    'סופש', 'סופ"ש', 'מחרתיים', 'הקרוב', 'הבאה', 'הזה', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי',
+    'צפון', 'דרום', 'מרכז', 'גליל', 'גולן', 'שרון', 'שפלה', 'נגב', 'ערבה', 'אילת', 'כנרת', 'כרמל',
+    'אזור', 'איזור', 'ארץ', 'בארץ', 'ישראל', 'בישראל', 'כל הארץ', 'כל'
   ];
 
-  const words = name.split(/\s+/).filter(Boolean);
-  if (words.some((w) => GENERIC_EXCLUSIONS.includes(w)) || GENERIC_EXCLUSIONS.includes(name)) {
-    return null;
+  // 1. Pattern matching with site type prefix: "נחל X", "שמורת X", "עין X", etc.
+  const streamMatch = lower.match(/(?:(?:לטייל|טיול|מסלול|לנסוע|ללכת)\s+(?:ל|ב)?)?\s*(?:ל|ב)?(נחל|נהר|מעיין|עין|שמורת|יער|מבצר|פארק)\s+([א-ת"״'-]{3,20}(?:\s+[א-ת"״'-]{3,20})?)/);
+  if (streamMatch) {
+    const prefix = streamMatch[1];
+    const name = streamMatch[2] ? streamMatch[2].trim() : '';
+    if (name) {
+      const words = name.split(/\s+/).filter(Boolean);
+      if (!words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(name)) {
+        return `${prefix} ${name}`.trim();
+      }
+    }
   }
 
-  return `${prefix} ${name}`.trim();
+  // 2. Pattern matching general destination: "רוצה לטייל בעזה", "לנסוע לחאן יונס", "טיול בנרניה"
+  const destMatch = lower.match(/(?:רוצה|בא לי|מחפש|מתכנן|נוסע|נוסעים|הולכים|יוצאים)?\s*(?:לטייל|טיול|לנסוע|ללכת|חופשה|נופש|לטוס|טיסה)\s+(?:ב|ל|אל)\s*([א-תa-zA-Z0-9"״'-]{2,20}(?:\s+[א-תa-zA-Z0-9"״'-]{1,20})?)/);
+  if (destMatch) {
+    const candidate = destMatch[1].trim();
+    const words = candidate.split(/\s+/).filter(Boolean);
+    if (!words.some((w) => GENERIC_EXCLUSIONS.includes(w)) && !GENERIC_EXCLUSIONS.includes(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 /**

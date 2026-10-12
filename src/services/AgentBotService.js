@@ -30,7 +30,8 @@ import {
   extractRequestedSiteEntity,
   isGibberishOrNoise,
   DOG_KEYWORDS,
-  ABROAD_STANDARD_REFUSAL
+  ABROAD_STANDARD_REFUSAL,
+  UNSAFE_BORDER_REFUSAL
 } from './agent/AgentNLUParser.js';
 
 import { 
@@ -367,7 +368,7 @@ export class AgentBotService {
 
         if (!matchesCity && !hasLookup && !hasOtherCriteria) {
           return {
-            text: ABROAD_STANDARD_REFUSAL,
+            text: UNSAFE_BORDER_REFUSAL,
             state: currentState,
             options: [
               { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
@@ -375,7 +376,7 @@ export class AgentBotService {
               { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש וקל לעגלות' },
             ],
             proposals: [],
-            toolActivity: `🌍 יעד מחוץ לישראל: ${requestedEntity} • סירוב חו"ל תקני`,
+            toolActivity: `🛡️ יעד מחוץ לגבולות ישראל הבטוחים: ${requestedEntity} • סירוב תקני`,
           };
         }
       }
