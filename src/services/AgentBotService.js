@@ -29,7 +29,8 @@ import {
   checkClimateContradictions,
   extractRequestedSiteEntity,
   isGibberishOrNoise,
-  DOG_KEYWORDS 
+  DOG_KEYWORDS,
+  ABROAD_STANDARD_REFUSAL
 } from './agent/AgentNLUParser.js';
 
 import { 
@@ -362,17 +363,15 @@ export class AgentBotService {
 
         if (!matchesCity && !hasLookup && !hasOtherCriteria) {
           return {
-            text: `לא הצלחתי לאתר את האתר או הנחל **${requestedEntity}** במאגר שמורות הטבע והמסלולים המאומתים בישראל 🌿.\n\nאם התכוונתם לאתר או מסלול מחוץ לישראל – אני לא ממליץ על טיולים בחו"ל, בינתיים... 😉\n\n💡 **אנא נסחו שוב את שאלתכם:**\n• נסו לחפש לפי אזור בארץ (צפון, מרכז, ירושלים, דרום).\n• או לציין סגנון מסלול מבוקש (מסלול מים, מעיין, יער מוצל, נגיש לעגלות).\n• או לבחור באחת האפשרויות המומלצות להלן:`,
+            text: ABROAD_STANDARD_REFUSAL,
             state: currentState,
             options: [
-              { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
-              { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
-              { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
-              { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
-              { label: '🎲 כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
+              { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
+              { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
+              { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש וקל לעגלות' },
             ],
             proposals: [],
-            toolActivity: `🔍 אתר לא מוכר: ${requestedEntity} • בקשת ניסוח מחדש`,
+            toolActivity: `🌍 יעד מחוץ לישראל: ${requestedEntity} • סירוב חו"ל תקני`,
           };
         }
       }
@@ -496,17 +495,15 @@ export class AgentBotService {
 
         if (isWeatherInquiry && !hasIsraeliRegion && !matchesCity) {
           return {
-            text: 'לא הצלחתי לאתר את האתר או היעד המבוקש במאגר שמורות הטבע והמסלולים בישראל 🌿.\n\nאם התכוונתם לאתר או יעד מחוץ לישראל – אני לא ממליץ על טיולים בחו"ל, בינתיים... 😉✈️ המומחיות שלי כסוכן שטח ממוקדת אך ורק בשמורות הטבע, הגנים הלאומיים ומסלולי ההליכה בישראל 🇮🇱 בלבד... בואו נטייל בארץ!\n\n💡 בישראל תוכלו לבדוק מזג אוויר ותחזית לפי אזור (צפון, מרכז, ירושלים, דרום) או לפי שם שמורה ומסלול ספציפי (למשל: *"מה מזג האוויר בעין גדי"*).',
+            text: ABROAD_STANDARD_REFUSAL,
             state: currentState,
             options: [
-              { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
-              { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
-              { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
-              { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
-              { label: '🎲 כל הארץ', value: 'לא משנה לי האזור, בכל הארץ', field: 'region' },
+              { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
+              { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
+              { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש וקל לעגלות' },
             ],
             proposals: [],
-            toolActivity: '🌤️ בדיקת מזג אוויר: יעד לא מוכר בישראל • הפניה לאתרים בארץ',
+            toolActivity: '🌍 בדיקת מזג אוויר מחוץ לישראל • סירוב חו"ל תקני',
           };
         }
       }
