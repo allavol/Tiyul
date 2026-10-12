@@ -170,8 +170,10 @@ export class WeatherService {
     return {
       isLive: false,
       isSimulated: true,
-      source: 'סימולציה דטרמיניסטית',
-      badgeText: 'נתוני הדמיה (Offline Mode)',
+      isEstimateOnly: true,
+      source: 'הערכה בלבד (סימולציית אופליין)',
+      badgeText: '⚠️ הערכה בלבד (מצב לא מקוון)',
+      disclaimer: 'נתוני מזג האוויר מוערכים על בסיס מודל אזורי עקב היעדר תקשורת חיה.',
       dayIndex,
       temp: dayIndex === 0 ? `${tempMax}°C` : `${tempMax}° / ${tempMin}°`,
       tempNum: tempMax,
@@ -264,6 +266,7 @@ export class WeatherService {
     return {
       isLive: true,
       isSimulated: false,
+      isEstimateOnly: false,
       source: dayData.source || 'Open-Meteo Live',
       badgeText: `🟢 מזג אוויר חי (${dayData.source || 'Open-Meteo'})`,
       dayIndex: targetIdx,

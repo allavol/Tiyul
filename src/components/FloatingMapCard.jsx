@@ -216,7 +216,8 @@ export default function FloatingMapCard({
     : {
         ...fallbackWeather,
         isLive: false,
-        sourceLabel: activeDay === 0 ? 'נתוני הדמיה אזורית (Offline)' : `תחזית ליום ${activeDay + 1} (מודל)`,
+        isEstimateOnly: true,
+        sourceLabel: activeDay === 0 ? '⚠️ הערכה בלבד (מצב לא מקוון / Offline)' : `תחזית ליום ${activeDay + 1} (הערכת מודל)`,
       };
 
   // Adjust temperature based on time of day
@@ -594,7 +595,7 @@ export default function FloatingMapCard({
 
       {/* ── Live Source Footer ────────────────────────────────── */}
       <div className="px-4 pb-3 pt-1 border-t border-white/[0.04] text-[9px] text-zinc-500 text-center flex items-center justify-between">
-        <span className="flex items-center gap-1 text-accent/80 font-medium">
+        <span className={`flex items-center gap-1 font-medium ${effectiveWeather.isLive ? 'text-accent/80' : 'text-amber-400'}`}>
           <Radio size={10} className={effectiveWeather.isLive ? 'animate-pulse' : ''} />
           <span>{effectiveWeather.sourceLabel}</span>
         </span>

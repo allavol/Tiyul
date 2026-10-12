@@ -452,7 +452,8 @@ export class AgentBotService {
             wind: weather.wind, 
             rain: weather.rain, 
             isLive: weather.isLive ?? true, 
-            source: weather.source || 'Open-Meteo Live' 
+            isEstimateOnly: weather.isEstimateOnly ?? !weather.isLive,
+            source: weather.source || (weather.isLive ? 'Open-Meteo Live' : 'הערכה בלבד (Offline)') 
           } : { 
             temp: '28°C', 
             conditions: 'בהיר ונוח', 
@@ -460,7 +461,8 @@ export class AgentBotService {
             wind: '15 קמ"ש', 
             rain: '0 מ"מ', 
             isLive: false, 
-            source: 'תחזית IMS' 
+            isEstimateOnly: true,
+            source: 'הערכה בלבד (Offline)' 
           },
           safetyBadge: !advisory ? 'בטוח ומומלץ לטיול 🛡️' : 'נדרשת תשומת לב ⚠️',
           waterAdvisory: advisory,
@@ -826,7 +828,8 @@ export class AgentBotService {
           wind: weather.wind,
           rain: weather.rain,
           isLive: weather.isLive ?? true,
-          source: weather.source || 'Open-Meteo Live',
+          isEstimateOnly: weather.isEstimateOnly ?? !weather.isLive,
+          source: weather.source || (weather.isLive ? 'Open-Meteo Live' : 'הערכה בלבד (Offline)'),
         } : {
           temp: '28°C',
           conditions: 'בהיר ונוח',
@@ -834,7 +837,8 @@ export class AgentBotService {
           wind: '15 קמ"ש',
           rain: '0 מ"מ',
           isLive: false,
-          source: 'תחזית IMS',
+          isEstimateOnly: true,
+          source: 'הערכה בלבד (Offline)',
         },
         safetyBadge: isSafe ? 'בטוח ומומלץ לטיול 🛡️' : 'נדרשת תשומת לב ⚠️',
         waterAdvisory: advisory,

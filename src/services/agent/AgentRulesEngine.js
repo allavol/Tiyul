@@ -298,7 +298,11 @@ export function buildRationale(site, state, weather) {
   }
 
   if (weather) {
-    parts.push(`${weather.temp} (${weather.conditions}) ב-Tomorrow.io`);
+    if (weather.isEstimateOnly || weather.isSimulated || weather.isLive === false) {
+      parts.push(`${weather.temp} (${weather.conditions}) • הערכה בלבד (Offline)`);
+    } else {
+      parts.push(`${weather.temp} (${weather.conditions}) ב-${weather.source || 'Tomorrow.io'}`);
+    }
   }
 
   if (site.type?.includes('מים') || site.type?.includes('בריכות')) {
