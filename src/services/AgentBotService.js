@@ -33,7 +33,9 @@ import {
   DOG_KEYWORDS,
   ABROAD_STANDARD_REFUSAL,
   UNSAFE_BORDER_REFUSAL,
-  MILITARY_ZONE_REFUSAL
+  MILITARY_ZONE_REFUSAL,
+  isInScope,
+  OFF_TOPIC_REFUSAL
 } from './agent/AgentNLUParser.js';
 
 import { 
@@ -80,6 +82,8 @@ export class AgentBotService {
       farFutureConfirmed: false,
       diffDays: null,
       targetMonth: null,
+      lastMissingField: null,
+      repeatClarificationCount: 0,
     };
   }
 
@@ -230,6 +234,21 @@ export class AgentBotService {
     const text = (message || '').toLowerCase();
     const currentState = sessionState || this.getInitialState();
 
+    // 1.02 Off-topic gate (positive scope check): anything with no hiking/planning signal is refused politely
+    if (!isInScope(message)) {
+      return {
+        text: OFF_TOPIC_REFUSAL,
+        state: currentState,
+        options: [
+          { label: '🌲 טיול מוצל בצפון למחר', value: 'רוצה טיול מוצל בצפון למחר עם ילדים' },
+          { label: '💧 מסלול מים במרכז להיום', value: 'מחפש מסלול מים במרכז להיום' },
+          { label: '👶 מסלול קל לעגלות', value: 'מחפש מסלול נגיש וקל לעגלות' },
+        ],
+        proposals: [],
+        toolActivity: '🧭 הודעה מחוץ לתחום הטיולים • סירוב מנומס והחזרה לנושא',
+      };
+    }
+
     // 1.03 Gibberish & Noise Check
     if (isGibberishOrNoise(message)) {
       return {
@@ -293,7 +312,7 @@ export class AgentBotService {
 
     // 1.2 Handle Explicit Parameter Reset Buttons
     if (text.includes('שנה אזור') || text.includes('אזור אחר') || text.includes('איזור אחר')) {
-      const resetState = { ...currentState, region: null, regionLabel: null };
+      const resetState = { ...currentState, region: null, regionLabel: null, lastMissingField: null, repeatClarificationCount: 0 };
       return this.generateClarificationResponse('region', resetState, ['region']);
     }
     if (text.includes('תאריך אחר') || text.includes('שנה תאריך') || text.includes('יום אחר') || text.includes('שנה מועד') || text.includes('בדוק תאריך')) {
@@ -306,15 +325,17 @@ export class AgentBotService {
         farFutureConfirmed: false,
         diffDays: null,
         targetMonth: null,
+        lastMissingField: null,
+        repeatClarificationCount: 0,
       };
       return this.generateClarificationResponse('timing', resetState, ['timing']);
     }
     if (text.includes('שנה גיל') || text.includes('גיל אחר') || text.includes('גילאי הילדים') || text.includes('שנה גילאי')) {
-      const resetState = { ...currentState, minAge: null, minAgeLabel: null };
+      const resetState = { ...currentState, minAge: null, minAgeLabel: null, lastMissingField: null, repeatClarificationCount: 0 };
       return this.generateClarificationResponse('minAge', resetState, ['minAge']);
     }
     if (text.includes('שנה סגנון') || text.includes('מסלול אחר') || text.includes('סגנון אחר')) {
-      const resetState = { ...currentState, feature: null, featureLabel: null };
+      const resetState = { ...currentState, feature: null, featureLabel: null, lastMissingField: null, repeatClarificationCount: 0 };
       return this.generateClarificationResponse('feature', resetState, ['feature']);
     }
 
@@ -323,11 +344,12 @@ export class AgentBotService {
 
     // 1.4 Follow-up question about previous proposal
     if (currentState.lastProposals && currentState.lastProposals.length > 0) {
-      const ordinalMatch = text.match(/(?:ה-?)?(ראשון|שני|שלישי|1|2|3)/);
+      // Ordinals must be words (ראשון/שני/שלישי) or a digit explicitly tied to a proposal (הצעה/מסלול/אפשרות 2)
+      const ordinalMatch = text.match(/(?:ה-?)?(ראשון|שני|שלישי)|(?:הצעה|מסלול|אפשרות|מספר|#)\s*(1|2|3)(?!\d)/);
       const hasFollowUp = text.includes('ספר לי עוד') || text.includes('עוד על') || text.includes('פרטים על') || text.includes('מידע על') || text.includes('מה יש ב');
       if (ordinalMatch && hasFollowUp) {
         const ordMap = { 'ראשון': 0, 'שני': 1, 'שלישי': 2, '1': 0, '2': 1, '3': 2 };
-        const idx = ordMap[ordinalMatch[1]] ?? 0;
+        const idx = ordMap[ordinalMatch[1] || ordinalMatch[2]] ?? 0;
         const proposal = currentState.lastProposals[idx];
         if (proposal) {
           const details = [
@@ -824,12 +846,47 @@ export class AgentBotService {
       missing.length = 0; // Fulfilled by Smart Defaults!
     }
 
+    // 2.1 Infinite Loop Breaker (Rule #5 AGENTS.md)
+    if (missing.length > 0) {
+      const nextMissing = missing[0];
+      if (currentState.lastMissingField === nextMissing) {
+        state.repeatClarificationCount = (currentState.repeatClarificationCount || 0) + 1;
+      } else {
+        state.lastMissingField = nextMissing;
+        state.repeatClarificationCount = 1;
+      }
+
+      // If user repeated or failed to clarify the same missing field (2nd prompt), break loop with Smart Fallback
+      if (state.repeatClarificationCount >= 2) {
+        if (nextMissing === 'feature') {
+          state.feature = 'any';
+          state.featureLabel = 'כל הסגנונות';
+        } else if (nextMissing === 'timing') {
+          state.timing = 'today';
+          state.timingLabel = 'היום';
+          state.dayIndex = 0;
+        } else if (nextMissing === 'region') {
+          state.region = 'all';
+          state.regionLabel = 'כל הארץ';
+        } else if (nextMissing === 'minAge') {
+          state.minAge = 4;
+          state.minAgeLabel = '4+ (ילדים קטנים)';
+        }
+        missing.shift();
+        state.lastMissingField = null;
+        state.repeatClarificationCount = 0;
+      }
+    }
+
     if (missing.length > 0) {
       const nextMissing = missing[0];
       if (traceId) {
         AgentTelemetryService.log('INFO', `Clarification requested for parameter: ${nextMissing}`, { traceId, missing });
       }
       return this.generateClarificationResponse(nextMissing, state, missing);
+    } else {
+      state.lastMissingField = null;
+      state.repeatClarificationCount = 0;
     }
 
     // Multi-turn State Stagnation Guard:
@@ -849,7 +906,8 @@ export class AgentBotService {
         (state.originCoords && state.originCoords !== currentState.originCoords)
       );
       const hasMoreIntent = (
-        text.includes('עוד') || text.includes('הבא') || text.includes('נוספים') ||
+        /(?:^|\s)עוד\s+(?:אפשרויות|מסלולים|הצעות|אתרים|רעיונות|משהו)/.test(text) || text === 'עוד' ||
+        text.includes('הצג עוד') || text.includes('תציע עוד') || text.includes('הבא') || text.includes('נוספים') ||
         text.includes('אחרים') || text.includes('החלף') || text.includes('רענן') ||
         text.includes('אפשרויות נוספות')
       );

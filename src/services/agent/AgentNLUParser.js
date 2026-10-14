@@ -8,10 +8,43 @@
 
 import { KNOWN_ORIGIN_CITIES } from './AgentGeoEngine.js';
 
+// Phrases that legitimately contain a prohibited word (heritage / scenic hiking context) - stripped before matching
+export const HERITAGE_ALLOWLIST = [
+  'בית כנסת', 'בתי כנסת', 'בית הכנסת', 'מלחמת העצמאות', 'מלחמת ששת הימים', 'מלחמת יום כיפור',
+  'מלחמת העולם', 'מלחמת השחרור', 'מוזיאון הנשק', 'נוף נשקף', 'נשקף', 'עוטף עזה', 'דרום אדום'
+];
+
+// Stems that may legitimately take a short Hebrew suffix (e.g. פוליטיקה, מפלגה)
+const PROHIBITED_STEMS = ['פוליטיק', 'מפלג'];
+
+// Hebrew prompt-injection / role-play / prompt-disclosure patterns
+export const INJECTION_PATTERNS = [
+  /(?:ת)?התעלם\s+מ(?:כל\s+)?ה?הוראות/, /תתעלם\s+מ(?:כל\s+)?ה?הוראות/, /שכח\s+(?:את\s+)?(?:כל\s+)?ה?הוראות/,
+  /הצג\s+(?:לי\s+)?את\s+ה?(?:פרומפט|הנחיות|הוראות)/, /(?:מה|איזה)\s+ה?(?:הנחיות|הוראות)\s+שלך/,
+  /שחק\s+תפקיד/, /דבר\s+כמו/, /אתה\s+עכשיו\s+(?!בטיול)/, /התחזה\s+ל/, /מצב\s+מפתח/, /jailbreak/i,
+  /ignore\s+(?:all\s+)?(?:previous|prior)/i, /system\s*:/i, /\bDAN\b/, /```/
+];
+
+// Hard cap on user message length (anti-abuse / perf)
+export const MAX_MESSAGE_CHARS = 500;
+
+// Refusal for topics unrelated to hiking in Israel
+export const OFF_TOPIC_REFUSAL = 'שלום! 🌿 אני סוכן הטיולים של "לאן נטייל?" (הסוכן המטייל), ואני עוזר רק בתכנון טיולים, שמורות טבע, גנים לאומיים ומסלולי הליכה בישראל 🇮🇱. בנושא הזה אין לי מה להוסיף... בואו נתכנן טיול! לאיזה אזור בארץ תרצו לטייל?';
+
+export const TOO_LONG_REFUSAL = 'ההודעה ארוכה מדי 🌿. אשמח אם תקצרו ל-2-3 משפטים: לאן, מתי ועם מי תרצו לטייל?';
+
+/** Whole-word (with Hebrew prefix letters) keyword match */
+export function matchWord(lower, kw, allowSuffix = false) {
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const suffix = allowSuffix ? '[\\u05D0-\\u05EA]{0,3}' : '';
+  const pattern = new RegExp('(?:^|[^\\u0590-\\u05FFa-zA-Z0-9])(?:[בלמהוכשד]{1,2})?' + escaped + suffix + '(?:$|[^\\u0590-\\u05FFa-zA-Z0-9])', 'i');
+  return pattern.test(lower);
+}
+
 // Strict Prohibited Topics (Politics, Violence, Weapons, Drugs, Hate, Jailbreak/Prompt Injection)
 export const PROHIBITED_KEYWORDS = [
   'פוליטיק', 'בחירות', 'ממשלה', 'ביבי', 'נתניהו', 'לפיד', 'גנץ', 'כנסת', 'מפלג',
-  'נשק', 'אקדח', 'רובה', 'טיל', 'פצצה', 'סמים', 'מריחואנה', 'קוקאין', 'סם',
+  'נשק', 'נשקים', 'אקדח', 'רובה', 'טיל', 'טילים', 'פצצה', 'סמים', 'מריחואנה', 'קוקאין', 'סם',
   'אלימות', 'רצח', 'פיגוע', 'מלחמה', 'הרג', 'לפגוע', 'לתקוף',
   'system prompt', 'prompt injection', 'ignore previous instructions', 'architecture', 'api key', 'secret',
   'מי תכנת אותך', 'איזה מודל אתה', 'הדלף', 'קוד מקור'
@@ -34,6 +67,8 @@ export const UNSAFE_BORDER_KEYWORDS = [
 
   // Area A & Unsafe West Bank cities (excluding safe Israeli heritage parks)
   'שטח a', 'בשטח a', 'שטחי a', 'שטח א', 'בשטח א', 'שטחי א',
+  'שטח b', 'בשטח b', 'שטחי b', 'שטח ב', 'בשטח ב', 'שטחי ב',
+  'בית לחם', 'חברון', 'אבו דיס', 'בית ג\'אלה', 'בית סחור',
   'שכם', 'בשכם', 'ג\'נין', 'בג\'נין', 'גנין', 'בגנין',
   'רמאללה', 'ברמאללה', 'טול כרם', 'בטול כרם', 'קלקיליה', 'בקלקיליה', 'טובאס',
   'יריחו', 'ביריחו', 'ארמונות החשמונאים ביריחו', 'ארמונות החשמונאים', 'קבר יוסף', 'סבסטיה',
@@ -162,7 +197,7 @@ export const FOREIGN_COUNTRIES_KEYWORDS = [
 
   // Rivers & Mountains
   'דנובה', 'נהר הדנובה', 'ריין', 'נהר הריין', 'תמזה', 'נהר התמזה', 'סיין', 'נהר הסיין',
-  'אלפים', 'האלפים', 'דולומיטים', 'הדולומיטים', 'פירינאים', 'הפירינאים',
+  'האלפים', 'הרי האלפים', 'דולומיטים', 'הדולומיטים', 'פירינאים', 'הפירינאים',
   'מונט בלאן', 'מטרהורן',
   'חידקל', 'החידקל', 'נחל החידקל', 'נהר החידקל',
   'נהר הפרת', 'נהר פרת',
@@ -301,6 +336,10 @@ export function applyTypoCorrections(text) {
 export function checkGuardrails(message) {
   if (!message || typeof message !== 'string') return { safe: true };
   const trimmed = message.trim();
+  if (trimmed.length > MAX_MESSAGE_CHARS) {
+    return { safe: false, isTooLong: true, refusal: TOO_LONG_REFUSAL };
+  }
+
   const lower = trimmed.toLowerCase();
 
   // 1. Foreign language check
@@ -319,7 +358,7 @@ export function checkGuardrails(message) {
     if (arabicLetters > 2) {
       return {
         safe: false,
-        refusal: 'مرحباً! 🌿 أنا المرشد الذكي למסארות الطبيعة في إسرائيل. أتحدث بالלغة **العبرية** فقط حالياً. يرجى مراسلتي بالלغة العبرية لمساعدتك في العثور על أفضل המסارات والرحلات!',
+        refusal: 'مرحباً! 🌿 أنا المرشد الذكي لمسارات الطبيعة في إسرائيل. أتحدث باللغة **العبرية** فقط حالياً. يرجى مراسلتي باللغة العبرية لمساعدتك في العثور على أفضل المسارات والرحلات!',
       };
     }
     if (lower.includes('bonjour') || lower.includes('salut') || lower.includes('merci') || lower.includes('randonn')) {
@@ -434,14 +473,10 @@ export function checkGuardrails(message) {
   }
 
   // 1.8 Unsafe border territories & hostile or fictional destinations
+  // Gaza envelope (עוטף עזה) and Darom Adom are legitimate Israeli destinations - neutralize before matching
+  const lowerForBorder = lower.replace(/עוטף\s+עזה/g, ' עוטף ').replace(/דרום\s+אדום/g, ' דרוםאדום ');
   for (const uKw of UNSAFE_BORDER_KEYWORDS) {
-    let matched = false;
-    if (uKw.includes(' ') || uKw.includes('"') || uKw.includes('״') || uKw.includes('-')) {
-      matched = lower.includes(uKw);
-    } else {
-      const pattern = new RegExp('(?:^|[^\\u0590-\\u05FFa-zA-Z0-9])(?:[בלמהוכשבד]{1,2})?' + uKw + '(?:$|[^\\u0590-\\u05FFa-zA-Z0-9])', 'i');
-      matched = pattern.test(lower);
-    }
+    const matched = matchWord(lowerForBorder, uKw);
 
     if (matched) {
       const isMilitary = (
@@ -528,9 +563,18 @@ export function checkGuardrails(message) {
     }
   }
 
-  // 3. Prohibited sensitive topics
+  // 2.5 Prompt-injection / role-play / prompt disclosure (Hebrew + English, also in mixed-language text)
+  if (INJECTION_PATTERNS.some((p) => p.test(lower))) {
+    return { safe: false, isOffTopic: true, refusal: OFF_TOPIC_REFUSAL };
+  }
+
+  // 3. Prohibited sensitive topics (whole-word match; heritage phrases exempted)
+  let scrubbed = lower;
+  for (const phrase of HERITAGE_ALLOWLIST) {
+    scrubbed = scrubbed.split(phrase).join(' ');
+  }
   for (const kw of PROHIBITED_KEYWORDS) {
-    if (lower.includes(kw)) {
+    if (matchWord(scrubbed, kw, PROHIBITED_STEMS.includes(kw))) {
       return {
         safe: false,
         refusal: 'שלום! אני סוכן הטיולים החכם של "לאן נטייל?" 🧭, ומטרתי הבלעדית היא לעזור לכם לתכנן טיולים וחוויות בטוחות ומהנות בטבע בישראל 🌿.\n\n💡 **אנא נסחו שוב את שאלתכם** בנושאי מסלולים, שמורות טבע או גנים לאומיים בישראל, ולאיזה אזור בארץ תרצו לטייל ומתי.',
@@ -555,14 +599,16 @@ export function detectEmergencyDistress(message) {
     'מישהו נפצע', 'פציעה קשה', 'זקוקים לחילוץ', 'חילוץ דחוף',
     'תקועים בשטח', 'תקועים על מצוק', 'תקועים בנחל',
     'שיטפון עולה', 'שיטפון מתקרב', 'מים בוציים בנחל', 'זרם חזק בנחל', 'נסחפים בזרם',
-    'הצילו אנחנו', 'סכנת חיים בשטח'
+    'הצילו אנחנו', 'סכנת חיים בשטח',
+    'לא נושם', 'לא נושמת', 'התעלף', 'התעלפה', 'איבד הכרה', 'מכת חום', 'מכת שמש קשה', 'דימום', 'מדמם',
+    'איבדנו ילד', 'איבדנו את הילד', 'הילד נעלם', 'הילדה נעלמה', 'ילד נעלם', 'ילד אבד'
   ];
 
   for (const pat of SOS_PATTERNS) {
     if (lower.includes(pat)) {
       return {
         isEmergency: true,
-        text: `🚨🆘 מצב חירום ומצוקה בשטח! 🆘🚨\n\nאם אתם או מישהו מסביבכם נמצא בסכנה — פעלו מיד על פי ההנחיות מצילות החיים הבאות:\n\n📞 מספרי חירום לחיוג מיידי:\n• 🚔 100 — משטרת ישראל ויחידות חילוץ והצלה\n• 🚑 101 — מגן דוד אדום (מד"א)\n• 🚒 102 — כבאות והצלה לישראל\n\n🧭 הנחיות בטיחות מצילות חיים:\n1. הישארו יחד במקום בטוח ואל תנסו להמשיך ללכת בחושך או בתוואי לא מוכר.\n2. אם מדובר בשיטפון או זרימה עולה — עלו מיד למקום הגבוה ביותר מחוץ לערוץ הנחל! חל איסור מוחלט לחצות זרם מים.\n3. שתפו מיקום GPS מדויק בשיחה עם מוקד 100 של המשטרה.\n4. שמרו על סוללת הטלפון — הנמיכו בהירות, סגרו אפליקציות מיותרות והשאירו קו פנוי לכוחות החילוץ.`,
+        text: `🚨🆘 מצב חירום ומצוקה בשטח! 🆘🚨\n\nאם אתם או מישהו מסביבכם נמצא בסכנה — פעלו מיד על פי ההנחיות מצילות החיים הבאות:\n\n📞 מספרי חירום לחיוג מיידי:\n• 🚔 100 — משטרת ישראל ויחידות חילוץ והצלה\n• 🚑 101 — מגן דוד אדום (מד"א)\n• 🚒 102 — כבאות והצלה לישראל\n• 🆘 112 — מוקד חירום כללי (עובד גם ללא כיסוי של הספק)\n\n🧭 הנחיות בטיחות מצילות חיים:\n1. הישארו יחד במקום בטוח ואל תנסו להמשיך ללכת בחושך או בתוואי לא מוכר.\n2. אם מדובר בשיטפון או זרימה עולה — עלו מיד למקום הגבוה ביותר מחוץ לערוץ הנחל! חל איסור מוחלט לחצות זרם מים.\n3. שתפו מיקום GPS מדויק בשיחה עם מוקד 100 של המשטרה.\n4. שמרו על סוללת הטלפון — הנמיכו בהירות, סגרו אפליקציות מיותרות והשאירו קו פנוי לכוחות החילוץ.`,
         options: [
           { label: '📞 חיוג למשטרה ויחידות חילוץ (100)', value: 'tel:100' },
           { label: '🚑 חיוג למד"א (101)', value: 'tel:101' },
@@ -693,23 +739,70 @@ export function extractParameters(message, currentState) {
   let text = applyTypoCorrections(message);
   const updated = { ...currentState };
 
+  const trimmed = (text || '').trim();
+
   // 0. Non-restrictive phrases
-  if (text.includes('לא משנה לי האזור') || text.includes('בכל הארץ') || text.includes('כל הארץ') || text.includes('כל מקום') || text.includes('ללא העדפה לאזור')) {
+  if (trimmed === 'כל הארץ' || text.includes('לא משנה לי האזור') || text.includes('לא משנה האזור') || text.includes('בכל הארץ') || text.includes('כל הארץ') || text.includes('כל מקום') || text.includes('ללא העדפה לאזור') || text.includes('אין העדפה לאזור')) {
     updated.region = 'all';
     updated.regionLabel = 'כל הארץ';
   }
-  if (text.includes('לא משנה לי התאריך') || text.includes('לא משנה מתי') || text.includes('בימים הקרובים') || text.includes('ללא העדפה לתאריך')) {
+  if (text.includes('לא משנה לי התאריך') || text.includes('לא משנה התאריך') || text.includes('לא משנה מתי') || text.includes('בימים הקרובים') || text.includes('ללא העדפה לתאריך') || text.includes('אין העדפה לתאריך')) {
     updated.timing = 'today';
     updated.timingLabel = 'היום / בימים הקרובים';
     updated.dayIndex = 0;
   }
-  if (text.includes('לכל הגילאים') || text.includes('לא משנה הגיל') || text.includes('מתאים לכולם') || text.includes('ללא מגבלת גיל')) {
+  if (text.includes('לכל הגילאים') || text.includes('לא משנה הגיל') || text.includes('מתאים לכולם') || text.includes('ללא מגבלת גיל') || text.includes('כל הגילאים')) {
     updated.minAge = 0;
     updated.minAgeLabel = 'לכל הגילאים (0+)';
   }
-  if (text.includes('לא משנה לי סגנון') || text.includes('הכל מתאים') || text.includes('הכל הולך') || text.includes('מה שהכי מומלץ') || text.includes('ללא העדפה לסגנון') || text.includes('גם וגם') || text.includes('שניהם') || text.includes('שילוב')) {
+
+  const isFeatureAnyPhrase = (
+    trimmed === 'הכל' ||
+    trimmed === 'הכול' ||
+    trimmed === 'כלום' ||
+    trimmed === 'הכל מתאים' ||
+    trimmed === 'הכל הולך' ||
+    trimmed === 'הכל טוב' ||
+    trimmed === 'הכל סבבה' ||
+    trimmed === 'הכל זורם' ||
+    trimmed === 'זורם' ||
+    trimmed === 'זורמת' ||
+    trimmed === 'זורמים' ||
+    trimmed === 'כל דבר' ||
+    trimmed === 'כל סגנון' ||
+    trimmed === 'כל הסגנונות' ||
+    trimmed === 'כל סוג' ||
+    trimmed === 'כל הסוגים' ||
+    trimmed === 'מה שבא' ||
+    trimmed === 'מה שיש' ||
+    trimmed === 'פתוח' ||
+    trimmed === 'פתוחה' ||
+    trimmed === 'פתוחים' ||
+    text.includes('לא משנה לי סגנון') ||
+    text.includes('לא משנה הסגנון') ||
+    text.includes('לא משנה לי הסגנון') ||
+    text.includes('לא משנה סגנון') ||
+    text.includes('הכל מתאים') ||
+    text.includes('הכל הולך') ||
+    text.includes('מה שהכי מומלץ') ||
+    text.includes('מה שמומלץ') ||
+    text.includes('ללא העדפה לסגנון') ||
+    text.includes('אין העדפה לסגנון') ||
+    text.includes('כל סגנון') ||
+    text.includes('כל הסגנונות') ||
+    text.includes('כל סוג') ||
+    text.includes('כל הסוגים') ||
+    text.includes('פתוח להכל') ||
+    text.includes('פתוחים להכל') ||
+    text.includes('פתוחה להכל') ||
+    text.includes('גם וגם') ||
+    text.includes('שניהם') ||
+    text.includes('שילוב')
+  );
+
+  if (isFeatureAnyPhrase) {
     updated.feature = 'any';
-    updated.featureLabel = text.includes('גם וגם') ? 'גם וגם (שילוב סגנונות)' : 'כל סגנונות המסלול';
+    updated.featureLabel = (text.includes('גם וגם') || text.includes('שילוב')) ? 'גם וגם (שילוב סגנונות)' : 'כל סגנונות המסלול';
   }
 
   // Surprise Me / Spontaneity shortcut (Scenario 13)
@@ -735,17 +828,47 @@ export function extractParameters(message, currentState) {
   }
 
   const isGenericAny = (
-    text === 'לא משנה' || 
-    text === 'לא משנה לי' || 
-    text === 'גם וגם' ||
+    trimmed === 'הכל' ||
+    trimmed === 'הכול' ||
+    trimmed === 'לא משנה' || 
+    trimmed === 'לא משנה לי' || 
+    trimmed === 'גם וגם' ||
+    trimmed === 'כלום' ||
+    trimmed === 'הכל הולך' ||
+    trimmed === 'הכל מתאים' ||
+    trimmed === 'הכל טוב' ||
+    trimmed === 'הכל סבבה' ||
+    trimmed === 'הכל זורם' ||
+    trimmed === 'כל דבר' ||
+    trimmed === 'זורם' ||
+    trimmed === 'זורמת' ||
+    trimmed === 'זורמים' ||
+    trimmed === 'מה שבא' ||
+    trimmed === 'מה שיש' ||
+    trimmed === 'פתוח' ||
+    trimmed === 'פתוחה' ||
+    trimmed === 'פתוחים' ||
+    trimmed === 'פתוח להכל' ||
+    trimmed === 'פתוחה להכל' ||
+    trimmed === 'פתוחים להכל' ||
     text.includes('גם וגם') ||
     text.includes('שניהם') ||
     text.includes('לא משנה לי') || 
     text.includes('לא משנה') || 
     text.includes('אין לי העדפה') || 
     text.includes('אין העדפה') || 
+    text.includes('ללא העדפה') ||
+    text.includes('לא אכפת לי') ||
     text.includes('לא חשוב') ||
-    text.includes('לא קריטי')
+    text.includes('לא קריטי') ||
+    text.includes('מה שאתה מציע') ||
+    text.includes('מה שאתה רוצה') ||
+    text.includes('מה שתבחר') ||
+    text.includes('מה שמומלץ') ||
+    text.includes('מה שהכי מומלץ') ||
+    text.includes('מה שבא לך') ||
+    text.includes('הכל פתוח') ||
+    text.includes('מצידי הכל')
   );
 
   if (isGenericAny) {
@@ -1685,3 +1808,17 @@ export function isGibberishOrNoise(message) {
   return false;
 }
 
+const SCOPE_SIGNALS = /(?:טיול|טייל|מסלול|שביל|שמור|גן לאומי|נחל|מעיין|עין |מצפ|יער|פיקניק|הליכ|טבע|אתר|פריח|תצפית|שקיעה|מבצר|מערה|קניון|מפל|חוף|פארק|צפון|דרום|מרכז|ירושלים|גליל|גולן|נגב|כנרת|אילת|ים המלח|שרון|שפלה|ערבה|כרמל|היום|מחר|מחרתיים|סופש|סופ"ש|סוף שבוע|שבת|ילד|תינוק|פעוט|עגל|סבא|סבתא|משפחה|הורים|נוער|כלב|גיל|בן \d|בת \d|\d|מים|צל|חם|קר|גשם|מזג|תחזית|קק"ל|רט"ג|חניון|קמפינג|לינה|הפתע|תחליט|תבחר|לא משנה|התחל|אפס|ריסט|reset|restart|עוד|הבא|שנה|מה אם|תרחיש|שיטפון|ספר לי|מידע על|כל הארץ|בארץ|ישראל|הכל|שניהם|גם וגם|כן|לא|תודה|אוקיי|אשמח|בטוח|סכנה|עזרה|הצילו|חירום|נתיב|טרק|סנפלינג|אופניים|רכב|נגיש|קצר|קל|אתגר)/i;
+
+/**
+ * Positive scope check. A message is "in scope" if it carries at least one
+ * hiking / trip-planning / planning-parameter signal, or mentions a known origin city.
+ * One-word messages are given the benefit of the doubt.
+ */
+export function isInScope(message) {
+  if (!message || typeof message !== 'string') return true;
+  const lower = message.toLowerCase().trim();
+  if (lower.split(/\s+/).length <= 1) return true;
+  if (SCOPE_SIGNALS.test(lower)) return true;
+  return KNOWN_ORIGIN_CITIES.some((c) => c.names.some((n) => lower.includes(n)));
+}
