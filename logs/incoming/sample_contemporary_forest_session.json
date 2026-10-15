@@ -1,0 +1,26 @@
+{
+  "log_id": "log_session_desert_forest_audit_03",
+  "client_timestamp": "2026-10-15T22:50:00.000Z",
+  "app_version": "1.0.0",
+  "app_commit_hash": "3697343",
+  "environment": "https://allavol.github.io/Tiyul/",
+  "user_device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+  "session_id": "sess_live_user_audit_check",
+  "turns": [
+    {
+      "turn_id": "turn_df_01",
+      "timestamp": "2026-10-15T22:50:00.000Z",
+      "query": "אני רוצה טיול ביער בנגב",
+      "latency_ms": 32,
+      "nlu_parsed": {
+        "region": "south",
+        "feature": "forest"
+      },
+      "agent_response": "באזור הנגב והערבה אין יערות טבעיים מוצלים כבצפון, והנוף הינו מדברי ופתוח (כגון מכתש רמון או חולות צבעוניים). אם ברצונכם לטייל ביער מוצל, מומלץ להצפין לאזור שפלת יהודה (כגון פארק בריטניה) או להרי ירושלים!",
+      "proposals": []
+    }
+  ],
+  "audit_metadata": {
+    "is_checked": false
+  }
+}

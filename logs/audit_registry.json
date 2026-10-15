@@ -1,7 +1,7 @@
 {
   "log_clean_verified_session_02": {
     "is_checked": true,
-    "checked_at": "2026-10-15T19:41:10.959835+00:00",
+    "checked_at": "2026-10-15T20:07:06.260178+00:00",
     "file_name": "sample_clean_session.json",
     "client_timestamp": "2026-10-15T21:40:00.000Z",
     "status": "CLEAN_PASS",
@@ -18,7 +18,7 @@
   },
   "log_historical_snow_contradiction_01": {
     "is_checked": true,
-    "checked_at": "2026-10-15T19:41:10.959921+00:00",
+    "checked_at": "2026-10-15T20:07:06.260234+00:00",
     "file_name": "sample_historical_snow.json",
     "client_timestamp": "2026-10-15T17:48:48.000Z",
     "status": "RESOLVED_VERIFIED",
@@ -38,6 +38,23 @@
             "explanation": "Turn occurred at 2026-10-15T17:48:48.000Z, before fix commit 4bcf757 at 2026-10-15T18:36:00Z."
           }
         ]
+      }
+    ]
+  },
+  "log_session_desert_forest_audit_03": {
+    "is_checked": true,
+    "checked_at": "2026-10-15T20:07:06.260212+00:00",
+    "file_name": "sample_contemporary_forest_session.json",
+    "client_timestamp": "2026-10-15T22:50:00.000Z",
+    "status": "CLEAN_PASS",
+    "turns_count": 1,
+    "turn_results": [
+      {
+        "query": "אני רוצה טיול ביער בנגב",
+        "timestamp": "2026-10-15T22:50:00.000Z",
+        "verdict": "PASS",
+        "issues": [],
+        "resolutions": []
       }
     ]
   }
