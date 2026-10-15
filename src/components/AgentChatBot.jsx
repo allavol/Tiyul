@@ -166,6 +166,7 @@ export default function AgentChatBot({
   const [copiedId, setCopiedId] = useState(null);
   const [expandedCards, setExpandedCards] = useState({});
   const [exportedAudit, setExportedAudit] = useState(false);
+  const [reportedIssue, setReportedIssue] = useState(false);
   const messagesEndRef = useRef(null);
 
   const toggleCardExpansion = (cardId) => {
@@ -418,11 +419,17 @@ export default function AgentChatBot({
               {exportedAudit ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Download className="w-3.5 h-3.5" />}
             </button>
             <button
-              onClick={() => AgentAuditLogger.openGitHubIssueReport()}
-              title="דווח על שיחה ישירות ב-GitHub Issues"
+              onClick={() => {
+                const ok = AgentAuditLogger.openGitHubIssueReport();
+                if (ok) {
+                  setReportedIssue(true);
+                  setTimeout(() => setReportedIssue(false), 2500);
+                }
+              }}
+              title="דווח על שיחה ב-GitHub Issues (מעתיק פרוטוקול מלא ללוח ופותח דף דיווח)"
               className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-amber-400 flex items-center justify-center transition"
             >
-              <Bug className="w-3.5 h-3.5" />
+              {reportedIssue ? <Check className="w-3.5 h-3.5 text-amber-400" /> : <Bug className="w-3.5 h-3.5" />}
             </button>
             <button
               onClick={handleReset}

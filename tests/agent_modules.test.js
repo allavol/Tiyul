@@ -291,4 +291,27 @@ describe('AgentAuditLogger Unit Tests (Least Privilege & ISO Timestamps)', () =>
     AgentAuditLogger.setWebhookUrl('');
     expect(AgentAuditLogger.getWebhookUrl()).toBe('');
   });
+
+  it('buildSafeGitHubIssueUrl strictly caps encoded URL length under 1,500 characters to prevent HTTP 414 errors', () => {
+    // Add 10 bulky turns to stress-test URL encoding
+    for (let i = 0; i < 10; i++) {
+      AgentAuditLogger.recordTurn({
+        query: `שאילתת בדיקת עומס מספר ${i} עם פירוט רב מאד בעברית שעלול לנפח את כתובת ה-URL`,
+        agentResponse: `זוהי תשובה ארוכה ומפורטת מאד של סוכן הטיולים עם הסברים נרחבים על תנאי שטח, גיאוגרפיה, וקטורי מילוט ובטיחות מסלולים מספר ${i}`,
+        proposals: [{ id: 100 + i, name: `שמורת טבע יפה מספר ${i}`, region: 'צפון' }]
+      });
+    }
+
+    const safeUrl = AgentAuditLogger.buildSafeGitHubIssueUrl();
+    expect(safeUrl).toBeDefined();
+    expect(safeUrl.startsWith('https://github.com/allavol/Tiyul/issues/new?')).toBe(true);
+    // Hard limit: MUST be strictly under 1,500 characters (GitHub safe limit is ~2,000)
+    expect(safeUrl.length).toBeLessThan(1500);
+
+    const fullMarkdown = AgentAuditLogger.generateFullReportMarkdown();
+    expect(fullMarkdown).toContain('פרוטוקול השאלות והתשובות המלא');
+    expect(fullMarkdown).toContain('<details>');
+    expect(fullMarkdown).toContain('```json');
+  });
 });
+

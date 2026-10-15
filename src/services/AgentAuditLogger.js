@@ -183,41 +183,92 @@ class AgentAuditLoggerClass {
   }
 
   /**
-   * Open a pre-filled GitHub Issue in a new tab with the structured validation audit payload.
-   * Completely zero-cost, secure, and enables direct user reporting directly into Git!
+   * Constructs a URL-safe GitHub Issue URL strictly capped under 1,500 encoded characters
+   * to prevent GitHub HTTP 414 'Whoa there! Your request URL is too long' errors.
    */
-  openGitHubIssueReport(repoUrl = 'https://github.com/allavol/Tiyul') {
-    if (typeof window === 'undefined') return false;
-
+  buildSafeGitHubIssueUrl(repoUrl = 'https://github.com/allavol/Tiyul') {
     const log = this.getAuditLog();
-    const firstTurn = log.turns?.[0];
-    const querySnippet = firstTurn?.query ? `"${firstTurn.query.substring(0, 35)}..."` : 'Session Report';
+    const turns = log.turns || [];
+    const latestTurn = turns[turns.length - 1] || turns[0];
+    const querySnippet = latestTurn?.query ? latestTurn.query.trim().substring(0, 30) : 'Session Report';
     const nowIso = new Date().toISOString();
 
     const title = `[Q&A Audit] ${querySnippet} (${nowIso.substring(0, 10)})`;
 
-    let body = `### 🛡️ דיווח ולידציה ובקרת איכות לסוכן הטיולים\n\n`;
-    body += `- **חותמת זמן לקוח:** \`${log.client_timestamp || nowIso}\`\n`;
-    body += `- **גרסת אפליקציה:** \`${log.app_version}\` (Commit \`${log.app_commit_hash}\`)\n`;
-    body += `- **סביבה:** \`${log.environment}\`\n`;
-    body += `- **מזהה שיחה:** \`${log.session_id}\`\n`;
-    body += `- **סה"כ תורות שנבדקו:** \`${log.turns?.length || 0}\`\n\n`;
+    let compactBody = `### 🛡️ דיווח ולידציה ובקרת איכות\n\n`;
+    compactBody += `- **זמן:** \`${log.client_timestamp || nowIso}\`\n`;
+    compactBody += `- **גרסה:** \`${log.app_version}\` (\`${log.app_commit_hash}\`)\n`;
+    compactBody += `- **מזהה שיחה:** \`${log.session_id}\`\n\n`;
 
-    body += `#### פירוט השאלות והתשובות בשיחה:\n\n`;
-    (log.turns || []).slice(0, 10).forEach((t, i) => {
-      body += `**תור #${i + 1} (${t.timestamp}):**\n`;
-      body += `* **שאלה:** ${t.query}\n`;
-      body += `* **תשובת הסוכן:** ${t.agent_response.substring(0, 300)}...\n`;
+    if (latestTurn) {
+      const q = (latestTurn.query || '').trim().substring(0, 50);
+      const a = (latestTurn.agent_response || '').trim().substring(0, 80);
+      compactBody += `**שאלה:** ${q}\n`;
+      compactBody += `**תשובה:** ${a}...\n\n`;
+    }
+
+    compactBody += `> 📋 **פרוטוקול השיחה המלא וה-JSON הועתקו ללוח (Clipboard).** לחצו כאן 'הדבק' (Paste / Ctrl+V).\n`;
+
+    let targetUrl = `${repoUrl}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(compactBody)}`;
+
+    // Strict Hard-Cap: ensure total URL length is < 1,500 chars (GitHub safe limit is ~2,000)
+    if (targetUrl.length > 1500) {
+      const minimalBody = `### 🛡️ דיווח איכות\n- **זמן:** \`${nowIso}\`\n- **מזהה:** \`${log.session_id}\`\n\n> 📋 **הפרוטוקול המלא הועתק ללוח.** לחצו Paste כאן.`;
+      targetUrl = `${repoUrl}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(minimalBody)}`;
+    }
+
+    return targetUrl;
+  }
+
+  /**
+   * Generates the comprehensive Markdown + JSON payload for clipboard copy or export.
+   */
+  generateFullReportMarkdown() {
+    const log = this.getAuditLog();
+    const turns = log.turns || [];
+    const nowIso = new Date().toISOString();
+
+    let md = `### 🛡️ דיווח ולידציה ובקרת איכות לסוכן הטיולים\n\n`;
+    md += `- **חותמת זמן לקוח:** \`${log.client_timestamp || nowIso}\`\n`;
+    md += `- **גרסת אפליקציה:** \`${log.app_version}\` (Commit \`${log.app_commit_hash}\`)\n`;
+    md += `- **סביבה:** \`${log.environment}\`\n`;
+    md += `- **מזהה שיחה:** \`${log.session_id}\`\n`;
+    md += `- **סה"כ תורות שנבדקו:** \`${turns.length}\`\n\n`;
+
+    md += `#### פרוטוקול השאלות והתשובות המלא:\n\n`;
+    turns.forEach((t, i) => {
+      md += `**תור #${i + 1} (${t.timestamp}):**\n`;
+      md += `* **שאלה:** ${t.query}\n`;
+      md += `* **תשובת הסוכן:** ${t.agent_response}\n`;
       if (t.proposals && t.proposals.length > 0) {
-        body += `* **הצעות:** ${t.proposals.map(p => p.name).join(', ')}\n`;
+        md += `* **הצעות:** ${t.proposals.map(p => p.name).join(', ')}\n`;
       }
-      body += `\n---\n`;
+      md += `\n---\n`;
     });
 
     const jsonSnippet = JSON.stringify(log, null, 2);
-    body += `\n<details>\n<summary>📋 נתוני JSON מובנים לסקירה ממוחשבת (Click to Expand)</summary>\n\n\`\`\`json\n${jsonSnippet}\n\`\`\`\n</details>\n`;
+    md += `\n<details>\n<summary>📋 נתוני JSON מובנים לסקירה ממוחשבת (Click to Expand)</summary>\n\n\`\`\`json\n${jsonSnippet}\n\`\`\`\n</details>\n`;
 
-    const targetUrl = `${repoUrl}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+    return md;
+  }
+
+  /**
+   * Open a pre-filled GitHub Issue in a new tab with the structured validation audit payload.
+   * Completely zero-cost, secure, copies full payload to clipboard, and stays within safe URL limits.
+   */
+  openGitHubIssueReport(repoUrl = 'https://github.com/allavol/Tiyul') {
+    if (typeof window === 'undefined') return false;
+
+    // 1. Copy complete, untruncated transcript + JSON to user clipboard
+    try {
+      const fullReport = this.generateFullReportMarkdown();
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(fullReport).catch(() => {});
+      }
+    } catch (e) {}
+
+    // 2. Open safe-length GitHub issue URL
+    const targetUrl = this.buildSafeGitHubIssueUrl(repoUrl);
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
     return true;
   }
