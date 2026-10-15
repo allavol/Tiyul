@@ -92,8 +92,9 @@ export default function AgentChatBot({
   onClearQueryTrigger = null,
   onOpenObservability = null,
 }) {
-  const CHAT_STORAGE_KEY = 'tiyul_agent_chat_messages_v1';
-  const SESSION_STORAGE_KEY = 'tiyul_agent_session_state_v1';
+  const CHAT_STORAGE_KEY = 'tiyul_agent_chat_messages_v2';
+  const SESSION_STORAGE_KEY = 'tiyul_agent_session_state_v2';
+  const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24-hour session expiration window
 
   const defaultWelcomeMessages = [
     {
@@ -113,15 +114,26 @@ export default function AgentChatBot({
 
   const [messages, setMessages] = useState(() => {
     try {
+      // Purge legacy untimed v1 sessions to ensure clean slate
+      localStorage.removeItem('tiyul_agent_chat_messages_v1');
+      localStorage.removeItem('tiyul_agent_session_state_v1');
+      localStorage.removeItem('tiyul_chat_messages');
+      localStorage.removeItem('tiyul_session_state');
+
       const saved = localStorage.getItem(CHAT_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        const isFresh = parsed?.timestamp && (Date.now() - parsed.timestamp < SESSION_TTL_MS);
+        const msgs = parsed?.messages || (Array.isArray(parsed) && !parsed.timestamp ? parsed : null);
+        if (isFresh && Array.isArray(msgs) && msgs.length > 0) {
           // Keep welcome options in sync with latest definitions
-          if (parsed[0]?.id === 'welcome') {
-            parsed[0].options = defaultWelcomeMessages[0].options;
+          if (msgs[0]?.id === 'welcome') {
+            msgs[0].options = defaultWelcomeMessages[0].options;
           }
-          return parsed;
+          return msgs;
+        } else {
+          // Stale / Expired (>24h) session -> Purge
+          localStorage.removeItem(CHAT_STORAGE_KEY);
         }
       }
     } catch (e) {}
@@ -133,7 +145,13 @@ export default function AgentChatBot({
       const saved = localStorage.getItem(SESSION_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') return parsed;
+        const isFresh = parsed?.timestamp && (Date.now() - parsed.timestamp < SESSION_TTL_MS);
+        const state = parsed?.state || (parsed && typeof parsed === 'object' && !parsed.timestamp ? parsed : null);
+        if (isFresh && state && typeof state === 'object') {
+          return state;
+        } else {
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+        }
       }
     } catch (e) {}
     return AgentBotService.getInitialState();
@@ -153,17 +171,25 @@ export default function AgentChatBot({
     }));
   };
 
-  // Sync messages to localStorage
+  // Sync messages to localStorage with timestamp for 24h expiration
   useEffect(() => {
     try {
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+      const payload = {
+        timestamp: Date.now(),
+        messages,
+      };
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {}
   }, [messages]);
 
-  // Sync sessionState to localStorage
+  // Sync sessionState to localStorage with timestamp for 24h expiration
   useEffect(() => {
     try {
-      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionState));
+      const payload = {
+        timestamp: Date.now(),
+        state: sessionState,
+      };
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {}
   }, [sessionState]);
 
@@ -272,6 +298,10 @@ export default function AgentChatBot({
     try {
       localStorage.removeItem(CHAT_STORAGE_KEY);
       localStorage.removeItem(SESSION_STORAGE_KEY);
+      localStorage.removeItem('tiyul_agent_chat_messages_v1');
+      localStorage.removeItem('tiyul_agent_session_state_v1');
+      localStorage.removeItem('tiyul_chat_messages');
+      localStorage.removeItem('tiyul_session_state');
     } catch (e) {}
     setSessionState(AgentBotService.getInitialState());
     if (onProposalsUpdate) {
@@ -281,7 +311,7 @@ export default function AgentChatBot({
       {
         id: `welcome-${Date.now()}`,
         sender: 'bot',
-        text: 'השיחה אופסה! 🌿 ספרו לי: לאיזה אזור בארץ תרצו לטייל ומתי?',
+        text: 'השיחה וההיסטוריה אופסו בהצלחה! 🌿 ספרו לי: לאיזה אזור בארץ תרצו לטייל ומתי?',
         options: [
           { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון' },
           { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון' },
