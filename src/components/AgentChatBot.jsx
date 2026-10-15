@@ -25,7 +25,8 @@ import {
   ChevronDown,
   ChevronUp,
   Activity,
-  Download
+  Download,
+  Bug
 } from 'lucide-react';
 import { AgentBotService } from '../services/AgentBotService';
 import { AgentAuditLogger } from '../services/AgentAuditLogger';
@@ -415,6 +416,13 @@ export default function AgentChatBot({
               className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-emerald-400 flex items-center justify-center transition"
             >
               {exportedAudit ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Download className="w-3.5 h-3.5" />}
+            </button>
+            <button
+              onClick={() => AgentAuditLogger.openGitHubIssueReport()}
+              title="דווח על שיחה ישירות ב-GitHub Issues"
+              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-amber-400 flex items-center justify-center transition"
+            >
+              <Bug className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleReset}

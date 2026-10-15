@@ -183,6 +183,46 @@ class AgentAuditLoggerClass {
   }
 
   /**
+   * Open a pre-filled GitHub Issue in a new tab with the structured validation audit payload.
+   * Completely zero-cost, secure, and enables direct user reporting directly into Git!
+   */
+  openGitHubIssueReport(repoUrl = 'https://github.com/allavol/Tiyul') {
+    if (typeof window === 'undefined') return false;
+
+    const log = this.getAuditLog();
+    const firstTurn = log.turns?.[0];
+    const querySnippet = firstTurn?.query ? `"${firstTurn.query.substring(0, 35)}..."` : 'Session Report';
+    const nowIso = new Date().toISOString();
+
+    const title = `[Q&A Audit] ${querySnippet} (${nowIso.substring(0, 10)})`;
+
+    let body = `### 🛡️ דיווח ולידציה ובקרת איכות לסוכן הטיולים\n\n`;
+    body += `- **חותמת זמן לקוח:** \`${log.client_timestamp || nowIso}\`\n`;
+    body += `- **גרסת אפליקציה:** \`${log.app_version}\` (Commit \`${log.app_commit_hash}\`)\n`;
+    body += `- **סביבה:** \`${log.environment}\`\n`;
+    body += `- **מזהה שיחה:** \`${log.session_id}\`\n`;
+    body += `- **סה"כ תורות שנבדקו:** \`${log.turns?.length || 0}\`\n\n`;
+
+    body += `#### פירוט השאלות והתשובות בשיחה:\n\n`;
+    (log.turns || []).slice(0, 10).forEach((t, i) => {
+      body += `**תור #${i + 1} (${t.timestamp}):**\n`;
+      body += `* **שאלה:** ${t.query}\n`;
+      body += `* **תשובת הסוכן:** ${t.agent_response.substring(0, 300)}...\n`;
+      if (t.proposals && t.proposals.length > 0) {
+        body += `* **הצעות:** ${t.proposals.map(p => p.name).join(', ')}\n`;
+      }
+      body += `\n---\n`;
+    });
+
+    const jsonSnippet = JSON.stringify(log, null, 2);
+    body += `\n<details>\n<summary>📋 נתוני JSON מובנים לסקירה ממוחשבת (Click to Expand)</summary>\n\n\`\`\`json\n${jsonSnippet}\n\`\`\`\n</details>\n`;
+
+    const targetUrl = `${repoUrl}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    return true;
+  }
+
+  /**
    * Set and persist a Google Apps Script Webhook URL for Google Drive sync.
    */
   setWebhookUrl(url) {
