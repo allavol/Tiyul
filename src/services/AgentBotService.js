@@ -964,12 +964,18 @@ export class AgentBotService {
       if (site.min_age > targetAge) return false;
       if (targetAge === 0 && !site.stroller_accessible && site.min_age > 0) return false;
       if (state.excludeWater || state.feature === 'dry') {
-        const types = (site.type || []).join(' ') + ' ' + (site.name || '');
+        const types = (site.type || []).join(' ') + ' ' + (site.type_en || []).join(' ') + ' ' + (site.category || '') + ' ' + (site.name || '');
+        const lowerTypes = types.toLowerCase();
         if (
+          site.category === 'water' ||
+          (site.type || []).includes('מים') ||
+          (site.type_en || []).some(t => t.toLowerCase() === 'water') ||
+          lowerTypes.includes('water') ||
           types.includes('מים') ||
           types.includes('שכשוך') ||
           types.includes('מעיין') ||
           types.includes('בריכ') ||
+          types.includes('מפל') ||
           site.name.includes('עין ') ||
           site.name.includes('מעיין') ||
           site.name.includes('נחל')

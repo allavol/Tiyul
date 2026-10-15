@@ -98,6 +98,10 @@ export async function geocodeCity(name) {
         const item = data[0];
         const lat = parseFloat(item.lat);
         const lng = parseFloat(item.lon);
+        // Strict Israeli Bounding Box Check ([29.45, 34.20] to [33.35, 35.90])
+        if (lat < 29.45 || lat > 33.35 || lng < 34.20 || lng > 35.90) {
+          return null;
+        }
         let region = 'center';
         let regionLabel = 'מרכז והשרון';
         if (lat >= 32.5) { region = 'north'; regionLabel = 'צפון (גליל וגולן)'; }

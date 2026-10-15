@@ -593,6 +593,14 @@ export default function FloatingMapCard({
         </button>
       </div>
 
+      {/* ── Non-Dismissible Safety & Legal Disclaimer ─────────── */}
+      <div className="mx-4 mb-3 p-2.5 bg-amber-500/[0.08] border border-amber-500/25 rounded-xl text-[10px] text-amber-200/90 leading-relaxed flex items-start gap-2 shadow-sm">
+        <ShieldAlert size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <p>
+          <strong className="text-amber-300">אחריות ובטיחות:</strong> הנתונים מבוססים על מודלים ואומדנים ואינם מחליפים בדיקה עצמאית. חובה לוודא אישורי פתיחה והתרעות שיטפונות באתר רט״ג טרם היציאה לשטח.
+        </p>
+      </div>
+
       {/* ── Live Source Footer ────────────────────────────────── */}
       <div className="px-4 pb-3 pt-1 border-t border-white/[0.04] text-[9px] text-zinc-500 text-center flex items-center justify-between">
         <span className={`flex items-center gap-1 font-medium ${effectiveWeather.isLive ? 'text-accent/80' : 'text-amber-400'}`}>

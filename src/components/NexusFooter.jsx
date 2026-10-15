@@ -62,8 +62,8 @@ export default function NexusFooter({
       </div>
 
       {/* 3. Right: Legal Disclaimer */}
-      <div className="text-[10px] text-slate-400 text-left max-w-xs truncate hidden md:block">
-        System provides AI-assisted estimations. Verify field conditions. No liability assumed.
+      <div className="text-[10px] text-amber-300/80 text-left max-w-sm truncate hidden md:block" title="המידע מבוסס על אומדנים מטאורולוגיים ואינו מחליף בדיקת סטטוס ברט״ג והפעלת שיקול דעת.">
+        ⚠️ אומדן מטאורולוגי בלבד — חובה לוודא סטטוס ברט״ג טרם יציאה לשטח
       </div>
     </footer>
   );
