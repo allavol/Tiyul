@@ -251,6 +251,33 @@ class TestBaalSkills(unittest.TestCase):
             self.assertFalse(any(t in ["יער", "חורש", "shade", "woodland"] for t in all_tags),
                              f"Desert asset '{dune.get('name')}' must not have shaded forest tags")
 
+    def test_read_audit_logs_skill(self):
+        from skills.read_audit_logs import read_audit_logs
+        incoming_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "incoming")
+        res = read_audit_logs(incoming_dir)
+        self.assertEqual(res["status"], "SUCCESS")
+        self.assertGreaterEqual(res["files_scanned"], 2)
+        self.assertGreaterEqual(len(res["valid_logs"]), 2)
+        
+        # Verify schema
+        for log in res["valid_logs"]:
+            self.assertIn("log_id", log)
+            self.assertIn("client_timestamp", log)
+            self.assertIn("turns", log)
+            self.assertIsInstance(log["turns"], list)
+
+    def test_agent_log_auditor_execution(self):
+        from scripts.agent_log_auditor import run_audit
+        incoming_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "incoming")
+        output_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
+        
+        result = run_audit(incoming_dir, output_dir)
+        self.assertEqual(result["status"], "SUCCESS")
+        self.assertIn("registry_path", result)
+        self.assertIn("report_path", result)
+        self.assertTrue(os.path.exists(result["registry_path"]))
+        self.assertTrue(os.path.exists(result["report_path"]))
+
 
 if __name__ == "__main__":
     unittest.main()

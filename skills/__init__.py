@@ -11,6 +11,7 @@ from .fetch_safety_incidents import fetch_safety_incidents
 from .ingest_verified_sites import ingest_candidate_site, verify_site_guardrails
 from .fetch_water_pollution import check_water_pollution, list_all_active_water_advisories
 from .evaluate_min_age import evaluate_min_age, AGE_TIERS
+from .read_audit_logs import read_audit_logs
 
 __all__ = [
     "fetch_weather_osint",
@@ -26,4 +27,5 @@ __all__ = [
     "list_all_active_water_advisories",
     "evaluate_min_age",
     "AGE_TIERS",
+    "read_audit_logs",
 ]

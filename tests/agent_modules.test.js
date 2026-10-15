@@ -27,6 +27,7 @@ import {
 
 import assetsData from '../assets_db.json' with { type: 'json' };
 import { WeatherService } from '../src/services/WeatherService.js';
+import { AgentAuditLogger } from '../src/services/AgentAuditLogger.js';
 
 describe('AgentGeoEngine Unit Tests', () => {
   it('correctly resolves known origin cities', async () => {
@@ -254,5 +255,40 @@ describe('AgentRulesEngine Unit Tests', () => {
     const rationale = buildRationale(site, state, { temp: '25°C', conditions: 'נעים' });
     expect(rationale).toContain('נסיעה');
     expect(rationale).toContain('Tomorrow.io');
+  });
+});
+
+describe('AgentAuditLogger Unit Tests (Least Privilege & ISO Timestamps)', () => {
+  it('records interaction turns with immutable ISO timestamps and NLU state', () => {
+    AgentAuditLogger.clearLog();
+
+    const turn = AgentAuditLogger.recordTurn({
+      query: 'אני רוצה מחר טיול שלג בחרמון',
+      response: 'בעונה זו אין שלג בחרמון...',
+      nluState: { region: 'north', timing: 'tomorrow', feature: 'snow', contradiction: true },
+      proposals: [],
+      toolActivity: 'בדיקת סתירות עונתיות',
+      latencyMs: 14.5
+    });
+
+    expect(turn).toBeDefined();
+    expect(turn.turn_id).toContain('turn_');
+    expect(turn.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+    expect(turn.query).toBe('אני רוצה מחר טיול שלג בחרמון');
+    expect(turn.nlu_parsed.is_contradiction).toBe(true);
+    expect(turn.latency_ms).toBe(15);
+
+    const fullLog = AgentAuditLogger.getAuditLog();
+    expect(fullLog.turns.length).toBeGreaterThanOrEqual(1);
+    expect(fullLog.app_version).toBe('1.0.0');
+    expect(fullLog.client_timestamp).toBeDefined();
+  });
+
+  it('manages webhook configuration for Google Drive sync safely', () => {
+    AgentAuditLogger.setWebhookUrl('https://script.google.com/macros/s/TEST/exec');
+    expect(AgentAuditLogger.getWebhookUrl()).toBe('https://script.google.com/macros/s/TEST/exec');
+
+    AgentAuditLogger.setWebhookUrl('');
+    expect(AgentAuditLogger.getWebhookUrl()).toBe('');
   });
 });

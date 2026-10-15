@@ -1,0 +1,32 @@
+{
+  "log_id": "log_historical_snow_contradiction_01",
+  "client_timestamp": "2026-10-15T17:48:48.000Z",
+  "app_version": "1.0.0",
+  "app_commit_hash": "39a8c8d",
+  "environment": "localhost:5173",
+  "user_device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+  "session_id": "sess_past_snow_test",
+  "turns": [
+    {
+      "turn_id": "turn_past_01",
+      "timestamp": "2026-10-15T17:48:48.000Z",
+      "query": "אני רוצה שלג בחרמון מחר",
+      "nlu_parsed": {
+        "region": "north",
+        "timing": "tomorrow",
+        "feature": "snow"
+      },
+      "agent_response": "שלום! הנה הצעות לטיול שלג בחרמון...",
+      "proposals": [
+        {
+          "id": 101,
+          "name": "החרמון",
+          "region": "צפון"
+        }
+      ]
+    }
+  ],
+  "audit_metadata": {
+    "is_checked": false
+  }
+}

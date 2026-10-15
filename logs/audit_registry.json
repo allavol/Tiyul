@@ -1,0 +1,44 @@
+{
+  "log_clean_verified_session_02": {
+    "is_checked": true,
+    "checked_at": "2026-10-15T19:17:36.645694+00:00",
+    "file_name": "sample_clean_session.json",
+    "client_timestamp": "2026-10-15T21:40:00.000Z",
+    "status": "CLEAN_PASS",
+    "turns_count": 1,
+    "turn_results": [
+      {
+        "query": "מעיין קריר ברמת הגולן למחר לילד בן 8",
+        "timestamp": "2026-10-15T21:40:00.000Z",
+        "verdict": "PASS",
+        "issues": [],
+        "resolutions": []
+      }
+    ]
+  },
+  "log_historical_snow_contradiction_01": {
+    "is_checked": true,
+    "checked_at": "2026-10-15T19:17:36.645735+00:00",
+    "file_name": "sample_historical_snow.json",
+    "client_timestamp": "2026-10-15T17:48:48.000Z",
+    "status": "RESOLVED_VERIFIED",
+    "turns_count": 1,
+    "turn_results": [
+      {
+        "query": "אני רוצה שלג בחרמון מחר",
+        "timestamp": "2026-10-15T17:48:48.000Z",
+        "verdict": "PASS",
+        "issues": [],
+        "resolutions": [
+          {
+            "fix_id": "FIX_SEASONAL_SNOW",
+            "description": "Seasonal snow contradiction (Hermon closed for snow outside winter/Oct)",
+            "fixed_in_commit": "4bcf757",
+            "status": "RESOLVED_VERIFIED",
+            "explanation": "Turn occurred at 2026-10-15T17:48:48.000Z, before fix commit 4bcf757 at 2026-10-15T18:36:00Z."
+          }
+        ]
+      }
+    ]
+  }
+}

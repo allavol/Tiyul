@@ -1,0 +1,34 @@
+{
+  "log_id": "log_clean_verified_session_02",
+  "client_timestamp": "2026-10-15T21:40:00.000Z",
+  "app_version": "1.0.0",
+  "app_commit_hash": "4bcf757",
+  "environment": "allavol.github.io",
+  "user_device": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+  "session_id": "sess_mobile_clean_test",
+  "turns": [
+    {
+      "turn_id": "turn_clean_01",
+      "timestamp": "2026-10-15T21:40:00.000Z",
+      "query": "מעיין קריר ברמת הגולן למחר לילד בן 8",
+      "nlu_parsed": {
+        "region": "north",
+        "timing": "tomorrow",
+        "min_age": 8,
+        "feature": "water"
+      },
+      "agent_response": "שלום! הנה שמורות טבע ומעיינות מומלצים ברמת הגולן למחר:",
+      "proposals": [
+        {
+          "id": 102,
+          "name": "שמורת טבע הבניאס",
+          "region": "גולן",
+          "min_age": 4
+        }
+      ]
+    }
+  ],
+  "audit_metadata": {
+    "is_checked": false
+  }
+}

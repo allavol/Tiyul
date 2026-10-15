@@ -24,9 +24,11 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Activity
+  Activity,
+  Download
 } from 'lucide-react';
 import { AgentBotService } from '../services/AgentBotService';
+import { AgentAuditLogger } from '../services/AgentAuditLogger';
 import { getCategoryIconChar, getAgeBadge } from '../utils/weatherUtils';
 
 const ThinkingIndicator = () => {
@@ -162,6 +164,7 @@ export default function AgentChatBot({
   const [isMinimized, setIsMinimized] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [expandedCards, setExpandedCards] = useState({});
+  const [exportedAudit, setExportedAudit] = useState(false);
   const messagesEndRef = useRef(null);
 
   const toggleCardExpansion = (cardId) => {
@@ -243,11 +246,23 @@ export default function AgentChatBot({
     setIsProcessing(true);
 
     // 2. Process with AgentBotService
+    const startTime = performance.now();
     try {
       // Natural responsive micro-delay for smooth UI transition (<100ms, Finding H6)
       await new Promise((r) => setTimeout(r, 80));
 
       const response = await AgentBotService.processUserMessage(text, sessionState);
+      const latencyMs = performance.now() - startTime;
+
+      // Record to validation audit trail with immutable timestamp
+      AgentAuditLogger.recordTurn({
+        query: text,
+        response: response.text,
+        nluState: response.state,
+        proposals: response.proposals,
+        toolActivity: response.toolActivity,
+        latencyMs
+      });
 
       setSessionState(response.state);
 
@@ -388,6 +403,19 @@ export default function AgentChatBot({
           </div>
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                const ok = AgentAuditLogger.exportAsJsonFile();
+                if (ok) {
+                  setExportedAudit(true);
+                  setTimeout(() => setExportedAudit(false), 2000);
+                }
+              }}
+              title="הורד יומן ולידציה ובקרת איכות (JSON)"
+              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-emerald-400 flex items-center justify-center transition"
+            >
+              {exportedAudit ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Download className="w-3.5 h-3.5" />}
+            </button>
             <button
               onClick={handleReset}
               title="איפוס שיחה"
