@@ -8,6 +8,7 @@ import {
 
 import { 
   checkGuardrails, 
+  checkClimateContradictions,
   parseAgeFromText, 
   extractParameters, 
   applyTypoCorrections 
@@ -168,6 +169,24 @@ describe('AgentNLUParser Unit Tests', () => {
 
     const check2 = checkGuardrails('בארץ האש');
     expect(check2.safe).toBe(false);
+  });
+
+  it('detects seasonal snow contradiction and desert forest contradiction', () => {
+    // 1. Snow outside winter
+    const snowQuery = checkClimateContradictions('אני רוצה מחר טיול שלג בחרמון');
+    const currentMonth = new Date().getMonth() + 1;
+    const isWinter = currentMonth === 12 || currentMonth === 1 || currentMonth === 2 || currentMonth === 3;
+    if (!isWinter) {
+      expect(snowQuery).toBeDefined();
+      expect(snowQuery.contradiction).toBe(true);
+      expect(snowQuery.text).toContain('אין שלג');
+    }
+
+    // 2. Forest in Negev / Desert
+    const desertForestQuery = checkClimateContradictions('אני רוצה טיול ביער בנגב');
+    expect(desertForestQuery).toBeDefined();
+    expect(desertForestQuery.contradiction).toBe(true);
+    expect(desertForestQuery.text).toContain('לא קיימים יערות מוצלים בנגב');
   });
 
   it('correctly flags far-future dates beyond 14 days and extracts target month', () => {

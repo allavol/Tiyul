@@ -92,5 +92,36 @@ test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
     await copyBtn.click();
     await expect(page.locator('text=הועתק ללוח!')).toBeVisible();
   });
+
+  test('Chatbot verifies Seasonal Snow and Desert Shaded Forest Contradictions in Browser E2E', async ({ page }) => {
+    test.setTimeout(45000);
+
+    await page.goto('/');
+
+    // Open Chatbot
+    const openChatBtn = page.locator('button:has-text("שאל את סוכן הטיולים")').first();
+    await openChatBtn.click();
+
+    const input = page.locator('input[type="text"]').last();
+    const sendBtn = page.locator('button:has(svg.lucide-send)').last();
+
+    // 1. Query seasonal snow
+    await expect(input).toBeEnabled({ timeout: 10000 });
+    await input.fill('אני רוצה שלג בחרמון מחר');
+    await sendBtn.click();
+    await expect(input).toBeEnabled({ timeout: 10000 });
+
+    // Verify seasonal explanation
+    const chatContainer = page.locator('.flex-1.overflow-y-auto');
+    await expect(chatContainer).toContainText(/שלג/);
+
+    // 2. Query desert shaded forest
+    await input.fill('אני רוצה יער מוצל בנגב');
+    await sendBtn.click();
+    await expect(input).toBeEnabled({ timeout: 10000 });
+
+    // Verify desert forest absence explanation
+    await expect(chatContainer).toContainText(/יער/);
+  });
 });
 

@@ -77,8 +77,25 @@ export function rankCandidates(candidates, state, rawText = '') {
       if (bTypes.includes('מים') || bTypes.includes('בריכות') || bTypes.includes('מעיין') || bTypes.includes('שניר') || bTypes.includes('דן') || bTypes.includes('דליות') || bTypes.includes('מג׳רסה')) scoreB += 10;
     }
     if (state.feature === 'shade') {
-      if (aTypes.includes('חורש') || aTypes.includes('יער') || aTypes.includes('טבע') || aTypes.includes('כרמל') || aTypes.includes('מירון')) scoreA += 10;
-      if (bTypes.includes('חורש') || bTypes.includes('יער') || bTypes.includes('טבע') || bTypes.includes('כרמל') || bTypes.includes('מירון')) scoreB += 10;
+      const isShadeForest = (types) => (
+        types.includes('חורש') || types.includes('יער') || types.includes('כרמל') || 
+        types.includes('מירון') || types.includes('מוצל') || types.includes('צל') || 
+        types.includes('אלונים') || types.includes('אורנים') || types.includes('שווייצריה הקטנה') ||
+        types.includes('כלח') || types.includes('ביריה')
+      );
+      if (isShadeForest(aTypes)) scoreA += 25;
+      if (isShadeForest(bTypes)) scoreB += 25;
+
+      // Special highlight for flagship shaded forest hiking trails in Carmel
+      if (aTypes.includes('שווייצריה') || aTypes.includes('פארק הכרמל') || a.name.includes('כלח') || a.name.includes('נוף הכרמל')) scoreA += 15;
+      if (bTypes.includes('שווייצריה') || bTypes.includes('פארק הכרמל') || b.name.includes('כלח') || b.name.includes('נוף הכרמל')) scoreB += 15;
+
+      // When user asks for a shaded forest walk and NOT water, don't let water/swimming reserves push forests down
+      const isWaterIntent = rawText.includes('מים') || rawText.includes('רטוב') || rawText.includes('שכשוך') || state.feature === 'water';
+      if (!isWaterIntent) {
+        if (a.category === 'water' && !isShadeForest(aTypes)) scoreA -= 20;
+        if (b.category === 'water' && !isShadeForest(bTypes)) scoreB -= 20;
+      }
     }
     if (state.feature === 'adventure') {
       if (aTypes.includes('הרים') || aTypes.includes('אתגרי') || aTypes.includes('מצוק') || aTypes.includes('סנפלינג')) scoreA += 10;
@@ -97,6 +114,8 @@ export function rankCandidates(candidates, state, rawText = '') {
     if (state.concept === 'cool_haven') {
       if (aTypes.includes('מער') || aTypes.includes('גוברין') || aTypes.includes('חורש') || aTypes.includes('אלונים') || aTypes.includes('מוצל')) scoreA += 25;
       if (bTypes.includes('מער') || bTypes.includes('גוברין') || bTypes.includes('חורש') || bTypes.includes('אלונים') || bTypes.includes('מוצל')) scoreB += 25;
+      if (a.id === 105 || a.name.includes('בית גוברין') || aTypes.includes('גוברין') || a.category === 'safe_haven') scoreA += 25;
+      if (b.id === 105 || b.name.includes('בית גוברין') || bTypes.includes('גוברין') || b.category === 'safe_haven') scoreB += 25;
     }
     if (state.concept === 'wildlife') {
       if (aTypes.includes('צפרות') || aTypes.includes('אגם') || aTypes.includes('עופות') || a.name.includes('צבאים') || a.name.includes('גמלא') || a.name.includes('ציפורי ירושלים')) scoreA += 20;
@@ -173,6 +192,22 @@ export function selectDiverseTopCandidates(candidates, state, rawText = '', limi
     if (site.name.includes('דן')) clusterKey = 'tel_dan';
     if (site.name.includes('שניר')) clusterKey = 'snir';
     
+    // North Sub-Regional Diversity: ensures representation across Upper Galilee, Western Galilee, Golan, Carmel & Valleys
+    if (state.region === 'north' && !state.subRegionKeyword) {
+      const siteRegionFull = (site.region || '') + ' ' + (site.region_group || '') + ' ' + aTypes;
+      if (siteRegionFull.includes('גולן') || siteRegionFull.includes('חרמון') || siteRegionFull.includes('יהודיה') || siteRegionFull.includes('משושים') || siteRegionFull.includes('מג׳רסה') || siteRegionFull.includes('מג\'רסה') || siteRegionFull.includes('עלמין') || siteRegionFull.includes('דליות')) {
+        clusterKey = 'north_golan';
+      } else if (siteRegionFull.includes('כרמל') || siteRegionFull.includes('רמות מנשה') || siteRegionFull.includes('תנינים') || siteRegionFull.includes('אביאל') || siteRegionFull.includes('נדיב') || siteRegionFull.includes('כלח') || siteRegionFull.includes('שוויצריה')) {
+        clusterKey = 'north_carmel_menashe';
+      } else if (siteRegionFull.includes('גליל מערבי') || siteRegionFull.includes('כזיב') || siteRegionFull.includes('חרדלית') || siteRegionFull.includes('מונפורט') || siteRegionFull.includes('גורן') || siteRegionFull.includes('ראש הנקרה') || siteRegionFull.includes('בצת')) {
+        clusterKey = 'north_west_galilee';
+      } else if (siteRegionFull.includes('גליל עליון') || siteRegionFull.includes('אצבע הגליל') || siteRegionFull.includes('דן') || siteRegionFull.includes('שניר') || siteRegionFull.includes('חצבני') || siteRegionFull.includes('חולה') || siteRegionFull.includes('מירון')) {
+        clusterKey = 'north_upper_galilee';
+      } else if (siteRegionFull.includes('מעיינות') || siteRegionFull.includes('מודע') || siteRegionFull.includes('שוקק') || siteRegionFull.includes('קיבוצים') || siteRegionFull.includes('ציפורי') || siteRegionFull.includes('תבור')) {
+        clusterKey = 'north_valleys';
+      }
+    }
+    
     if (!seenClusters.has(clusterKey)) {
       seenClusters.add(clusterKey);
       topSites.push(site);
@@ -217,7 +252,7 @@ export function generateClarificationResponse(targetField, state, allMissing) {
     case 'region':
       text = `${summaryPrefix}באיזה **אזור בארץ** תרצו לטייל? 🗺️`;
       options = [
-        { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+        { label: '🏞️ צפון (גליל, גולן וכרמל)', value: 'באזור הצפון', field: 'region' },
         { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
         { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
         { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },

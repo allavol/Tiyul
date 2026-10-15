@@ -237,8 +237,8 @@ export const TYPO_CORRECTIONS = {
   'חרמן': 'חרמון',
   // Feature typos
   'סנפליג': 'סנפלינג', 'סנפאלינג': 'סנפלינג', 'סנפליינג': 'סנפלינג',
-  'מוצאל': 'מוצל', 'מצל': 'מוצל', 'מוצלל': 'מוצל',
-  'הלחכה': 'הליכה',
+  'מוצאל': 'מוצל', 'מצל': 'מוצל', 'מוצלל': 'מוצל', 'מוצר': 'מוצל',
+  'הלחכה': 'הליכה', 'נליכה': 'הליכה', 'נלכה': 'הליכה', 'שבייל': 'שביל',
   // Site name typos
   'עין גידי': 'עין גדי', 'עין-גידי': 'עין גדי', 'עינגדי': 'עין גדי',
   'מסדה': 'מצדה', 'מאסדה': 'מצדה', 'מסאדה': 'מצדה',
@@ -1030,6 +1030,32 @@ export function extractParameters(message, currentState) {
     text.includes('מטה יהודה') || text.includes('גוש עציון') || text.includes('עציון') || text.includes('בית שמש')
   );
 
+  const isWestGalileeRegion = (
+    text.includes('גליל מערבי') || text.includes('בגליל המערבי') || text.includes('לגליל המערבי') ||
+    text.includes('חוף הגליל') || text.includes('כזיב') || text.includes('חרדלית') ||
+    text.includes('מונפורט') || text.includes('ראש הנקרה') || text.includes('פארק גורן') || text.includes('אכזיב')
+  );
+
+  const isGolanRegion = (
+    text.includes('גולן') || text.includes('בגולן') || text.includes('לגולן') ||
+    text.includes('רמת הגולן') || text.includes('חרמון') || text.includes('בחרמון') ||
+    text.includes('מג׳רסה') || text.includes('מג\'רסה') || text.includes('מגרסה') ||
+    text.includes('גמלא') || text.includes('יהודיה') || text.includes('משושים') || text.includes('בנטל')
+  );
+
+  const isUpperGalileeRegion = (
+    text.includes('גליל עליון') || text.includes('בגליל העליון') || text.includes('לגליל העליון') ||
+    text.includes('אצבע הגליל') || text.includes('עמק החולה') || text.includes('תל דן') ||
+    text.includes('שניר') || text.includes('חצבני') || text.includes('ביריה') || text.includes('צפת') || text.includes('מירון')
+  );
+
+  const isCarmelRegion = (
+    text.includes('כרמל') || text.includes('בכרמל') || text.includes('רכס הכרמל') ||
+    text.includes('פארק הכרמל') || text.includes('חוף הכרמל') || text.includes('שוויצריה הקטנה') ||
+    text.includes('שווייצריה הקטנה') || text.includes('רמת הנדיב') || text.includes('רמות מנשה') ||
+    text.includes('נחל כלח')
+  );
+
   const isNorthRegion = (
     text.includes('בצפון') || text.includes('לצפון') || text.includes('באזור הצפון') ||
     text.includes('צפון') || text.includes('גליל') || text.includes('בגליל') || text.includes('לגליל') ||
@@ -1093,9 +1119,37 @@ export function extractParameters(message, currentState) {
       updated.originName = null;
       updated.originCoords = null;
     }
+  } else if (isWestGalileeRegion) {
+    updated.region = 'west_galilee';
+    updated.regionLabel = 'גליל מערבי וחוף הגליל';
+    updated.maxDistanceKm = null;
+    updated.originCity = null;
+    updated.originName = null;
+    updated.originCoords = null;
+  } else if (isGolanRegion) {
+    updated.region = 'golan';
+    updated.regionLabel = 'רמת הגולן והחרמון';
+    updated.maxDistanceKm = null;
+    updated.originCity = null;
+    updated.originName = null;
+    updated.originCoords = null;
+  } else if (isUpperGalileeRegion) {
+    updated.region = 'upper_galilee';
+    updated.regionLabel = 'גליל עליון ואצבע הגליל';
+    updated.maxDistanceKm = null;
+    updated.originCity = null;
+    updated.originName = null;
+    updated.originCoords = null;
+  } else if (isCarmelRegion) {
+    updated.region = 'carmel';
+    updated.regionLabel = 'כרמל ורמות מנשה';
+    updated.maxDistanceKm = null;
+    updated.originCity = null;
+    updated.originName = null;
+    updated.originCoords = null;
   } else if (isNorthRegion) {
     updated.region = 'north';
-    updated.regionLabel = 'צפון (גליל וגולן)';
+    updated.regionLabel = 'צפון (גליל, גולן וכרמל)';
     updated.maxDistanceKm = null;
     if (foundCity) {
       updated.originCity = foundCity.label;
@@ -1573,6 +1627,52 @@ export function checkClimateContradictions(message) {
     };
   }
 
+  // 1.1 Seasonal Snow Check across Israel (Outside Winter Months)
+  const currentMonth = new Date().getMonth() + 1;
+  const isWinterSeason = currentMonth === 12 || currentMonth === 1 || currentMonth === 2 || currentMonth === 3;
+  const mentionsWinterMonth = lower.includes('ינואר') || lower.includes('פברואר') || lower.includes('מרץ') || lower.includes('דצמבר') || lower.includes('בחורף');
+
+  if (mentionsSnow && !isWinterSeason && !mentionsWinterMonth) {
+    const isHermon = lower.includes('חרמון');
+    const place = isHermon ? 'בהר החרמון ובארץ' : 'בישראל';
+    return {
+      contradiction: true,
+      text: `❄️🚫 אין שלג ${place} בעונה זו!\n\nשלג בישראל יורד אך ורק בהר החרמון ובצפון רמת הגולן בשיא חודשי החורף (דצמבר–מרץ).\nכעת (עונת הסתיו/הקיץ) אין שלג בארץ כלל, ואתר החרמון פתוח לסיורי קיץ, רכבל ונוף הררי בלבד ללא שלג.\n\n💡 אנא נסחו שוב את שאלתכם או בחרו באחת האפשרויות למטה:\n• מחפשים קרירות ומים? כדאי לבחור במסלול נחלים ומעיינות זורמים בצפון.\n• מעוניינים לבקר בחרמון ובגולן? תוכלו ליהנות מנופי ההרים ומזג אוויר נעים ללא שלג.\n• או בחרו באחת האפשרויות למטה:`,
+      options: [
+        { label: '💧 מסלול מים מוצל בצפון', value: 'מחפש מסלול מים מוצל בצפון' },
+        { label: '🏔️ טיול נוף בהרי הגולן והחרמון', value: 'מחפש טיול נוף ברמת הגולן' },
+        { label: '🔄 התחל מחדש', value: 'התחל מחדש' },
+      ],
+    };
+  }
+
+  // 1.2 Forest / Shaded Woodland in Desert / Negev Contradiction Check
+  const mentionsForestOrShade = (
+    lower.includes('יער') || lower.includes('חורש') || lower.includes('מוצל') || lower.includes('מוצר') ||
+    lower.includes('עצי אורן') || lower.includes('אלונים')
+  );
+  const mentionsDesertSouth = (
+    lower.includes('בנגב') || lower.includes('נגב') || lower.includes('בנג') ||
+    lower.includes('במדבר') || lower.includes('מדבר') ||
+    lower.includes('בערבה') || lower.includes('ערבה') ||
+    lower.includes('בדרום') || lower.includes('דרום') ||
+    lower.includes('באילת') || lower.includes('אילת')
+  );
+
+  if (mentionsForestOrShade && mentionsDesertSouth && !lower.includes('יתיר') && !lower.includes('להב')) {
+    const place = lower.includes('אילת') ? 'באילת' : lower.includes('ערבה') ? 'בערבה' : 'בנגב ובדרום המדברי';
+    return {
+      contradiction: true,
+      text: `🌲🚫 לא קיימים יערות מוצלים ${place}!\n\nהנגב, הערבה ואילת מאופיינים באקלים מדברי צחיח ופתוח של מצוקים, מכתשים ודיונות חול — ללא יערות חורש טבעיים או צל עצים (אתרים כמו חולות צבעוניים או מכתש רמון חשופים לשמש לחלוטין).\n\n💡 איפה כדאי לטייל?\n• מחפשים יערות מוצלים? כדאי לבחור בהרי ירושלים (יער עמינדב/סטף), ברכס הכרמל (שוויצריה הקטנה) או בצפון (יער ביריה ואלוני אבא).\n• מעוניינים לטייל בנגב? מומלץ לבחור במסלול מדברי ייחודי (כמו מכתש רמון, עין עבדת או נחל קרקש) בשעות הבוקר הנעימות.\n• יער יתיר ולהב — היערות הנטועים היחידים בצפון הנגב.\n• או בחרו באחת האפשרויות למטה:`,
+      options: [
+        { label: '🌲 יערות מוצלים בהרי ירושלים', value: 'מחפש יער מוצל בהרי ירושלים' },
+        { label: '🌲 יערות מוצלים בכרמל ובצפון', value: 'מחפש יער מוצל בכרמל ובצפון' },
+        { label: '🏜️ מסלול מדברי בנגב (מכתש רמון)', value: 'מחפש מסלול מדברי במכתש רמון' },
+        { label: '🔄 התחל מחדש', value: 'התחל מחדש' },
+      ],
+    };
+  }
+
   // 2. Ice or Glaciers anywhere in Israel
   if (mentionsIce) {
     return {
@@ -1590,7 +1690,6 @@ export function checkClimateContradictions(message) {
   const mentionsCherryPicking = (
     lower.includes('קטיף דובדבנים') || lower.includes('דובדבנים') || lower.includes('קטיף דובדבן')
   );
-  const currentMonth = new Date().getMonth() + 1;
   const isCherrySeason = currentMonth === 5 || currentMonth === 6;
   const mentionsCherryMonths = lower.includes('מאי') || lower.includes('יוני') || lower.includes('באביב');
   if (mentionsCherryPicking && !isCherrySeason && !mentionsCherryMonths) {
@@ -1611,7 +1710,6 @@ export function checkClimateContradictions(message) {
     lower.includes('דרום אדום') || lower.includes('מרבדי כלניות') || lower.includes('תורמוסים')
   );
   const isBloomingSeason = currentMonth === 12 || currentMonth === 1 || currentMonth === 2 || currentMonth === 3;
-  const mentionsWinterMonth = lower.includes('ינואר') || lower.includes('פברואר') || lower.includes('מרץ') || lower.includes('דצמבר') || lower.includes('בחורף');
   if (mentionsAnemones && !isBloomingSeason && !mentionsWinterMonth) {
     return {
       contradiction: true,

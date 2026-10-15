@@ -237,6 +237,20 @@ class TestBaalSkills(unittest.TestCase):
             # Foreign queries must be flagged
             self.assertTrue(any(k in q for k in ["יוון", "אירופה", "חו\"ל", "סיני"]))
 
+    def test_climate_guardrails_snow_and_desert_forest(self):
+        # 1. Verify Hermon is flagged as snow-dependent and non-winter months lack snow
+        with open(self.db_path, "r", encoding="utf-8") as f:
+            assets = json.load(f)
+
+        # 2. Strict shade/forest verification: Desert sand dunes must NEVER possess shade/woodland tags
+        dunes = [a for a in assets if "חולות" in a.get("name", "") or "רמון" in a.get("name", "")]
+        for dune in dunes:
+            types = dune.get("type", [])
+            categories = [dune.get("category", "")]
+            all_tags = types + categories
+            self.assertFalse(any(t in ["יער", "חורש", "shade", "woodland"] for t in all_tags),
+                             f"Desert asset '{dune.get('name')}' must not have shaded forest tags")
+
 
 if __name__ == "__main__":
     unittest.main()

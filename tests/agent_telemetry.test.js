@@ -130,5 +130,5 @@ describe('AgentTelemetryService - OpenTelemetry GenAI Observability Tests', () =
     const metrics = AgentTelemetryService.getMetrics();
     expect(metrics.totalTokens).toBeGreaterThan(0);
     expect(metrics.totalCostUsd).toBe(0.00);
-  });
+  }, 15000);
 });

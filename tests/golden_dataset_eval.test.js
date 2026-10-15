@@ -75,9 +75,13 @@ const GOLDEN_50_QUERIES = [
   { id: 48, query: 'מה אם יש שיטפון פתאומי בעין גדי?', expectCrisisSafeHaven: true },
   { id: 49, query: 'מה אם יש עומס חום קיצוני של 44 מעלות במצדה?', expectCrisisSafeHaven: true },
   { id: 50, query: 'מה אם יש זיהום מים בירדן?', expectCrisisSafeHaven: true },
+
+  // ── Category 6: Climate Contradictions & Guardrails (Snow & Desert Forest) (51-52)
+  { id: 51, query: 'אני רוצה מחר טיול שלג בחרמון', expectSnowContradiction: true },
+  { id: 52, query: 'אני רוצה טיול ביער מוצל בנגב', expectDesertForestContradiction: true },
 ];
 
-describe('Golden Dataset 50-Query Benchmark Suite (Finding A1)', () => {
+describe('Golden Dataset 52-Query Benchmark Suite (Finding A1 & Climate Contradictions)', { timeout: 15000 }, () => {
   GOLDEN_50_QUERIES.forEach((item) => {
     it(`Query #${item.id}: "${item.query}"`, async () => {
       const res = await AgentBotService.processUserMessage(item.query, null);
@@ -97,32 +101,50 @@ describe('Golden Dataset 50-Query Benchmark Suite (Finding A1)', () => {
         return;
       }
 
-      // 2. Dog Warnings
+      // 2. Climate Contradictions (Snow & Desert Forest)
+      if (item.expectSnowContradiction) {
+        const currentMonth = new Date().getMonth() + 1;
+        const isWinter = currentMonth === 12 || currentMonth === 1 || currentMonth === 2 || currentMonth === 3;
+        if (!isWinter) {
+          expect(res.proposals).toHaveLength(0);
+          expect(res.text).toMatch(/(אין שלג|שלג|עונה זו|חורף)/);
+        }
+        return;
+      }
+
+      if (item.expectDesertForestContradiction) {
+        expect(res.text).toMatch(/(לא קיימים יערות|יער|מוצל)/);
+        const hasSandDunes = (res.proposals || []).some((p) => p.name.includes('חולות צבעוניים') || p.name.includes('מכתש רמון'));
+        expect(hasSandDunes).toBe(false);
+        return;
+      }
+
+      // 3. Dog Warnings
       if (item.expectDogWarning) {
         expect(res.state.dogWarning).toBe(true);
       }
 
-      // 3. Direct Lookup
+      // 4. Direct Lookup
       if (item.expectDirectLookup) {
         expect(res.proposals.length).toBeGreaterThanOrEqual(1);
         expect(res.proposals[0].name).toContain('עין גדי');
         return;
       }
 
-      // 4. Crisis & What-If Safe Haven Rerouting
+      // 5. Crisis & What-If Safe Haven Rerouting
       if (item.expectCrisisSafeHaven) {
         expect(res.text).toMatch(/(מקלט בטוח|פינוי|זהירות|עומס חום|שיטפון|זיהום|בטוח|חלופ)/);
         expect(res.toolActivity).toBeDefined();
         return;
       }
 
-      // 5. Age Extraction Verification (checking discrete safety tier or exact age)
+      // 6. Age Extraction Verification (checking discrete safety tier or exact age)
       if (item.expectAge !== undefined) {
         const expectedTier = item.expectAge <= 2.5 ? 0 : item.expectAge <= 6 ? 4 : item.expectAge <= 9 ? 7 : 10;
         expect(res.state.minAge).toBeLessThanOrEqual(expectedTier);
       }
 
-      // 6. Stroller Accessibility
+      // 7. Stroller Accessibility
       if (item.expectStroller) {
         expect(res.state.minAge).toBe(0);
         if (res.proposals && res.proposals.length > 0) {
@@ -132,13 +154,13 @@ describe('Golden Dataset 50-Query Benchmark Suite (Finding A1)', () => {
         }
       }
 
-      // 7. City & Radius
+      // 8. City & Radius
       if (item.expectCity) {
         expect(res.state.originCity || res.state.originName).toContain(item.expectCity);
         expect(res.state.maxDistanceKm).toBe(item.expectRadius);
       }
 
-      // 8. Proposals Safety Invariant
+      // 9. Proposals Safety Invariant
       // If proposals were generated, ensure NO proposal violates the family's youngest hiker age!
       if (res.proposals && res.proposals.length > 0) {
         const hikerAge = res.state.minAge ?? 10;

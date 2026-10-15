@@ -255,7 +255,7 @@ export class AgentBotService {
         text: 'לא הצלחתי לפענח את ההודעה (נראה כמו טקסט לא ברור או ג\'יבריש) 🌿.\n\n💡 **אנא נסחו שוב את שאלתכם בצורה ברורה:**\nספרו לי לאיזה אזור בארץ תרצו לטייל ומתי (לדוגמה: *"רוצים טיול מים בצפון למחר עם ילד בן 4"*), או בחרו באחת האפשרויות למטה:',
         state: currentState,
         options: [
-          { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+          { label: '🏞️ צפון (גליל, גולן וכרמל)', value: 'באזור הצפון', field: 'region' },
           { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
           { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
           { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
@@ -299,7 +299,7 @@ export class AgentBotService {
         text: 'השיחה אופסה בהצלחה! 🌿 ספרו לי: **לאיזה אזור בארץ תרצו לטייל ומתי?** (למשל: *"רוצים לטייל מחר בצפון עם ילדים קטנים בני 4, מחפשים מים"*).',
         state: freshState,
         options: [
-          { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+          { label: '🏞️ צפון (גליל, גולן וכרמל)', value: 'באזור הצפון', field: 'region' },
           { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
           { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
           { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
@@ -677,7 +677,7 @@ export class AgentBotService {
             text: `איני מכיר את ${siteDisplay} במאגר שמורות הטבע, הגנים הלאומיים ומסלולי הטיול המאומתים של ישראל 🌿.\n\n💡 ייתכן שמדובר באתר שאינו שייך לרשות הטבע והגנים או לקק"ל, או בשם שנכתב עם שגיאה. בואו נמשיך לחפש מסלול באחד מאזורי הארץ:`,
             state: currentState,
             options: [
-              { label: '🏞️ צפון (גליל וגולן)', value: 'באזור הצפון', field: 'region' },
+              { label: '🏞️ צפון (גליל, גולן וכרמל)', value: 'באזור הצפון', field: 'region' },
               { label: '🌾 מרכז והשרון', value: 'באזור המרכז והשרון', field: 'region' },
               { label: '🏰 ירושלים והשפלה', value: 'באזור ירושלים והשפלה', field: 'region' },
               { label: '🏜️ דרום וים המלח', value: 'באזור הדרום וים המלח', field: 'region' },
@@ -982,6 +982,18 @@ export class AgentBotService {
         ) {
           return false;
         }
+      }
+      if (state.feature === 'shade') {
+        const types = (site.type || []).join(' ') + ' ' + (site.name || '');
+        const isShadeForest = (
+          types.includes('חורש') || types.includes('יער') || types.includes('אלונים') ||
+          types.includes('אורנים') || types.includes('מוצל') || types.includes('צל') ||
+          types.includes('כרמל') || types.includes('מירון') || types.includes('פארק') ||
+          types.includes('שווייצריה') || types.includes('כלח') || types.includes('ביריה') ||
+          types.includes('סטף') || types.includes('עמינדב') || types.includes('מטע') ||
+          types.includes('מער') || types.includes('גוברין') || site.category === 'safe_haven' || site.id === 105
+        );
+        if (!isShadeForest) return false;
       }
       return true;
     });

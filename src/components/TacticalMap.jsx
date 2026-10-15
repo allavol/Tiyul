@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import FloatingMapCard from './FloatingMapCard';
 import NationalRadarCard from './NationalRadarCard';
+import { isWaterAsset, getCategoryIconChar } from '../utils/weatherUtils';
 
 export default function TacticalMap({
   assets = [],
@@ -45,7 +46,7 @@ export default function TacticalMap({
         return recommendedAssetIds ? recommendedAssetIds.includes(asset.id) : true;
       }
       if (activeFilter === 'all') return true;
-      if (activeFilter === 'water') return (asset.type || []).some(t => t.includes('מים') || t.includes('מעיין') || t.includes('נחל'));
+      if (activeFilter === 'water') return isWaterAsset(asset);
       if (activeFilter === 'stroller') return asset.stroller_accessible || asset.min_age === 0;
       if (activeFilter === 'safe') {
         const isAlert = asset.status === 'CRITICAL' || asset.status === 'REROUTED';
@@ -142,14 +143,8 @@ export default function TacticalMap({
       const isAlert = asset.status === 'CRITICAL' || asset.status === 'REROUTED';
       const isSelected = selectedAssetId === asset.id;
 
-      // Category Icon
-      let iconChar = '🌲';
-      const types = (asset.type || []).join(' ');
-      if (isSafeHaven) iconChar = '🛡️';
-      else if (types.includes('מים') || types.includes('חוף')) iconChar = '💧';
-      else if (types.includes('הרים') || types.includes('שלג')) iconChar = '⛰️';
-      else if (types.includes('מדבר')) iconChar = '☀️';
-      else if (asset.category === 'spni') iconChar = '🦅';
+      // Category Icon (Synchronized with weatherUtils)
+      const iconChar = getCategoryIconChar(asset);
 
       // Colors — Surfline teal circular badges
       const bgColor = isAlert ? '#dc2626' : isSelected ? '#2DD4BF' : '#14B8A6';
@@ -355,6 +350,7 @@ export default function TacticalMap({
           onClose={onCloseCard}
           onSelectAlternative={(alt) => onSelectAsset(alt.id)}
           onAskAgentAboutSite={onAskAgentAboutSite}
+          isLightMode={isLightMode}
         />
       )}
 

@@ -52,16 +52,49 @@ export const getAgeBadge = (minAge) => {
   }
 };
 
+/**
+ * Determines whether an asset is a genuine water destination (spring, flowing stream, pool)
+ * and strictly filters out false positives from Hebrew plural suffixes (כרמים, אדומים, תמרים, תאומים)
+ * as well as seasonal dry desert seeps (עין סהרונים / פרסת נקרות).
+ */
+export const isWaterAsset = (asset) => {
+  if (!asset) return false;
+  if (asset.category === 'water') return true;
+
+  const types = asset.type || [];
+
+  // Exclude seasonal dry desert seeps and dry wadis that are not swimming/splashing destinations
+  if (asset.category === 'desert' && ((asset.name || '').includes('סהרונים') || (asset.name || '').includes('נקרות'))) {
+    return false;
+  }
+
+  // Exclude false positive substrings (כרמים, אדומים, תמרים, תאומים, בורות מים קדומים)
+  const isFalsePositiveTag = (t) => (
+    t.includes('כרמים') || t.includes('אדומים') || t.includes('תמרים') || 
+    t.includes('תאומים') || t.includes('בורות מים קדומים') || t.includes('דרך היין')
+  );
+
+  const hasIsolatedWaterWord = types.some(t => !isFalsePositiveTag(t) && /(?:^|[^\u0590-\u05fe])מים(?=[^\u0590-\u05fe]|$)/.test(t));
+  const hasGenuineWaterTag = types.some(t => 
+    t === 'מעיין' || t === 'מעיין נקבה' || t === 'מעיין הררי' || t === 'מעיין עמוק' || t === 'מעיין פועם' ||
+    t === 'נחל זורם' || t === 'בריכת שכשוך' || t === 'הליכה במים' || t === 'מסלול מים רטוב' ||
+    t === 'בריכת מים' || t === 'מפל מים' || t === 'אגם מים' || t === 'פלג מים' || t === 'גב מים' || t === 'גבי מים'
+  );
+
+  return hasIsolatedWaterWord || hasGenuineWaterTag;
+};
+
 export const getCategoryIconChar = (asset) => {
   if (!asset) return '🌿';
   const isSafeHaven = asset.vulnerabilities?.includes('Safe Haven') || asset.category === 'safe_haven';
-  const types = (asset.type || []).join(' ');
   if (isSafeHaven) return '🛡️';
-  if (types.includes('מים') || types.includes('חוף') || types.includes('בריכות')) return '💧';
-  if (types.includes('הרים') || types.includes('שלג') || types.includes('מכתש')) return '⛰️';
-  if (types.includes('חורש') || types.includes('טבע') || types.includes('יער')) return '🌲';
-  if (types.includes('מדבר') || types.includes('דיונות')) return '☀️';
+  if (isWaterAsset(asset)) return '💧';
   if (asset.category === 'spni') return '🦅';
+
+  const types = (asset.type || []).join(' ');
+  if (types.includes('הרים') || types.includes('שלג') || types.includes('מכתש')) return '⛰️';
+  if (types.includes('מדבר') || asset.category === 'desert' || types.includes('דיונות')) return '☀️';
+  if (types.includes('חורש') || types.includes('טבע') || types.includes('יער')) return '🌲';
   return '🌿';
 };
 

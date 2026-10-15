@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 580" width="100%" height="100%" style="background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGradB" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#16181d" />
+      <stop offset="100%" stop-color="#0c0d11" />
+    </linearGradient>
+
+    <!-- Glowing Pill -->
+    <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <linearGradient id="wazeBtnGradB" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Glassmorphic Card Container -->
+  <rect x="10" y="10" width="400" height="560" rx="24" fill="url(#bgGradB)" stroke="#38BDF8" stroke-opacity="0.25" stroke-width="1.5" />
+
+  <!-- ── 1. HEADER (Title, Waze CTA, Close X) ── -->
+  <!-- Close Button (X) -->
+  <circle cx="38" cy="38" r="14" fill="#242731" stroke="#373c4d" stroke-width="1" />
+  <path d="M 33 33 L 43 43 M 43 33 L 33 43" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" />
+
+  <!-- Waze Navigation Button -->
+  <g transform="translate(62, 24)">
+    <rect x="0" y="0" width="112" height="28" rx="14" fill="url(#wazeBtnGradB)" filter="url(#glowBlue)" />
+    <text x="56" y="18" fill="#0c2340" font-size="12" font-weight="900" text-anchor="middle" direction="rtl">🚗 נווט ב-Waze</text>
+  </g>
+
+  <!-- Site Title (RTL) -->
+  <g transform="translate(390, 30)" text-anchor="end">
+    <text x="0" y="10" fill="#ffffff" font-size="16" font-weight="900" direction="rtl">עין פרת - שמורת נחל פרת</text>
+  </g>
+
+  <!-- ── 2. UPPER HERO: 3 HIGHLIGHT PILLS ── -->
+  <g transform="translate(25, 68)">
+    <!-- Pill 1: גיל 4+ -->
+    <g transform="translate(255, 0)">
+      <rect x="0" y="0" width="115" height="30" rx="15" fill="#2e2515" stroke="#f59e0b" stroke-opacity="0.6" stroke-width="1" />
+      <text x="57" y="19" fill="#fcd34d" font-size="11" font-weight="800" text-anchor="middle" direction="rtl">👶 מגיל 4+</text>
+    </g>
+
+    <!-- Pill 2: עגלות -->
+    <g transform="translate(130, 0)">
+      <rect x="0" y="0" width="115" height="30" rx="15" fill="#132a2a" stroke="#14b8a6" stroke-opacity="0.6" stroke-width="1" />
+      <text x="57" y="19" fill="#5eead4" font-size="11" font-weight="800" text-anchor="middle" direction="rtl">♿ נגיש לעגלות ✓</text>
+    </g>
+
+    <!-- Pill 3: מרחק -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="120" height="30" rx="15" fill="#1e2433" stroke="#38bdf8" stroke-opacity="0.5" stroke-width="1" />
+      <text x="60" y="19" fill="#bae6fd" font-size="11" font-weight="800" text-anchor="middle" direction="rtl">🚗 61 דק' מת"א</text>
+    </g>
+  </g>
+
+  <!-- ── 3. 4-DAY MINI WEATHER ROW ── -->
+  <g transform="translate(25, 115)">
+    <rect x="0" y="0" width="370" height="74" rx="14" fill="#181a22" stroke="#252936" stroke-width="1" />
+    
+    <!-- Day 0 (Active) -->
+    <g transform="translate(280, 8)">
+      <rect x="0" y="0" width="82" height="58" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2" />
+      <text x="41" y="14" fill="#38bdf8" font-size="9.5" font-weight="800" text-anchor="middle">היום</text>
+      <text x="41" y="32" font-size="14" text-anchor="middle">☀️</text>
+      <text x="41" y="48" fill="#ffffff" font-size="11" font-weight="900" text-anchor="middle">23°</text>
+    </g>
+
+    <!-- Day 1 -->
+    <g transform="translate(190, 8)">
+      <text x="41" y="14" fill="#94a3b8" font-size="9.5" font-weight="700" text-anchor="middle">מחר</text>
+      <text x="41" y="32" font-size="14" text-anchor="middle">☀️</text>
+      <text x="41" y="48" fill="#cbd5e1" font-size="11" font-weight="800" text-anchor="middle">26°</text>
+    </g>
+
+    <!-- Day 2 -->
+    <g transform="translate(100, 8)">
+      <text x="41" y="14" fill="#94a3b8" font-size="9.5" font-weight="700" text-anchor="middle">שבת</text>
+      <text x="41" y="32" font-size="14" text-anchor="middle">🌤️</text>
+      <text x="41" y="48" fill="#cbd5e1" font-size="11" font-weight="800" text-anchor="middle">29°</text>
+    </g>
+
+    <!-- Day 3 -->
+    <g transform="translate(10, 8)">
+      <text x="41" y="14" fill="#94a3b8" font-size="9.5" font-weight="700" text-anchor="middle">יום א׳</text>
+      <text x="41" y="32" font-size="14" text-anchor="middle">☀️</text>
+      <text x="41" y="48" fill="#cbd5e1" font-size="11" font-weight="800" text-anchor="middle">27°</text>
+    </g>
+  </g>
+
+  <!-- ── 4. 3 SEGMENTED TIME BUTTONS (בוקר / צהריים / ערב) ── -->
+  <g transform="translate(25, 204)">
+    <rect x="0" y="0" width="370" height="42" rx="21" fill="#14161d" stroke="#252936" stroke-width="1" />
+
+    <!-- Button 1: בוקר 08:00 (ACTIVE) -->
+    <g transform="translate(244, 4)">
+      <rect x="0" y="0" width="122" height="34" rx="17" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+      <text x="61" y="21" fill="#ffffff" font-size="11" font-weight="900" text-anchor="middle" direction="rtl">☀️ בוקר (23°)</text>
+    </g>
+
+    <!-- Button 2: צהריים 14:00 -->
+    <g transform="translate(124, 4)">
+      <text x="60" y="21" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle" direction="rtl">🌡️ צהריים (34°)</text>
+    </g>
+
+    <!-- Button 3: ערב 19:00 -->
+    <g transform="translate(4, 4)">
+      <text x="60" y="21" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle" direction="rtl">🌙 ערב (26°)</text>
+    </g>
+  </g>
+
+  <!-- ── 5. DYNAMIC VERDICT CARD ── -->
+  <g transform="translate(25, 260)">
+    <rect x="0" y="0" width="370" height="48" rx="12" fill="#064e3b" stroke="#10b981" stroke-width="1.2" />
+    <text x="185" y="29" fill="#ecfdf5" font-size="13" font-weight="900" text-anchor="middle" direction="rtl">
+      🛡️ בטוח לטיול בבוקר (23°C) • תנאים מושלמים!
+    </text>
+  </g>
+
+  <!-- ── 6. DETAILED SPEC LIST ── -->
+  <g transform="translate(25, 322)">
+    <!-- Row 1: מים -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="370" height="34" rx="8" fill="#181a22" stroke="#252936" stroke-width="1" />
+      <text x="350" y="21" fill="#38bdf8" font-size="11" font-weight="800" text-anchor="end" direction="rtl">💧 סוג האתר: מים זורמים ובריכות שכשוך טבעיות</text>
+    </g>
+
+    <!-- Row 2: מסלול -->
+    <g transform="translate(0, 42)">
+      <rect x="0" y="0" width="370" height="34" rx="8" fill="#181a22" stroke="#252936" stroke-width="1" />
+      <text x="350" y="21" fill="#cbd5e1" font-size="11" font-weight="700" text-anchor="end" direction="rtl">🥾 מסלול: 2.5 ק"מ מעגלי קל, מתאים למשפחות</text>
+    </g>
+
+    <!-- Row 3: דמי כניסה -->
+    <g transform="translate(0, 84)">
+      <rect x="0" y="0" width="370" height="34" rx="8" fill="#181a22" stroke="#252936" stroke-width="1" />
+      <text x="350" y="21" fill="#fcd34d" font-size="11" font-weight="800" text-anchor="end" direction="rtl">🎟️ כניסה: 28 ₪ למבוגר / 14 ₪ לילד (מנויי מטמוֹן חינם)</text>
+    </g>
+  </g>
+
+  <!-- ── 7. FOOTER DISCLAIMER ── -->
+  <g transform="translate(25, 460)">
+    <rect x="0" y="0" width="370" height="38" rx="8" fill="#38200d" fill-opacity="0.3" stroke="#b45309" stroke-opacity="0.4" stroke-width="1" />
+    <text x="355" y="17" fill="#fde68a" font-size="8.5" font-weight="700" text-anchor="end" direction="rtl">⚠️ אחריות ובטיחות:</text>
+    <text x="355" y="29" fill="#fbbf24" font-size="8" font-weight="500" text-anchor="end" direction="rtl">
+      מידע משוער מודלי. חובה לבדוק אישור רשות הטבע והגנים טרם יציאה לשטח.
+    </text>
+  </g>
+
+  <!-- ── 8. BOTTOM TELEMETRY BAR ── -->
+  <g transform="translate(25, 520)">
+    <line x1="0" y1="0" x2="370" y2="0" stroke="#252936" stroke-width="1" />
+    <circle cx="10" cy="14" r="3.5" fill="#38BDF8" />
+    <text x="20" y="17" fill="#64748b" font-size="8.5" font-weight="600">Open-Meteo &amp; Tomorrow.io Multi-Tier Active</text>
+    <text x="370" y="17" fill="#64748b" font-size="8.5" font-weight="600" text-anchor="end" direction="rtl">INPA-4011 • רט״ג</text>
+  </g>
+</svg>

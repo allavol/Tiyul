@@ -104,7 +104,7 @@ export async function geocodeCity(name) {
         }
         let region = 'center';
         let regionLabel = 'מרכז והשרון';
-        if (lat >= 32.5) { region = 'north'; regionLabel = 'צפון (גליל וגולן)'; }
+        if (lat >= 32.5) { region = 'north'; regionLabel = 'צפון (גליל, גולן וכרמל)'; }
         else if (lat >= 31.7 && lat <= 31.95 && lng >= 34.95) { region = 'jerusalem'; regionLabel = 'ירושלים והשפלה'; }
         else if (lat < 31.6) { region = 'south'; regionLabel = 'דרום ונגב'; }
         
@@ -136,6 +136,26 @@ export function filterCandidatesByGeo(candidates, state) {
   return candidates.filter((site) => {
     // 1. Strict regional boundary check
     if (state.region && state.region !== 'all' && state.region !== 'radius') {
+      const siteRegion = (site.region || '') + ' ' + (site.name || '') + ' ' + (site.type || []).join(' ');
+      if (state.region === 'west_galilee') {
+        return siteRegion.includes('גליל מערבי') || siteRegion.includes('חוף הגליל') || siteRegion.includes('כזיב') || 
+               siteRegion.includes('חרדלית') || siteRegion.includes('מונפורט') || siteRegion.includes('גורן') || 
+               siteRegion.includes('ראש הנקרה') || siteRegion.includes('אכזיב');
+      }
+      if (state.region === 'golan') {
+        return siteRegion.includes('גולן') || siteRegion.includes('חרמון') || siteRegion.includes('גמלא') || 
+               siteRegion.includes('מג׳רסה') || siteRegion.includes('מג\'רסה') || siteRegion.includes('דליות') || 
+               siteRegion.includes('יהודיה') || siteRegion.includes('משושים') || siteRegion.includes('בנטל') || 
+               siteRegion.includes('כנף') || siteRegion.includes('מוקש') || siteRegion.includes('פיק');
+      }
+      if (state.region === 'upper_galilee') {
+        return siteRegion.includes('גליל עליון') || siteRegion.includes('אצבע הגליל') || siteRegion.includes('עמק החולה') || 
+               siteRegion.includes('דן') || siteRegion.includes('שניר') || siteRegion.includes('חצבני') || 
+               siteRegion.includes('ביריה') || siteRegion.includes('מירון') || siteRegion.includes('עיון');
+      }
+      if (state.region === 'carmel') {
+        return site.region_group === 'haifa_carmel' || siteRegion.includes('כרמל') || siteRegion.includes('רמות מנשה');
+      }
       if (state.region === 'north' && site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
       if (state.region === 'center' && site.region_group !== 'center') return false;
       if (state.region === 'jerusalem' && site.region_group !== 'jerusalem' && site.region !== 'שפלת יהודה') return false;
