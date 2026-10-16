@@ -823,10 +823,12 @@ export default function AgentChatBot({
 
         {/* Audit Log Modal */}
         {showAuditModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" dir="rtl">
-            <div className={`relative w-full max-w-md border rounded-2xl shadow-2xl p-5 flex flex-col gap-4 max-h-[90vh] overflow-y-auto ${
+          <div className={`fixed inset-0 z-50 flex items-center justify-center p-3 rounded-3xl animate-fade-in ${
+            isLightMode ? 'bg-slate-900/20 backdrop-blur-[2px]' : 'bg-black/70 backdrop-blur-sm'
+          }`} dir="rtl">
+            <div className={`relative w-full border rounded-2xl shadow-2xl p-4 flex flex-col gap-3 max-h-full overflow-y-auto ${
               isLightMode
-                ? 'bg-white border-slate-200 text-slate-900 shadow-slate-900/10'
+                ? 'bg-white border-slate-200 text-slate-900 shadow-xl'
                 : 'bg-zinc-900 border-white/10 text-zinc-100'
             }`}>
               {/* Header */}
