@@ -341,6 +341,7 @@ export default function App() {
       <AgentChatBot
         isOpen={isChatBotOpen}
         onClose={() => setIsChatBotOpen(false)}
+        isLightMode={isLightMode}
         onProposalsUpdate={(proposals) => {
           if (proposals && proposals.length > 0) {
             setRecommendedAssetIds(proposals.map((p) => p.id));

@@ -95,6 +95,7 @@ export default function AgentChatBot({
   queryTrigger = null,
   onClearQueryTrigger = null,
   onOpenObservability = null,
+  isLightMode = true,
 }) {
   const CHAT_STORAGE_KEY = 'tiyul_agent_chat_messages_v2';
   const SESSION_STORAGE_KEY = 'tiyul_agent_session_state_v2';
@@ -353,23 +354,37 @@ export default function AgentChatBot({
           onClick={() => setIsMinimized(false)}
           data-testid="docked-chatbot-pill"
           title="הרחב שיחת סוכן"
-          className="flex items-center gap-3 px-4 py-3 rounded-2xl glass-panel border border-accent/40 bg-brand-deep/95 text-zinc-100 shadow-2xl hover:border-accent hover:bg-brand-card transition-all group"
+          className={`flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-2xl transition-all group ${
+            isLightMode
+              ? 'bg-white text-slate-800 border-slate-200 shadow-slate-900/10 hover:border-teal-300'
+              : 'glass-panel border-accent/40 bg-brand-deep/95 text-zinc-100 hover:border-accent hover:bg-brand-card'
+          }`}
         >
-          <div className="w-8 h-8 rounded-xl bg-accent/20 text-accent flex items-center justify-center shadow">
-            <Compass className="w-4 h-4 animate-spin-slow text-accent" />
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow ${
+            isLightMode ? 'bg-teal-50 text-teal-700' : 'bg-accent/20 text-accent'
+          }`}>
+            <Compass className="w-4 h-4 animate-spin-slow" />
           </div>
           <div className="text-right">
-            <div className="text-xs font-black text-white flex items-center gap-1.5">
+            <div className={`text-xs font-black flex items-center gap-1.5 ${
+              isLightMode ? 'text-slate-900' : 'text-white'
+            }`}>
               <span>סוכן הטיולים</span>
               {sessionState.lastProposals?.length > 0 && (
-                <span className="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full border border-accent/30 font-bold">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-bold ${
+                  isLightMode
+                    ? 'bg-teal-50 text-teal-700 border-teal-200'
+                    : 'bg-accent/20 text-accent border-accent/30'
+                }`}>
                   {sessionState.lastProposals.length} הצעות
                 </span>
               )}
             </div>
-            <div className="text-[10px] text-zinc-400">לחץ להרחבת השיחה ↗</div>
+            <div className={`text-[10px] ${isLightMode ? 'text-slate-400' : 'text-zinc-400'}`}>לחץ להרחבת השיחה ↗</div>
           </div>
-          <Maximize2 className="w-4 h-4 text-zinc-400 group-hover:text-accent transition ml-1" />
+          <Maximize2 className={`w-4 h-4 transition ml-1 ${
+            isLightMode ? 'text-slate-400 group-hover:text-teal-600' : 'text-zinc-400 group-hover:text-accent'
+          }`} />
         </button>
       </div>
     );
@@ -381,18 +396,23 @@ export default function AgentChatBot({
       role="dialog"
       aria-modal="true"
       aria-label="סוכן הטיולים החכם"
-      className="fixed inset-3 bottom-16 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[420px] sm:h-[580px] sm:max-h-[85vh] z-[1200] glass-panel rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 animate-floating-card font-body select-none pointer-events-auto" 
-      style={{ borderColor: 'var(--border-accent)' }}
+      className={`fixed inset-3 bottom-16 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[420px] sm:h-[580px] sm:max-h-[85vh] z-[1200] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-floating-card font-body select-none pointer-events-auto border backdrop-blur-2xl ${
+        isLightMode
+          ? 'bg-white/95 text-slate-800 border-slate-200/90 shadow-slate-900/10'
+          : 'glass-panel text-zinc-100 border-[var(--border-accent)]'
+      }`} 
     >
       {/* Top Header */}
-      <div className="p-4 border-b border-white/[0.06] bg-brand-card/60 flex items-center justify-between gap-3">
+      <div className={`p-4 border-b flex items-center justify-between gap-3 ${
+        isLightMode ? 'bg-slate-50/90 border-slate-200' : 'bg-brand-card/60 border-white/[0.06]'
+      }`}>
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent shadow-lg">
               <Compass className="w-5 h-5 animate-spin-slow" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-base text-white tracking-tight font-display">
+                <h3 className={`font-black text-base tracking-tight font-display ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   סוכן הטיולים
                 </h3>
                 <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-accent bg-accent/[0.08] px-1.5 py-0.5 rounded-full border border-accent/20">
@@ -400,7 +420,7 @@ export default function AgentChatBot({
                   AI GUIDE
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 font-light">
+              <p className={`text-xs font-light ${isLightMode ? 'text-slate-500' : 'text-zinc-500'}`}>
                 תכנון מסלולים מונחה בטיחות ונתוני שטח
               </p>
             </div>
@@ -416,9 +436,13 @@ export default function AgentChatBot({
                 }
               }}
               title="הורד יומן ולידציה ובקרת איכות (JSON)"
-              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-emerald-400 flex items-center justify-center transition"
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
+                isLightMode
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-emerald-600'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-emerald-400'
+              }`}
             >
-              {exportedAudit ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Download className="w-3.5 h-3.5" />}
+              {exportedAudit ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Download className="w-3.5 h-3.5" />}
             </button>
             <button
               onClick={() => {
@@ -431,28 +455,44 @@ export default function AgentChatBot({
                 setShowAuditModal(true);
               }}
               title="שליחת לוג ובקרת איכות (שיתוף בנייד / GitHub / הורדה)"
-              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-amber-400 flex items-center justify-center transition"
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
+                isLightMode
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-amber-600'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-amber-400'
+              }`}
             >
               <Bug className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleReset}
               title="איפוס שיחה"
-              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-accent flex items-center justify-center transition"
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
+                isLightMode
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-teal-700'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-accent'
+              }`}
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setIsMinimized(true)}
               title="מזער שיחה"
-              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200 flex items-center justify-center transition"
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
+                isLightMode
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200'
+              }`}
             >
               <Minimize2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onClose}
               title="סגור"
-              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200 flex items-center justify-center transition"
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
+                isLightMode
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200'
+              }`}
             >
               <X className="w-4 h-4" />
             </button>
@@ -473,8 +513,12 @@ export default function AgentChatBot({
                 <div
                   className={`max-w-[88%] rounded-2xl p-3.5 leading-relaxed ${
                     isBot
-                      ? 'bg-brand-card text-zinc-200 border border-white/[0.06] shadow-md'
-                      : 'bg-accent text-brand-deep font-semibold shadow-md'
+                      ? isLightMode
+                        ? 'bg-slate-100 text-slate-800 border border-slate-200/90 shadow-sm'
+                        : 'bg-brand-card text-zinc-200 border border-white/[0.06] shadow-md'
+                      : isLightMode
+                        ? 'bg-teal-600 text-white font-semibold shadow-sm'
+                        : 'bg-accent text-brand-deep font-semibold shadow-md'
                   }`}
                 >
                   <div className="whitespace-pre-line text-sm">
@@ -504,8 +548,12 @@ export default function AgentChatBot({
                       return (
                         <div
                           key={cardKey}
-                          className="w-full editorial-card p-3 rounded-2xl border transition-all duration-200 group"
-                          style={{ borderColor: 'var(--border-accent)' }}
+                          className={`w-full p-3 rounded-2xl border transition-all duration-200 group ${
+                            isLightMode
+                              ? 'bg-white/95 border-slate-200 shadow-sm hover:border-teal-500/50'
+                              : 'editorial-card border-[var(--border-accent)]'
+                          }`}
+                          style={isLightMode ? undefined : { borderColor: 'var(--border-accent)' }}
                         >
                           {/* Card Header (Always visible - compact & clickable) */}
                           <div className="flex items-center justify-between gap-2">
@@ -515,20 +563,22 @@ export default function AgentChatBot({
                             >
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-base flex-shrink-0">{getCategoryIconChar(prop)}</span>
-                                <h4 className="text-sm font-bold text-white group-hover:text-accent transition-colors font-display truncate">
+                                <h4 className={`text-sm font-bold transition-colors font-display truncate ${
+                                  isLightMode ? 'text-slate-900 group-hover:text-teal-700' : 'text-white group-hover:text-accent'
+                                }`}>
                                   {prop.name}
                                 </h4>
                               </div>
-                              <div className="flex items-center gap-1.5 text-[11px] mt-0.5 text-zinc-400">
-                                <span className="text-accent/80 font-semibold">{prop.region}</span>
-                                <span className="text-zinc-600">•</span>
-                                <span className="font-mono text-zinc-400 text-[10px]">
+                              <div className={`flex items-center gap-1.5 text-[11px] mt-0.5 ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>
+                                <span className={isLightMode ? 'text-teal-700 font-semibold' : 'text-accent/80 font-semibold'}>{prop.region}</span>
+                                <span className={isLightMode ? 'text-slate-300' : 'text-zinc-600'}>•</span>
+                                <span className={`font-mono text-[10px] ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>
                                   {prop.authority_id}
                                 </span>
                                 {prop.weather?.temp && (
                                   <>
-                                    <span className="text-zinc-600">•</span>
-                                    <span className="text-amber-300 font-bold text-[11px]">{prop.weather.temp}</span>
+                                    <span className={isLightMode ? 'text-slate-300' : 'text-zinc-600'}>•</span>
+                                    <span className={`font-bold text-[11px] ${isLightMode ? 'text-amber-600' : 'text-amber-300'}`}>{prop.weather.temp}</span>
                                   </>
                                 )}
                               </div>
@@ -543,13 +593,17 @@ export default function AgentChatBot({
                                   e.stopPropagation();
                                   toggleCardExpansion(cardKey);
                                 }}
-                                className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-zinc-300 hover:text-white transition flex items-center justify-center text-xs"
+                                className={`p-1 rounded-lg flex items-center justify-center text-xs transition ${
+                                  isLightMode
+                                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900'
+                                    : 'bg-white/[0.04] hover:bg-white/[0.1] text-zinc-300 hover:text-white'
+                                }`}
                                 title={isExpanded ? 'סגור פרטים' : 'פתח פרטים'}
                               >
                                 {isExpanded ? (
-                                  <ChevronUp className="w-4 h-4 text-accent" />
+                                  <ChevronUp className={`w-4 h-4 ${isLightMode ? 'text-teal-600' : 'text-accent'}`} />
                                 ) : (
-                                  <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-accent" />
+                                  <ChevronDown className={`w-4 h-4 ${isLightMode ? 'text-slate-400 group-hover:text-teal-600' : 'text-zinc-400 group-hover:text-accent'}`} />
                                 )}
                               </button>
                             </div>
@@ -566,7 +620,11 @@ export default function AgentChatBot({
                                   setIsMinimized(true);
                                 }
                               }}
-                              className="flex-1 py-1.5 px-2.5 bg-accent hover:bg-accent-light active:scale-[0.98] text-brand-deep font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition"
+                              className={`flex-1 py-1.5 px-2.5 active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition ${
+                                isLightMode
+                                  ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                                  : 'bg-accent hover:bg-accent-light text-brand-deep'
+                              }`}
                             >
                               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                               <span>הצג במפה 🗺️</span>
@@ -574,16 +632,20 @@ export default function AgentChatBot({
 
                             <button
                               onClick={() => toggleCardExpansion(cardKey)}
-                              className="py-1.5 px-2.5 bg-brand-deep/80 hover:bg-brand-deep text-zinc-300 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition"
+                              className={`py-1.5 px-2.5 active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition border ${
+                                isLightMode
+                                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                                  : 'bg-brand-deep/80 hover:bg-brand-deep text-zinc-300 hover:text-white border-white/[0.08]'
+                              }`}
                             >
                               {isExpanded ? (
                                 <>
-                                  <ChevronUp className="w-3 h-3 text-accent" />
+                                  <ChevronUp className={`w-3 h-3 ${isLightMode ? 'text-teal-600' : 'text-accent'}`} />
                                   <span>סגור פרטים</span>
                                 </>
                               ) : (
                                 <>
-                                  <ChevronDown className="w-3 h-3 text-accent" />
+                                  <ChevronDown className={`w-3 h-3 ${isLightMode ? 'text-teal-600' : 'text-accent'}`} />
                                   <span>פרטים נוספים</span>
                                 </>
                               )}
@@ -592,32 +654,46 @@ export default function AgentChatBot({
 
                           {/* Expandable Details Container */}
                           {isExpanded && (
-                            <div className="pt-2.5 mt-2 space-y-2 border-t border-white/[0.06] animate-in fade-in duration-200">
+                            <div className={`pt-2.5 mt-2 space-y-2 border-t animate-in fade-in duration-200 ${
+                              isLightMode ? 'border-slate-200' : 'border-white/[0.06]'
+                            }`}>
                               {/* Weather & Climate Pill */}
-                              <div className="grid grid-cols-2 gap-1.5 text-xs bg-brand-deep/60 p-2 rounded-xl border border-white/[0.04]">
-                                <div className="flex items-center gap-1.5 text-amber-300">
+                              <div className={`grid grid-cols-2 gap-1.5 text-xs p-2 rounded-xl border ${
+                                isLightMode
+                                  ? 'bg-slate-50 border-slate-200 text-slate-800'
+                                  : 'bg-brand-deep/60 border-white/[0.04]'
+                              }`}>
+                                <div className={`flex items-center gap-1.5 ${isLightMode ? 'text-amber-600' : 'text-amber-300'}`}>
                                   <Sun className="w-3.5 h-3.5 flex-shrink-0" />
                                   <span className="font-bold">{prop.weather.temp}</span>
-                                  <span className="text-[10px] text-zinc-500 truncate">
+                                  <span className={`text-[10px] truncate ${isLightMode ? 'text-slate-500' : 'text-zinc-500'}`}>
                                     ({prop.weather.conditions})
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-accent">
+                                <div className={`flex items-center gap-1.5 ${isLightMode ? 'text-teal-700' : 'text-accent'}`}>
                                   <Droplets className="w-3.5 h-3.5 flex-shrink-0" />
-                                  <span className="text-xs text-zinc-400 truncate">
+                                  <span className={`text-xs truncate ${isLightMode ? 'text-slate-600' : 'text-zinc-400'}`}>
                                     {prop.weather.heatLoad}
                                   </span>
                                 </div>
                               </div>
 
                               {/* XAI Explainability Rationale */}
-                              <p className="text-xs text-zinc-300 bg-accent/[0.05] border border-accent/10 p-2 rounded-xl leading-snug">
+                              <p className={`text-xs p-2 rounded-xl leading-snug border ${
+                                isLightMode
+                                  ? 'text-slate-700 bg-teal-50/70 border-teal-200/80'
+                                  : 'text-zinc-300 bg-accent/[0.05] border-accent/10'
+                              }`}>
                                 💡 {prop.matchRationale}
                               </p>
 
                               {/* Water Advisory if any */}
                               {prop.waterAdvisory && (
-                                <div className="flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
+                                <div className={`flex items-center gap-1.5 text-xs p-2 rounded-xl border ${
+                                  isLightMode
+                                    ? 'text-amber-800 bg-amber-50 border-amber-200'
+                                    : 'text-amber-300 bg-amber-500/10 border-amber-500/20'
+                                }`}>
                                   <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                                   <span>{prop.waterAdvisory.title}</span>
                                 </div>
@@ -629,24 +705,32 @@ export default function AgentChatBot({
                                   href={`https://waze.com/ul?ll=${prop.lat},${prop.lng}&navigate=yes`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="py-1.5 px-2 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center"
+                                  className={`py-1.5 px-2 active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center border ${
+                                    isLightMode
+                                      ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
+                                      : 'bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border-white/[0.08]'
+                                  }`}
                                 >
-                                  <Navigation className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                                  <Navigation className={`w-3 h-3 flex-shrink-0 ${isLightMode ? 'text-blue-600' : 'text-blue-400'}`} />
                                   <span className="truncate">נווט ב-Waze</span>
                                 </a>
 
                                 <button
                                   onClick={() => handleCopyProposal(prop)}
-                                  className="py-1.5 px-2 bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border border-white/[0.08] active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center"
+                                  className={`py-1.5 px-2 active:scale-[0.98] font-bold text-[11px] leading-tight rounded-lg flex items-center justify-center gap-1 transition text-center border ${
+                                    isLightMode
+                                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                                      : 'bg-brand-deep/80 hover:bg-brand-deep text-zinc-200 hover:text-white border-white/[0.08]'
+                                  }`}
                                 >
                                   {copiedId === prop.id ? (
                                     <>
-                                      <Check className="w-3 h-3 text-emerald-400" />
-                                      <span className="text-emerald-400 truncate">הועתק ללוח!</span>
+                                      <Check className="w-3 h-3 text-emerald-600" />
+                                      <span className="text-emerald-600 truncate">הועתק ללוח!</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Copy className="w-3 h-3 text-accent" />
+                                      <Copy className={`w-3 h-3 ${isLightMode ? 'text-teal-600' : 'text-accent'}`} />
                                       <span className="truncate">העתק פרטים</span>
                                     </>
                                   )}
@@ -654,7 +738,9 @@ export default function AgentChatBot({
                               </div>
 
                               {/* Coordinates */}
-                              <div className="flex items-center justify-end text-[10px] text-zinc-500 font-mono px-1">
+                              <div className={`flex items-center justify-end text-[10px] font-mono px-1 ${
+                                isLightMode ? 'text-slate-400' : 'text-zinc-500'
+                              }`}>
                                 📍 {prop.lat.toFixed(3)}, {prop.lng.toFixed(3)}
                               </div>
                             </div>
@@ -692,13 +778,19 @@ export default function AgentChatBot({
         </div>
 
         {/* Chat Input Bar */}
-        <div className="p-3 border-t border-white/[0.06] bg-brand-card/60">
+        <div className={`p-3 border-t ${
+          isLightMode ? 'bg-slate-50/90 border-slate-200' : 'bg-brand-card/60 border-white/[0.06]'
+        }`}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="flex items-center gap-2 bg-brand-deep border border-white/[0.08] rounded-2xl px-3 py-1.5 focus-within:border-accent/40 transition-colors shadow-inner"
+            className={`flex items-center gap-2 border rounded-2xl px-3 py-1.5 transition-colors shadow-inner ${
+              isLightMode
+                ? 'bg-white border-slate-200 focus-within:border-teal-500'
+                : 'bg-brand-deep border-white/[0.08] focus-within:border-accent/40'
+            }`}
           >
             <input
               type="text"
@@ -706,48 +798,72 @@ export default function AgentChatBot({
               onChange={(e) => setInputVal(e.target.value)}
               placeholder="כתבו בקשה חופשית... (למשל: טיול מים מחר בצפון לגיל 4)"
               disabled={isProcessing}
-              className="flex-1 bg-transparent text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none py-1.5 text-right font-body"
+              className={`flex-1 bg-transparent text-xs py-1.5 text-right font-body focus:outline-none ${
+                isLightMode ? 'text-slate-900 placeholder-slate-400' : 'text-zinc-100 placeholder-zinc-600'
+              }`}
             />
             <button
               type="submit"
               disabled={!inputVal.trim() || isProcessing}
-              className="w-8 h-8 rounded-xl bg-accent hover:bg-accent-light disabled:opacity-30 text-brand-deep flex items-center justify-center transition flex-shrink-0 shadow font-bold"
+              className={`w-8 h-8 rounded-xl disabled:opacity-30 flex items-center justify-center transition flex-shrink-0 shadow font-bold ${
+                isLightMode
+                  ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                  : 'bg-accent hover:bg-accent-light text-brand-deep'
+              }`}
             >
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
-          <div className="flex items-center justify-center text-[10px] text-zinc-500 mt-2 px-1">
+          <div className={`flex items-center justify-center text-[10px] mt-2 px-1 ${
+            isLightMode ? 'text-slate-500' : 'text-zinc-500'
+          }`}>
             <span>🛡️ שיחה מאובטחת • נתונים מאומתים מ-INPA</span>
           </div>
         </div>
 
         {/* Audit Log Modal */}
         {showAuditModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in" dir="rtl">
-            <div className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl p-5 text-zinc-100 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" dir="rtl">
+            <div className={`relative w-full max-w-md border rounded-2xl shadow-2xl p-5 flex flex-col gap-4 max-h-[90vh] overflow-y-auto ${
+              isLightMode
+                ? 'bg-white border-slate-200 text-slate-900 shadow-slate-900/10'
+                : 'bg-zinc-900 border-white/10 text-zinc-100'
+            }`}>
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className={`flex items-center justify-between border-b pb-3 ${
+                isLightMode ? 'border-slate-200' : 'border-white/10'
+              }`}>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                    isLightMode
+                      ? 'bg-teal-50 border border-teal-200 text-teal-700'
+                      : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
+                  }`}>
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white">שליחת לוג ובקרת איכות</h3>
-                    <p className="text-[11px] text-zinc-400">פרוטוקול השיחה מתועד ומוכן לשיתוף</p>
+                    <h3 className={`text-sm font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>שליחת לוג ובקרת איכות</h3>
+                    <p className={`text-[11px] ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>פרוטוקול השיחה מתועד ומוכן לשיתוף</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAuditModal(false)}
-                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition"
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition ${
+                    isLightMode ? 'bg-slate-100 hover:bg-slate-200 text-slate-500' : 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white'
+                  }`}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Auto-copy Alert */}
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2.5">
-                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-emerald-300 leading-relaxed">
+              <div className={`p-3 rounded-xl border flex items-start gap-2.5 ${
+                isLightMode
+                  ? 'bg-teal-50/80 border-teal-200 text-teal-900'
+                  : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300'
+              }`}>
+                <Check className={`w-4 h-4 shrink-0 mt-0.5 ${isLightMode ? 'text-teal-600' : 'text-emerald-400'}`} />
+                <p className="text-xs leading-relaxed">
                   <strong>הפרוטוקול המלא וה-JSON הועתקו ללוח!</strong> כעת תוכלו לשתף אותו ישירות או להדביקו בכל מקום.
                 </p>
               </div>
@@ -761,14 +877,20 @@ export default function AgentChatBot({
                       await AgentAuditLogger.shareAuditLog();
                       setShowAuditModal(false);
                     }}
-                    className="w-full p-3.5 rounded-xl bg-accent/20 hover:bg-accent/30 border border-accent/40 text-white flex items-center gap-3 transition group text-right shadow-sm"
+                    className={`w-full p-3.5 rounded-xl border flex items-center gap-3 transition group text-right shadow-sm ${
+                      isLightMode
+                        ? 'bg-teal-600 hover:bg-teal-700 border-teal-700 text-white'
+                        : 'bg-accent/20 hover:bg-accent/30 border border-accent/40 text-white'
+                    }`}
                   >
-                    <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center text-accent shrink-0">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      isLightMode ? 'bg-white/20 text-white' : 'bg-accent/20 text-accent'
+                    }`}>
                       <Share2 className="w-4 h-4" />
                     </div>
                     <div className="flex-1">
                       <div className="text-xs font-bold text-white">שיתוף ישיר בנייד (WhatsApp / Drive / מייל)</div>
-                      <div className="text-[10px] text-zinc-400">פתיחת תפריט השיתוף הטבעי של הטלפון לשליחה מיידית</div>
+                      <div className={`text-[10px] ${isLightMode ? 'text-teal-100' : 'text-zinc-400'}`}>פתיחת תפריט השיתוף הטבעי של הטלפון לשליחה מיידית</div>
                     </div>
                   </button>
                 )}
@@ -779,14 +901,20 @@ export default function AgentChatBot({
                     AgentAuditLogger.openGitHubIssueReport();
                     setShowAuditModal(false);
                   }}
-                  className="w-full p-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white flex items-center gap-3 transition group text-right"
+                  className={`w-full p-3.5 rounded-xl border flex items-center gap-3 transition group text-right ${
+                    isLightMode
+                      ? 'bg-amber-50/70 hover:bg-amber-100/70 border-amber-200 text-slate-800'
+                      : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white'
+                  }`}
                 >
-                  <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 shrink-0">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                    isLightMode ? 'bg-amber-100 text-amber-700' : 'bg-amber-500/10 text-amber-400'
+                  }`}>
                     <Bug className="w-4 h-4" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs font-bold text-white">פתיחה ב-GitHub Issues</div>
-                    <div className="text-[10px] text-zinc-400">פתיחת דיווח קצר ונקי (עשו 'הדבק' כדי לצרף את הלוג המלא)</div>
+                    <div className="text-xs font-bold">פתיחה ב-GitHub Issues</div>
+                    <div className={`text-[10px] ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>פתיחת דיווח קצר ונקי (עשו 'הדבק' כדי לצרף את הלוג המלא)</div>
                   </div>
                 </button>
 
@@ -797,23 +925,31 @@ export default function AgentChatBot({
                     setExportedAudit(true);
                     setTimeout(() => setExportedAudit(false), 2000);
                   }}
-                  className="w-full p-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white flex items-center gap-3 transition group text-right"
+                  className={`w-full p-3.5 rounded-xl border flex items-center gap-3 transition group text-right ${
+                    isLightMode
+                      ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800'
+                      : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white'
+                  }`}
                 >
-                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                    isLightMode ? 'bg-slate-200 text-slate-700' : 'bg-emerald-500/10 text-emerald-400'
+                  }`}>
                     <Download className="w-4 h-4" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs font-bold text-white">הורדת קובץ לוג (JSON)</div>
-                    <div className="text-[10px] text-zinc-400">שמירת קובץ הנתונים המלא ישירות למכשיר</div>
+                    <div className="text-xs font-bold">הורדת קובץ לוג (JSON)</div>
+                    <div className={`text-[10px] ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>שמירת קובץ הנתונים המלא ישירות למכשיר</div>
                   </div>
                 </button>
               </div>
 
               {/* Close Footer */}
-              <div className="pt-2 border-t border-white/10 flex justify-end">
+              <div className={`pt-2 border-t flex justify-end ${isLightMode ? 'border-slate-200' : 'border-white/10'}`}>
                 <button
                   onClick={() => setShowAuditModal(false)}
-                  className="px-4 py-1.5 text-xs font-medium rounded-lg bg-white/10 hover:bg-white/15 text-zinc-300 transition"
+                  className={`px-4 py-1.5 text-xs font-medium rounded-lg transition ${
+                    isLightMode ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-white/10 hover:bg-white/15 text-zinc-300'
+                  }`}
                 >
                   סגור
                 </button>
