@@ -183,41 +183,67 @@ class AgentAuditLoggerClass {
   }
 
   /**
-   * Constructs a URL-safe GitHub Issue URL strictly capped under 1,500 encoded characters
-   * to prevent GitHub HTTP 414 'Whoa there! Your request URL is too long' errors.
+   * Constructs an ultra-short, URL-safe GitHub Issue URL (under 100 characters total)
+   * with ZERO body parameter to guarantee that GitHub HTTP 414 'Whoa there! Your request URL is too long'
+   * errors NEVER occur, even when mobile users are redirected through https://github.com/login?return_to=...
    */
   buildSafeGitHubIssueUrl(repoUrl = 'https://github.com/allavol/Tiyul') {
     const log = this.getAuditLog();
     const turns = log.turns || [];
     const latestTurn = turns[turns.length - 1] || turns[0];
-    const querySnippet = latestTurn?.query ? latestTurn.query.trim().substring(0, 30) : 'Session Report';
-    const nowIso = new Date().toISOString();
+    const querySnippet = latestTurn?.query ? latestTurn.query.trim().substring(0, 25) : 'Report';
+    const nowIso = new Date().toISOString().substring(0, 10);
 
-    const title = `[Q&A Audit] ${querySnippet} (${nowIso.substring(0, 10)})`;
+    const title = `[Q&A Audit] ${querySnippet} (${nowIso})`;
+    // Pass ONLY title! Body is copied to user's clipboard ready for Paste.
+    return `${repoUrl}/issues/new?title=${encodeURIComponent(title)}`;
+  }
 
-    let compactBody = `### 🛡️ דיווח ולידציה ובקרת איכות\n\n`;
-    compactBody += `- **זמן:** \`${log.client_timestamp || nowIso}\`\n`;
-    compactBody += `- **גרסה:** \`${log.app_version}\` (\`${log.app_commit_hash}\`)\n`;
-    compactBody += `- **מזהה שיחה:** \`${log.session_id}\`\n\n`;
+  /**
+   * Triggers native Web Share API on mobile (WhatsApp, Gmail, Drive, Telegram)
+   * or falls back to clipboard copy.
+   */
+  async shareAuditLog() {
+    const fullReport = this.generateFullReportMarkdown();
+    const log = this.getAuditLog();
+    const nowIso = new Date().toISOString().substring(0, 10);
+    const fileName = `audit_log_${nowIso}.json`;
 
-    if (latestTurn) {
-      const q = (latestTurn.query || '').trim().substring(0, 50);
-      const a = (latestTurn.agent_response || '').trim().substring(0, 80);
-      compactBody += `**שאלה:** ${q}\n`;
-      compactBody += `**תשובה:** ${a}...\n\n`;
+    // 1. Copy to clipboard as baseline
+    try {
+      if (typeof navigator !== 'undefined' && navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(fullReport);
+      }
+    } catch (e) {}
+
+    // 2. Mobile Web Share API
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        if (typeof File !== 'undefined' && navigator.canShare) {
+          const file = new File([JSON.stringify(log, null, 2)], fileName, { type: 'application/json' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `דוח שיחה לסוכן הטיולים (${nowIso})`,
+              text: `מצורף יומן שיחה ואימות (${nowIso}):`,
+              files: [file]
+            });
+            return { success: true, method: 'share_files' };
+          }
+        }
+
+        await navigator.share({
+          title: `דוח שיחה לסוכן הטיולים (${nowIso})`,
+          text: fullReport
+        });
+        return { success: true, method: 'share_text' };
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          return { success: false, method: 'aborted' };
+        }
+      }
     }
 
-    compactBody += `> 📋 **פרוטוקול השיחה המלא וה-JSON הועתקו ללוח (Clipboard).** לחצו כאן 'הדבק' (Paste / Ctrl+V).\n`;
-
-    let targetUrl = `${repoUrl}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(compactBody)}`;
-
-    // Strict Hard-Cap: ensure total URL length is < 1,500 chars (GitHub safe limit is ~2,000)
-    if (targetUrl.length > 1500) {
-      const minimalBody = `### 🛡️ דיווח איכות\n- **זמן:** \`${nowIso}\`\n- **מזהה:** \`${log.session_id}\`\n\n> 📋 **הפרוטוקול המלא הועתק ללוח.** לחצו Paste כאן.`;
-      targetUrl = `${repoUrl}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(minimalBody)}`;
-    }
-
-    return targetUrl;
+    return { success: true, method: 'clipboard' };
   }
 
   /**

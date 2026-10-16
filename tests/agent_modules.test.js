@@ -305,8 +305,9 @@ describe('AgentAuditLogger Unit Tests (Least Privilege & ISO Timestamps)', () =>
     const safeUrl = AgentAuditLogger.buildSafeGitHubIssueUrl();
     expect(safeUrl).toBeDefined();
     expect(safeUrl.startsWith('https://github.com/allavol/Tiyul/issues/new?')).toBe(true);
-    // Hard limit: MUST be strictly under 1,500 characters (GitHub safe limit is ~2,000)
-    expect(safeUrl.length).toBeLessThan(1500);
+    // Hard limit: ultra-short URL (under 300 chars) and zero body parameter to prevent HTTP 414
+    expect(safeUrl.length).toBeLessThan(300);
+    expect(safeUrl).not.toContain('body=');
 
     const fullMarkdown = AgentAuditLogger.generateFullReportMarkdown();
     expect(fullMarkdown).toContain('פרוטוקול השאלות והתשובות המלא');

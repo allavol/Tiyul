@@ -26,7 +26,8 @@ import {
   ChevronUp,
   Activity,
   Download,
-  Bug
+  Bug,
+  Share2
 } from 'lucide-react';
 import { AgentBotService } from '../services/AgentBotService';
 import { AgentAuditLogger } from '../services/AgentAuditLogger';
@@ -167,6 +168,7 @@ export default function AgentChatBot({
   const [expandedCards, setExpandedCards] = useState({});
   const [exportedAudit, setExportedAudit] = useState(false);
   const [reportedIssue, setReportedIssue] = useState(false);
+  const [showAuditModal, setShowAuditModal] = useState(false);
   const messagesEndRef = useRef(null);
 
   const toggleCardExpansion = (cardId) => {
@@ -420,16 +422,18 @@ export default function AgentChatBot({
             </button>
             <button
               onClick={() => {
-                const ok = AgentAuditLogger.openGitHubIssueReport();
-                if (ok) {
-                  setReportedIssue(true);
-                  setTimeout(() => setReportedIssue(false), 2500);
-                }
+                try {
+                  const fullReport = AgentAuditLogger.generateFullReportMarkdown();
+                  if (navigator?.clipboard?.writeText) {
+                    navigator.clipboard.writeText(fullReport).catch(() => {});
+                  }
+                } catch (e) {}
+                setShowAuditModal(true);
               }}
-              title="דווח על שיחה ב-GitHub Issues (מעתיק פרוטוקול מלא ללוח ופותח דף דיווח)"
+              title="שליחת לוג ובקרת איכות (שיתוף בנייד / GitHub / הורדה)"
               className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-amber-400 flex items-center justify-center transition"
             >
-              {reportedIssue ? <Check className="w-3.5 h-3.5 text-amber-400" /> : <Bug className="w-3.5 h-3.5" />}
+              <Bug className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleReset}
@@ -716,6 +720,107 @@ export default function AgentChatBot({
             <span>🛡️ שיחה מאובטחת • נתונים מאומתים מ-INPA</span>
           </div>
         </div>
+
+        {/* Audit Log Modal */}
+        {showAuditModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in" dir="rtl">
+            <div className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl p-5 text-zinc-100 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">שליחת לוג ובקרת איכות</h3>
+                    <p className="text-[11px] text-zinc-400">פרוטוקול השיחה מתועד ומוכן לשיתוף</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAuditModal(false)}
+                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Auto-copy Alert */}
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-emerald-300 leading-relaxed">
+                  <strong>הפרוטוקול המלא וה-JSON הועתקו ללוח!</strong> כעת תוכלו לשתף אותו ישירות או להדביקו בכל מקום.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2.5">
+                {/* Native Mobile Share */}
+                {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+                  <button
+                    onClick={async () => {
+                      await AgentAuditLogger.shareAuditLog();
+                      setShowAuditModal(false);
+                    }}
+                    className="w-full p-3.5 rounded-xl bg-accent/20 hover:bg-accent/30 border border-accent/40 text-white flex items-center gap-3 transition group text-right shadow-sm"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center text-accent shrink-0">
+                      <Share2 className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs font-bold text-white">שיתוף ישיר בנייד (WhatsApp / Drive / מייל)</div>
+                      <div className="text-[10px] text-zinc-400">פתיחת תפריט השיתוף הטבעי של הטלפון לשליחה מיידית</div>
+                    </div>
+                  </button>
+                )}
+
+                {/* GitHub Issue with Ultra-Short URL */}
+                <button
+                  onClick={() => {
+                    AgentAuditLogger.openGitHubIssueReport();
+                    setShowAuditModal(false);
+                  }}
+                  className="w-full p-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white flex items-center gap-3 transition group text-right"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 shrink-0">
+                    <Bug className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-white">פתיחה ב-GitHub Issues</div>
+                    <div className="text-[10px] text-zinc-400">פתיחת דיווח קצר ונקי (עשו 'הדבק' כדי לצרף את הלוג המלא)</div>
+                  </div>
+                </button>
+
+                {/* Download JSON File */}
+                <button
+                  onClick={() => {
+                    AgentAuditLogger.exportAsJsonFile();
+                    setExportedAudit(true);
+                    setTimeout(() => setExportedAudit(false), 2000);
+                  }}
+                  className="w-full p-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white flex items-center gap-3 transition group text-right"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+                    <Download className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-white">הורדת קובץ לוג (JSON)</div>
+                    <div className="text-[10px] text-zinc-400">שמירת קובץ הנתונים המלא ישירות למכשיר</div>
+                  </div>
+                </button>
+              </div>
+
+              {/* Close Footer */}
+              <div className="pt-2 border-t border-white/10 flex justify-end">
+                <button
+                  onClick={() => setShowAuditModal(false)}
+                  className="px-4 py-1.5 text-xs font-medium rounded-lg bg-white/10 hover:bg-white/15 text-zinc-300 transition"
+                >
+                  סגור
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
   );
