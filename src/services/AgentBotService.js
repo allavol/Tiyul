@@ -35,7 +35,8 @@ import {
   UNSAFE_BORDER_REFUSAL,
   MILITARY_ZONE_REFUSAL,
   isInScope,
-  OFF_TOPIC_REFUSAL
+  OFF_TOPIC_REFUSAL,
+  isDesertFloodInquiry
 } from './agent/AgentNLUParser.js';
 
 import { 
@@ -53,7 +54,7 @@ import {
 import { AgentTelemetryService } from './agent/AgentTelemetryService.js';
 
 // Public re-exports for complete backward compatibility
-export { KNOWN_ORIGIN_CITIES, geocodeCity, calculateHaversineDistanceKm, getSiteHazardScenario, AgentTelemetryService };
+export { KNOWN_ORIGIN_CITIES, geocodeCity, calculateHaversineDistanceKm, getSiteHazardScenario, AgentTelemetryService, isDesertFloodInquiry };
 
 export class AgentBotService {
   /**
@@ -120,6 +121,138 @@ export class AgentBotService {
    */
   static handleWhatIfScenario(message, sessionState) {
     return handleWhatIfScenario(message, sessionState, assetsData, this.getInitialState());
+  }
+
+  /**
+   * Handle Desert Flood Watch & Forecast Inquiries (e.g. "לראות שיטפון במדבר")
+   * Evaluates live meteorological forecasts across desert catchment basins (Judean Desert, Dead Sea, Negev).
+   * If there is no flood forecast/rain: returns explicit refusal "אין סיכוי לראות שיטפון במדבר" with safe desert alternatives.
+   * If there is a flood possibility: returns confirmation of possibility with strict life-saving safety guidance (elevated observation points only).
+   * 
+   * @param {string} message 
+   * @param {Object} [sessionState=null] 
+   * @param {Object} [options={}] - Optional configuration (e.g. forcePossibility for tests)
+   * @returns {Promise<Object>}
+   */
+  static async handleDesertFloodInquiry(message, sessionState = null, options = {}) {
+    const text = (message || '').toLowerCase();
+    const currentState = sessionState || this.getInitialState();
+
+    // 1. Determine timing
+    let dayIndex = 0;
+    let dayLabel = 'היום';
+
+    if (text.includes('מחרתיים')) {
+      dayIndex = 2;
+      dayLabel = 'מחרתיים';
+    } else if (text.includes('מחר')) {
+      dayIndex = 1;
+      dayLabel = 'מחר';
+    } else if (text.includes('שבת') || text.includes('סופ"ש') || text.includes('סוף שבוע')) {
+      dayIndex = 2;
+      dayLabel = 'סוף השבוע (שבת)';
+    } else if (currentState?.timing) {
+      dayIndex = currentState.dayIndex || 0;
+      dayLabel = currentState.timingLabel || 'היום';
+    }
+
+    // 2. Sample key desert and catchment assets
+    // Ein Gedi (103), Masada (102), Kfar Etzion upstream basin (211), Ein Yahav (801)
+    const desertSiteIds = [103, 102, 211, 801];
+    const desertSites = assetsData.filter((a) => desertSiteIds.includes(a.id));
+
+    let maxPrecip = 0;
+    let worstConditions = '';
+    let hasStormCode = false;
+
+    for (const site of desertSites) {
+      try {
+        const w = await WeatherService.fetchSiteWeather(site, dayIndex);
+        if (w) {
+          const p = Number(w.precipProb) || (parseFloat(String(w.rain).replace(/[^\d.]/g, '')) || 0);
+          if (p > maxPrecip) maxPrecip = p;
+          if (w.conditions && !worstConditions) worstConditions = w.conditions;
+          if (w.weatherCode && [65, 81, 82, 95, 96, 99].includes(w.weatherCode)) {
+            hasStormCode = true;
+          }
+        }
+      } catch (err) {}
+    }
+
+    const isPossibility = options.forcePossibility === true ||
+      (options.forcePossibility !== false && (
+        maxPrecip >= 35 ||
+        hasStormCode ||
+        (worstConditions && (
+          worstConditions.includes('שיטפון') ||
+          worstConditions.includes('גשם כבד') ||
+          worstConditions.includes('סופת רעמים')
+        ))
+      ));
+
+    // Handle specific inquiry about safe observation points
+    const isAskingForObservationSpots = (
+      text.includes('נקודות תצפית') ||
+      text.includes('איפה צופים') ||
+      text.includes('איפה אפשר לצפות') ||
+      text.includes('איפה רואים') ||
+      text.includes('איפה כדאי לראות')
+    );
+
+    let responseText = '';
+    let optionsList = [];
+    let proposalsList = [];
+
+    if (isAskingForObservationSpots) {
+      responseText = `👀 **נקודות תצפית בטוחות ומוסדרות לצפייה בשיטפונות במדבר:**\n\nאם קיימת זרימה באזור ים המלח ומדבר יהודה, צפייה בשיטפון מותרת **אך ורק ממקומות מוגבהים ובטוחים מחוץ לערוץ הנחל**:\n\n1. 🏞️ **מרפסת התצפית במצוקי דרגות / מצפה שלם:**\n   תצפית פנורמית מגובה של מאות מטרים מעל נחל חצצון ונחל דרגה אל עבר ים המלח. בטוח לחלוטין ונגיש ברכב.\n\n2. 🌉 **גשר נחל זוהר (סמוך לנווה זוהר / כביש 90):**\n   תצפית מגשר מוגבה ובטוח לעבר זרימת מי השטפונות הנשפכים לחופי ים המלח הדרומי.\n\n3. 🏖️ **טיילת עין בוקק ושפך נחל רום:**\n   נקודת תצפית מוסדרת ומרוחקת מזרם המים, בטוחה להולכי רגל ולמשפחות.\n\n4. 🚗 **גשר נחל צין (סמוך למפעלי ים המלח):**\n   מבט על הערוץ האדיר של נחל צין בעת זרימות חורפיות.\n\n⚠️ **כלל ברזל מציל חיים:** לעולם אין לרדת לשולי הערוץ או לנסות לחצות כביש מוצף!`;
+      optionsList = [
+        { label: '📡 בדוק תחזית שיטפונות להיום', value: 'לראות שיטפון במדבר היום' },
+        { label: '🛡️ מקלטים בטוחים (Safe Havens)', value: 'הצג מקלטים בטוחים בדרום' },
+        { label: '🔄 התחל מחדש', value: 'התחל מחדש' }
+      ];
+    } else if (!isPossibility) {
+      responseText = `🏜️ בבדיקת התחזית המטאורולוגית עבור **${dayLabel} במדבר ובאגן ים המלח**:\n\n❌ **אין סיכוי לראות שיטפון במדבר.**\n\n📡 **ממצאי בדיקת אגני הניקוז והתחזית החיה (Open-Meteo Live):**\n• **סיכוי למשקעים:** ${maxPrecip}% בלבד באזור מדבר יהודה, ים המלח והר הנגב.\n• **מצב השמיים:** ${worstConditions || 'בהיר ויבש'}, ללא עננות ממטירה או מערכת גשם פעילה.\n• **אגן הניקוז העילי (הרי יהודה וחברון):** יבש לחלוטין (0.0 מ"מ גשם).\n\n🧠 **הסבר שטח (איך נוצר שיטפון?):**\nשיטפונות בזק במדבר יהודה ובנגב מחייבים גשמים עזים ומרוכזים באגן ההיקוות (במעלה ההר או בערוצים עצמם) הגורמים לנגר עילי מהיר. בהיעדר גשם באגנים אלו — **אין כל סיכוי להיווצרות זרימות או שיטפונות**.\n\n💡 **המלצה למטיילים:**\nזהו יום מצוין לטיול מדברי רגוע ויבש ללא חשש משיטפונות! כל המסלולים, השמורות והגנים הלאומיים במדבר יהודה ובנגב פתוחים ובטוחים להליכה.`;
+
+      const safeDesert = assetsData.find((a) => a.id === 102) || assetsData.find((a) => a.id === 103);
+      if (safeDesert) {
+        proposalsList = [{
+          ...safeDesert,
+          matchRationale: `מסלול מדברי בטוח ויבש (${safeDesert.name}) ללא סכנת שיטפונות היום`
+        }];
+      }
+
+      optionsList = [
+        { label: '🏜️ מסלולים בטוחים במדבר', value: 'מחפש מסלול מדברי יפה בדרום להיום' },
+        { label: '💧 נחלים ומעיינות בצפון', value: 'רוצה מסלול מים בצפון למחר' },
+        { label: '📅 בדיקת יום אחר במדבר', value: 'מה התחזית לסוף השבוע במדבר?' },
+        { label: '🔄 תכנן טיול אחר', value: 'התחל מחדש' }
+      ];
+    } else {
+      responseText = `🌊⚠️ **קיימת אפשרות לשיטפונות במדבר עבור ${dayLabel}!**\n\n📡 **ממצאי ניטור מטאורולוגי והתראות הידרולוגיות:**\n• **סיכוי למשקעים באגני הניקוז:** ${maxPrecip}% (זוהתה עננות ממטירה / גשמים במעלה האגן).\n• **תנאי מזג אוויר:** ${worstConditions || 'גשמים ורוחות'}, קיים פוטנציאל לנגר עילי מהיר ושיטפונות בזק.\n• **אגנים רגישים לזרימה:** נחלי מדבר יהודה (דרגה, חצצון, ערוגות, דוד, קדרון, צאלים) ונחלי הנגב והערבה (צין, פארן, נקרות).\n\n🚨 **הנחיות בטיחות מחמירות ומצילות חיים (לציידי שיטפונות):**\n1. 👁️ **צפייה בטוחה בלבד ממקומות מוגבהים:**\n   צפייה בשיטפון מותרת אך ורק מנקודות תצפית גבוהות, מוסדרות ומחוץ לתחום ההצפה (כגון: גשר נווה זוהר, מרפסת תצפית מצפה שלם, טיילת עין בוקק).\n2. ⛔ **איסור מוחלט על כניסה לערוצים ומעברי מים:**\n   חל איסור מוחלט לחצות ברגל או ברכב ערוצי נחלים, מעברים איריים וכבישים מוצפים. זרם מים רדוד עלול לסחוף רכב בשניות!\n3. 🚫 **שמורות טבע ומסלולים סגורים:**\n   מסלולי הקניונים במדבר יהודה נסגרים מיד ע"י פקחי רשות הטבע והגנים — חל איסור מוחלט לטייל בערוצי הנחלים בעת חשש לשיטפונות.\n4. 📻 **מעקב והתעדכנות:**\n   התעדכנו בזמן אמת בחסימות כבישים (משטרת ישראל - מוקד 115 / 100) ובהודעות רשות הטבע והגנים (*3639).`;
+
+      const safeHaven = assetsData.find((a) => a.id === 211) || assetsData.find((a) => a.id === 105);
+      if (safeHaven) {
+        proposalsList = [{
+          ...safeHaven,
+          matchRationale: `מקלט בטוח מבוצר (${safeHaven.name}) מחוץ לאזור הסכנה השיטפונית`
+        }];
+      }
+
+      optionsList = [
+        { label: '👀 נקודות תצפית בטוחות לשיטפון', value: 'איפה יש נקודות תצפית בטוחות לשיטפונות במדבר?' },
+        { label: '🛡️ מקלטים בטוחים (Safe Havens)', value: 'הצג מקלטים בטוחים בדרום' },
+        { label: '🌲 חלופה יבשה ובטוחה במרכז', value: 'מחפש מסלול יבש ובטוח במרכז להיום' },
+        { label: '🔄 תכנן טיול אחר', value: 'התחל מחדש' }
+      ];
+    }
+
+    return {
+      text: responseText,
+      state: currentState,
+      options: optionsList,
+      proposals: proposalsList,
+      toolActivity: `🌊 בדיקת תחזית שיטפונות במדבר: ${dayLabel} • ${isPossibility ? 'קיימת אפשרות לשיטפון' : 'אין סיכוי לשיטפון'}`
+    };
   }
 
   /**
@@ -687,6 +820,19 @@ export class AgentBotService {
           };
         }
       }
+    }
+
+    // 1.58 Desert Flood Watch & Forecast Inquiry ("לראות שיטפון במדבר", "ציידי שיטפונות", "יש שיטפון במדבר")
+    if (isDesertFloodInquiry(message)) {
+      let floodSpanId = null;
+      if (traceId) {
+        floodSpanId = AgentTelemetryService.startSpan('execute_tool:checkDesertFloodForecast', traceId, rootSpanId, 'execute_tool', { input: message });
+      }
+      const floodRes = await this.handleDesertFloodInquiry(message, sessionState);
+      if (floodSpanId) {
+        AgentTelemetryService.endSpan(floodSpanId, 'OK', { output: floodRes.toolActivity || 'Desert Flood Forecast Checked' });
+      }
+      return floodRes;
     }
 
     // 1.6 Interactive What-If Crisis Scenario

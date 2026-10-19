@@ -96,6 +96,7 @@ export default function AgentChatBot({
   onClearQueryTrigger = null,
   onOpenObservability = null,
   isLightMode = true,
+  isPanelMode = false,   // when true: always visible, fills parent container, no floating positioning
 }) {
   const CHAT_STORAGE_KEY = 'tiyul_agent_chat_messages_v2';
   const SESSION_STORAGE_KEY = 'tiyul_agent_session_state_v2';
@@ -344,7 +345,7 @@ export default function AgentChatBot({
     ]);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !isPanelMode) return null;
 
   /* Minimized Docked Widget Pill */
   if (isMinimized) {
@@ -391,16 +392,24 @@ export default function AgentChatBot({
   }
 
   return (
-    /* Mobile & Desktop Responsive Floating Chatbot Widget */
-    <div 
-      role="dialog"
-      aria-modal="true"
+    /* Panel mode (desktop side panel) or floating drawer (mobile) */
+    <div
+      role={isPanelMode ? 'complementary' : 'dialog'}
+      aria-modal={isPanelMode ? undefined : 'true'}
       aria-label="סוכן הטיולים החכם"
-      className={`fixed inset-3 bottom-16 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[420px] sm:h-[580px] sm:max-h-[85vh] z-[1200] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-floating-card font-body select-none pointer-events-auto border backdrop-blur-2xl ${
-        isLightMode
-          ? 'bg-white/95 text-slate-800 border-slate-200/90 shadow-slate-900/10'
-          : 'glass-panel text-zinc-100 border-[var(--border-accent)]'
-      }`} 
+      className={
+        isPanelMode
+          ? `w-full h-full flex flex-col overflow-hidden font-body select-none pointer-events-auto ${
+              isLightMode
+                ? 'bg-white text-slate-800'
+                : 'bg-brand-card text-zinc-100'
+            }`
+          : `fixed inset-3 bottom-16 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[420px] sm:h-[580px] sm:max-h-[85vh] z-[1200] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-floating-card font-body select-none pointer-events-auto border backdrop-blur-2xl ${
+              isLightMode
+                ? 'bg-white/95 text-slate-800 border-slate-200/90 shadow-slate-900/10'
+                : 'glass-panel text-zinc-100 border-[var(--border-accent)]'
+            }`
+      }
     >
       {/* Top Header */}
       <div className={`p-4 border-b flex items-center justify-between gap-3 ${
@@ -545,6 +554,27 @@ export default function AgentChatBot({
                       const cardKey = `${msg.id || 'msg'}-${prop.id}`;
                       const isExpanded = !!expandedCards[cardKey];
 
+                      // ── Build reason chips from available proposal data ──
+                      const reasonChips = [];
+                      if (prop.min_age === 0) reasonChips.push({ label: 'עגלה-ידידותי', color: 'chip-age' });
+                      else reasonChips.push({ label: `גיל ${prop.min_age}+`, color: 'chip-age' });
+                      const types = prop.type || [];
+                      if (types.some((t) => t.includes('מים') || t.includes('נחל') || t.includes('מעיין') || t.includes('בריכה'))) {
+                        reasonChips.push({ label: '💧 מים', color: 'chip-water' });
+                      }
+                      if (types.some((t) => t.includes('יער') || t.includes('חורש'))) {
+                        reasonChips.push({ label: '🌲 צל', color: 'chip-shade' });
+                      }
+                      if (types.some((t) => t.includes('מדבר') || t.includes('נגב') || t.includes('מכתש'))) {
+                        reasonChips.push({ label: '🏜️ מדבר', color: 'chip-desert' });
+                      }
+                      if (prop.weather?.temp) {
+                        reasonChips.push({ label: prop.weather.temp, color: 'chip-weather' });
+                      }
+                      if (prop._distKm) {
+                        reasonChips.push({ label: `📍 ${Math.round(prop._distKm)} ק"מ`, color: 'chip-dist' });
+                      }
+
                       return (
                         <div
                           key={cardKey}
@@ -608,6 +638,37 @@ export default function AgentChatBot({
                               </button>
                             </div>
                           </div>
+
+                          {/* Reason Chips (always visible) */}
+                          {reasonChips.length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-2">
+                              {reasonChips.slice(0, 4).map((chip, ci) => (
+                                <span
+                                  key={ci}
+                                  className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    chip.color === 'chip-age'
+                                      ? isLightMode
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                                      : chip.color === 'chip-water'
+                                      ? isLightMode
+                                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                        : 'bg-blue-500/10 text-blue-400 border-blue-500/25'
+                                      : chip.color === 'chip-weather'
+                                      ? isLightMode
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/25'
+                                      : isLightMode
+                                        ? 'bg-slate-100 text-slate-600 border-slate-200'
+                                        : 'bg-white/[0.06] text-zinc-400 border-white/[0.1]'
+                                  }`}
+                                >
+                                  {chip.color === 'chip-age' && <span>✅</span>}
+                                  {chip.label}
+                                </span>
+                              ))}
+                            </div>
+                          )}
 
                           {/* Quick Actions (Always visible) */}
                           <div className="flex items-center gap-2 pt-2">

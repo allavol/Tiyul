@@ -864,6 +864,35 @@ await runTest('Edge Case 58: Desert Shaded Forest Contradiction ("יער מוצ�
   assert.strictEqual(hasSandDunes, false, 'Must NEVER propose hot sunny sand dunes when user asked for a shaded forest');
 });
 
+// ── Test 59: Desert Flood Watch Inquiry ("לראות שיטפון במדבר" - No Flood Forecast) ──
+await runTest('Edge Case 59: Desert Flood Watch Inquiry ("לראות שיטפון במדבר" - No Flood Forecast says "אין סיכוי")', async () => {
+  const res = await AgentBotService.processUserMessage('לראות שיטפון במדבר');
+  assert.ok(res && res.text, 'Must return response');
+  assert.ok(res.text.includes('אין סיכוי'), 'Must explicitly write "אין סיכוי" when there is no flood forecast');
+  assert.ok(res.text.includes('מדבר') || res.text.includes('ים המלח'), 'Must mention desert / Dead Sea catchment basins');
+  assert.ok(res.options.length > 0, 'Must provide interactive safe options');
+});
+
+// ── Test 60: Desert Flood Possibility Branch ("יש אפשרות לשיטפונות" with strict safety) ──
+await runTest('Edge Case 60: Desert Flood Possibility Branch ("יש אפשרות לשיטפונות" with strict safety)', async () => {
+  const res = await AgentBotService.handleDesertFloodInquiry('לראות שיטפון במדבר', null, { forcePossibility: true });
+  assert.ok(res && res.text, 'Must return response');
+  assert.ok(res.text.includes('אפשרות לשיטפונות') || res.text.includes('אפשרות'), 'Must confirm flood possibility');
+  assert.ok(res.text.includes('תצפית') || res.text.includes('מוגבה'), 'Must mandate elevated observation points');
+  assert.ok(res.text.includes('איסור') || res.text.includes('סגור'), 'Must warn against entering channels or closed canyons');
+});
+
+// ── Test 61: Semantic Distinction between What-If Crisis and Flood Watch ──
+await runTest('Edge Case 61: Semantic Distinction between What-If Crisis and Flood Watch', async () => {
+  const whatIfRes = await AgentBotService.processUserMessage('מה אם יש שיטפון פתאומי בעין גדי?');
+  assert.ok(whatIfRes.text.includes('What-If') || whatIfRes.text.includes('Re-Planning'), 'What-If query must trigger crisis Re-Planning');
+  assert.ok(whatIfRes.proposals.some(p => p.name?.includes('מקלט בטוח') || p.safetyBadge?.includes('Safe Haven')), 'Must route to Safe Haven');
+
+  const watchRes = await AgentBotService.processUserMessage('לראות שיטפון במדבר');
+  assert.ok(watchRes.text.includes('אין סיכוי') || watchRes.text.includes('אפשרות'), 'Watch query must evaluate meteorological forecast');
+  assert.ok(!watchRes.text.includes('What-If'), 'Watch query must NOT be confused with a crisis What-If simulation');
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);
@@ -871,5 +900,6 @@ console.log(`==================================================\n`);
 if (passedTests !== totalTests) {
   process.exit(1);
 }
+
 
 

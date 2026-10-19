@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tiyuli — Design B: Clarity (Clean Minimal)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:         #F8FAFC;
+      --bg-card:    #FFFFFF;
+      --bg-surface: #F1F5F9;
+      --bg-panel:   #FAFBFC;
+      --accent:     #0EA5E9;
+      --accent-dim: #0284C7;
+      --acc-glow:   rgba(14,165,233,0.10);
+      --border:     #E2E8F0;
+      --border-acc: rgba(14,165,233,0.35);
+      --t1:         #0F172A;
+      --t2:         #64748B;
+      --t3:         #94A3B8;
+      --safe:       #16A34A;
+      --safe-bg:    #DCFCE7;
+      --warn:       #D97706;
+      --warn-bg:    #FEF3C7;
+      --danger:     #DC2626;
+      --danger-bg:  #FEE2E2;
+    }
+    body { background:var(--bg); color:var(--t1); font-family:'Rubik',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+    /* ── TOP BAR ── */
+    .topbar { background:var(--bg-card); border-bottom:1px solid var(--border); padding:0 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-shrink:0; height:60px; }
+    .brand  { display:flex; align-items:center; gap:12px; }
+    .brand-icon { width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:900; }
+    .brand h1   { font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.2px; }
+    .brand h1 em{ font-style:normal;color:var(--accent);font-weight:500;font-size:14px; }
+    .brand p    { font-size:11px;color:var(--t2);margin-top:1px; }
+    .actions { display:flex;align-items:center;gap:8px; }
+    .btn  { display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid;font-family:'Rubik',sans-serif;transition:all .15s; }
+    .btn-f { background:#FEE2E2;color:#DC2626;border-color:#FECACA; }
+    .btn-h { background:#FEF3C7;color:#D97706;border-color:#FDE68A; }
+    .btn-r { background:#F1F5F9;color:#64748B;border-color:#E2E8F0; }
+    .badge-count { background:var(--acc-glow);color:var(--accent);border:1px solid var(--border-acc);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700; }
+
+    /* ── FILTER ROW ── */
+    .filterbar { background:var(--bg-surface);padding:10px 24px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);flex-shrink:0; }
+    .search { flex:1 1 240px;display:flex;align-items:center;gap:8px;background:var(--bg-card);padding:8px 14px;border-radius:8px;border:1px solid var(--border); }
+    .search input { flex:1;background:transparent;border:none;color:var(--t1);font-size:13px;outline:none; }
+    .fsel { background:var(--bg-card);color:var(--t1);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;font-family:'Rubik',sans-serif;cursor:pointer;outline:none; }
+    .date-pill { display:flex;align-items:center;gap:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--t2); }
+    .date-ok { background:#DCFCE7;color:var(--safe);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700; }
+
+    /* ── MAIN ── */
+    .main { flex:1;display:flex;overflow:hidden; }
+
+    /* ── LEFT PANEL ── */
+    .panel { width:380px;flex-shrink:0;background:var(--bg-panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
+    .panel-hd { padding:16px 18px 12px;border-bottom:1px solid var(--border); }
+    .panel-hd h2 { font-size:15px;font-weight:800;color:var(--t1); }
+    .panel-hd p  { font-size:12px;color:var(--t2);margin-top:3px; }
+    .msgs { flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:10px; }
+    .mb,.mu { max-width:88%;border-radius:14px;padding:11px 14px;font-size:13px;line-height:1.65; }
+    .mb { background:var(--bg-card);color:var(--t1);border:1px solid var(--border);align-self:flex-start;border-bottom-right-radius:4px; }
+    .mu { background:var(--accent);color:#fff;align-self:flex-end;border-bottom-left-radius:4px; }
+    .proposals { display:flex;flex-direction:column;gap:8px;margin-top:4px; }
+    .pc { background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;transition:all .15s; }
+    .pc:hover { border-color:var(--border-acc); }
+    .pc:first-child { border-color:var(--accent);box-shadow:0 0 0 3px var(--acc-glow); }
+    .pc-img { width:100%;height:70px;border-radius:8px;background:linear-gradient(135deg,#E0F2FE,#BAE6FD);display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:10px; }
+    .pc-top { display:flex;align-items:flex-start;justify-content:space-between; }
+    .pc-name { font-size:13px;font-weight:800;color:var(--t1); }
+    .pc-reg  { font-size:11px;color:var(--t2);margin-top:2px; }
+    .chips { display:flex;gap:5px;flex-wrap:wrap;margin-top:8px; }
+    .chip { display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;border:1px solid; }
+    .cg { background:var(--safe-bg);color:var(--safe);border-color:#BBF7D0; }
+    .ca { background:var(--warn-bg);color:var(--warn);border-color:#FDE68A; }
+    .cb { background:#EFF6FF;color:#2563EB;border-color:#BFDBFE; }
+    .quick { display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--border); }
+    .qbtn { padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;background:var(--bg-surface);color:var(--t2);border:1px solid var(--border);cursor:pointer;font-family:'Rubik',sans-serif;transition:all .15s; }
+    .qbtn:hover { border-color:var(--border-acc);color:var(--accent);background:var(--acc-glow); }
+    .inp-row { display:flex;align-items:center;gap:8px;padding:12px 14px;border-top:1px solid var(--border); }
+    .inp { flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--t1);font-size:13px;font-family:'Rubik',sans-serif;outline:none; }
+    .inp:focus { border-color:var(--border-acc); }
+    .send { width:38px;height:38px;border-radius:10px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0; }
+
+    /* ── MAP ── */
+    .map { flex:1;position:relative;overflow:hidden; }
+    .map-bg { width:100%;height:100%;background:linear-gradient(170deg,#EFF6FF 0%,#DBEAFE 40%,#E0F2FE 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px; }
+    .map-bg span { font-size:80px;opacity:.07; }
+    .map-grid { position:absolute;inset:0;background-image:linear-gradient(rgba(14,165,233,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.05) 1px,transparent 1px);background-size:40px 40px; }
+    .pin { position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.2); }
+    .ps { width:13px;height:13px;background:var(--safe); }
+    .pw { width:13px;height:13px;background:var(--warn); }
+    .pd { width:13px;height:13px;background:var(--danger); }
+    .pa { width:18px;height:18px;background:var(--accent);box-shadow:0 0 0 4px rgba(14,165,233,.25),0 1px 4px rgba(0,0,0,.2); }
+    .legend { position:absolute;top:16px;right:16px;background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.08); }
+    .lr { display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2); }
+    .ld { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+    .legend-title { font-size:10px;font-weight:700;color:var(--t1);margin-bottom:2px; }
+    .fc { position:absolute;bottom:24px;left:24px;width:290px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 8px 28px rgba(0,0,0,.12); }
+    .fc:hover { border-color:var(--border-acc); }
+    .fc-img { width:100%;height:90px;border-radius:9px;background:linear-gradient(135deg,#BFDBFE,#BAE6FD);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:10px; }
+    .fc-name { font-size:15px;font-weight:800;color:var(--t1); }
+    .fc-reg  { font-size:11px;color:var(--t2);font-family:'Inter',sans-serif;margin-top:2px; }
+    .fc-pills { display:flex;gap:6px;flex-wrap:wrap;margin-top:8px; }
+    .fc-pill { padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;border:1px solid; }
+    .fc-cta { width:100%;margin-top:12px;padding:10px;border-radius:9px;background:var(--accent);color:#fff;border:none;font-size:12px;font-weight:800;cursor:pointer;font-family:'Rubik',sans-serif; }
+
+    /* label */
+    .label { position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.35);border-radius:999px;padding:5px 18px;font-size:11px;font-weight:700;color:var(--accent);z-index:9999;pointer-events:none; }
+  </style>
+</head>
+<body>
+<div class="label">☀️ Design Direction B — "Clarity" Clean Minimal · Mockup</div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🧭</div>
+    <div>
+      <h1>לאן נטייל? <em>מדריך טיולים חכם</em></h1>
+      <p>ממליץ טיולים מותאם מזג אוויר · בטוח לכל הגיל</p>
+    </div>
+  </div>
+  <div class="actions">
+    <span class="badge-count">19 אתרים</span>
+    <button class="btn btn-f">🌊 סימולציית שיטפון</button>
+    <button class="btn btn-h">🔥 גל חום</button>
+    <button class="btn btn-r">↺ איפוס</button>
+  </div>
+</header>
+
+<!-- FILTER ROW -->
+<div class="filterbar">
+  <div class="search">
+    <span style="color:var(--t3)">🔍</span>
+    <input placeholder="חפש מקום, שמורת טבע, נחל..." />
+  </div>
+  <select class="fsel"><option>📍 כל האזורים</option><option>🌲 צפון וגליל</option><option>☀️ דרום ונגב</option></select>
+  <select class="fsel"><option>👶 כל הגילאים</option><option>🍼 0+ עגלות</option><option>🧒 4+</option><option>🧑 7+</option></select>
+  <div class="date-pill">📅 מחר, שישי&nbsp;<span class="date-ok">✓ תחזית תקפה</span></div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- LEFT PANEL -->
+  <aside class="panel">
+    <div class="panel-hd">
+      <h2>🧭 סוכן הטיולים החכם</h2>
+      <p>שאל בעברית חופשית · ממליץ לפי מזג אוויר, גיל ומיקום</p>
+    </div>
+    <div class="msgs">
+      <div class="mb">שלום! 👋 אני כאן לעזור לך למצוא טיול מושלם.<br/>ספר לי: כמה ילדים, איזה גילאים ולאן? 🌿</div>
+      <div class="mu">טיול עם ילד בן 4 ותינוק עם עגלה, מחר בצפון</div>
+      <div class="mb">מצוין! 🌊 מצאתי 3 מסלולים מתאימים לגיל 0+ ו-4+ בצפון.<br/>מזג האוויר מחר: <strong style="color:var(--accent)">24°C שמשי</strong> — תנאים אידיאליים לטיול עם עגלה 👇</div>
+      <div class="proposals">
+        <div class="pc">
+          <div class="pc-img">🌊</div>
+          <div class="pc-top">
+            <div><div class="pc-name">שמורת תל דן</div><div class="pc-reg">גליל עליון · 38 ק"מ מחיפה</div></div>
+            <span style="font-size:14px;background:#FEF9C3;color:#D97706;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:800">המלצה #1</span>
+          </div>
+          <div class="chips">
+            <span class="chip cg">✅ עגלה-ידידותי</span>
+            <span class="chip cb">💧 נחל זורם</span>
+            <span class="chip ca">☀️ מזג אוויר מתאים</span>
+          </div>
+        </div>
+        <div class="pc">
+          <div class="pc-img">🌲</div>
+          <div class="pc-top"><div><div class="pc-name">יער בן שמן</div><div class="pc-reg">מרכז · 22 ק"מ</div></div></div>
+          <div class="chips"><span class="chip cg">✅ גיל 0+</span><span class="chip ca">🌲 צל מלא</span><span class="chip cb">🅿️ חניה</span></div>
+        </div>
+        <div class="pc">
+          <div class="pc-img">🏔️</div>
+          <div class="pc-top"><div><div class="pc-name">נחל עמוד</div><div class="pc-reg">גליל תחתון · 45 ק"מ</div></div></div>
+          <div class="chips"><span class="chip cg">✅ גיל 4+</span><span class="chip cb">💧 מים</span><span class="chip ca">📸 נוף</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="quick">
+      <button class="qbtn">🌊 רק עם מים</button>
+      <button class="qbtn">🌲 עם צל</button>
+      <button class="qbtn">♿ נגיש לעגלה</button>
+      <button class="qbtn">🏃 הרפתקה</button>
+    </div>
+    <div class="inp-row">
+      <input class="inp" placeholder="שאל שאלה נוספת..." />
+      <button class="send">→</button>
+    </div>
+  </aside>
+
+  <!-- MAP -->
+  <div class="map">
+    <div class="map-bg"><span>🗺️</span></div>
+    <div class="map-grid"></div>
+    <div class="pin pa" style="top:28%;left:58%"></div>
+    <div class="pin ps" style="top:38%;left:52%"></div>
+    <div class="pin ps" style="top:45%;left:55%"></div>
+    <div class="pin ps" style="top:55%;left:60%"></div>
+    <div class="pin ps" style="top:62%;left:50%"></div>
+    <div class="pin pw" style="top:72%;left:63%"></div>
+    <div class="pin pd" style="top:78%;left:65%"></div>
+    <div class="pin ps" style="top:50%;left:46%"></div>
+    <div class="legend">
+      <div class="legend-title">מפסת מצב</div>
+      <div class="lr"><div class="ld" style="background:var(--safe)"></div>בטוח לטיול</div>
+      <div class="lr"><div class="ld" style="background:var(--warn)"></div>אזהרת מזג אוויר</div>
+      <div class="lr"><div class="ld" style="background:var(--danger)"></div>מסלול סגור</div>
+      <div class="lr"><div class="ld" style="background:var(--accent)"></div>המלצת הסוכן</div>
+    </div>
+    <div class="fc">
+      <div class="fc-img">🌊</div>
+      <div class="fc-name">שמורת תל דן</div>
+      <div class="fc-reg">גליל עליון · INPA-101</div>
+      <div class="fc-pills">
+        <span class="fc-pill" style="background:var(--safe-bg);color:var(--safe);border-color:#BBF7D0">✅ בטוח</span>
+        <span class="fc-pill" style="background:#EFF6FF;color:#2563EB;border-color:#BFDBFE">💧 מים</span>
+        <span class="fc-pill" style="background:var(--safe-bg);color:var(--safe);border-color:#BBF7D0">👶 0+ עגלות</span>
+        <span class="fc-pill" style="background:var(--warn-bg);color:var(--warn);border-color:#FDE68A">24°C ☀️</span>
+      </div>
+      <button class="fc-cta">🧭 ניווט למסלול</button>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

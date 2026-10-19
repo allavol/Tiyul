@@ -1920,3 +1920,103 @@ export function isInScope(message) {
   if (SCOPE_SIGNALS.test(lower)) return true;
   return KNOWN_ORIGIN_CITIES.some((c) => c.names.some((n) => lower.includes(n)));
 }
+
+/**
+ * Detects whether the user is inquiring about seeing, watching, chasing, or forecasting flash floods in the desert
+ * (e.g. "לראות שיטפון במדבר", "לראות שיטפונות", "ציידי שיטפונות", "צפייה בשיטפונות", "יש שיטפון במדבר", "סיכוי לשיטפון")
+ * Note: What-If crisis simulation (e.g. "מה אם יש שיטפון בעין גדי") is NOT a flood watch inquiry.
+ * @param {string} message 
+ * @returns {boolean}
+ */
+export function isDesertFloodInquiry(message) {
+  if (!message || typeof message !== 'string') return false;
+  const lower = message.toLowerCase().trim();
+
+  // 1. Exclude What-If crisis scenarios
+  if (lower.includes('מה אם') || lower.includes('what if') || lower.includes('תרחיש')) {
+    return false;
+  }
+
+  // 2. Exclude active emergency distress (drowning, trapped, flood water rising)
+  if (
+    lower.includes('שיטפון עולה') ||
+    lower.includes('שיטפון מתקרב') ||
+    lower.includes('מים בוציים בנחל') ||
+    lower.includes('זרם חזק בנחל') ||
+    lower.includes('נסחפים') ||
+    lower.includes('לכודים') ||
+    lower.includes('טובעים')
+  ) {
+    return false;
+  }
+
+  // 3. Exclude negative intents (e.g. "בלי שיטפון", "שלא יהיה שיטפון")
+  if (lower.includes('בלי שיטפון') || lower.includes('ללא שיטפון') || lower.includes('שלא יהיה שיטפון')) {
+    return false;
+  }
+
+  // 4. Exact / Key flood-watching and forecast trigger phrases
+  const exactTriggers = [
+    'לראות שיטפון',
+    'לראות שיטפונות',
+    'לראות שטפון',
+    'לראות שטפונות',
+    'לצפות בשיטפון',
+    'לצפות בשיטפונות',
+    'צפייה בשיטפון',
+    'צפייה בשיטפונות',
+    'ציידי שיטפונות',
+    'צייד שיטפונות',
+    'ציד שיטפונות',
+    'מרדף שיטפונות',
+    'לרדוף אחרי שיטפון',
+    'לרדוף אחרי שיטפונות',
+    'לתפוס שיטפון',
+    'לתפוס שיטפונות',
+    'תחזית לשיטפון',
+    'תחזית שיטפון',
+    'תחזית שיטפונות',
+    'אזהרת שיטפון',
+    'אזהרות שיטפונות',
+    'אזהרת שיטפונות',
+    'שיטפון במדבר',
+    'שיטפונות במדבר',
+    'שטפון במדבר',
+    'שטפונות במדבר',
+    'שיטפון בים המלח',
+    'שיטפונות בים המלח',
+    'שיטפון בנגב',
+    'שיטפונות בנגב',
+    'שיטפון בערבה',
+    'שיטפונות בערבה',
+    'שיטפון בדרום',
+    'שיטפונות בדרום',
+    'סיכוי לשיטפון',
+    'סיכוי לשיטפונות',
+    'יש שיטפון במדבר',
+    'האם יש שיטפון במדבר',
+    'יש שיטפונות במדבר',
+    'האם יש שיטפונות במדבר',
+    'יהיה שיטפון במדבר',
+    'האם יהיה שיטפון במדבר',
+    'צפוי שיטפון במדבר',
+    'האם צפוי שיטפון במדבר',
+    'אפשרות לשיטפון במדבר',
+    'אפשרות לשיטפון'
+  ];
+
+  if (exactTriggers.some((t) => lower.includes(t))) return true;
+
+  // 5. Pattern matching
+  const watchingFloodRegex = /(?:לראות|לצפות|לתפוס|צייד|ציד|רוצה|רוצים|מחפש|מחפשים|בא לי|אפשר|איפה)\s+(?:את\s+)?(?:ה)?(?:שיטפון|שיטפונות|שטפון|שטפונות)/;
+  if (watchingFloodRegex.test(lower)) return true;
+
+  const floodForecastRegex = /(?:יש|יהיה|יהיו|צפוי|צפויים|סיכוי|תחזית|אפשרות)\s+(?:ל|לראות\s+)?(?:שיטפון|שיטפונות|שטפון|שטפונות)/;
+  if (floodForecastRegex.test(lower)) return true;
+
+  const floodInDesertRegex = /(?:שיטפון|שיטפונות|שטפון|שטפונות).*?(?:במדבר|במדבר יהודה|בים המלח|בנגב|בדרום|בערבה)/;
+  if (floodInDesertRegex.test(lower)) return true;
+
+  return false;
+}
+

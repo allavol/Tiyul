@@ -79,9 +79,45 @@ const GOLDEN_50_QUERIES = [
   // ── Category 6: Climate Contradictions & Guardrails (Snow & Desert Forest) (51-52)
   { id: 51, query: 'אני רוצה מחר טיול שלג בחרמון', expectSnowContradiction: true },
   { id: 52, query: 'אני רוצה טיול ביער מוצל בנגב', expectDesertForestContradiction: true },
+
+  // ── Category 7: Desert Flood Watch & Forecast Inquiries (53)
+  { id: 53, query: 'לראות שיטפון במדבר', expectFloodForecast: true },
+
+  // ── Category 8: Semantic Equivalence — Age Rephrasings (54-63) ─────────
+  // Each canonical age query gets 2-3 paraphrase variants to ensure the NLU
+  // handles real-world Hebrew input variation, not just the canonical form.
+  { id: 54, query: 'ילד ב-4 רוצה טיול מים בצפון מחר', expectAge: 4, expectRegion: 'north', expectFeature: 'water' },
+  { id: 55, query: 'בן ארבע שנים מחפש נחל בצפון', expectAge: 4, expectRegion: 'north', expectFeature: 'water' },
+  { id: 56, query: 'ילד 4 שנים מחפש מסלול מים', expectAge: 4, expectFeature: 'water' },
+  { id: 57, query: 'תינוק 0 חודשים עגלה צפון מחר', expectAge: 0, expectStroller: true },
+  { id: 58, query: 'יש לנו בייבי קטן עם עגלה, מחפשים טיול בצפון', expectAge: 0, expectStroller: true },
+  { id: 59, query: 'ילד גן חובה בצפון מחר', expectAge: 4 },
+  { id: 60, query: 'ילד כיתה ג בירושלים לשבת', expectRegion: 'jerusalem' },
+  { id: 61, query: 'ילד בכיתה ה בדרום', expectRegion: 'south' },
+  { id: 62, query: 'נכד בן עשר, מחפשים טיול אתגרי בצפון', expectAge: 10, expectRegion: 'north' },
+  { id: 63, query: 'ילד גדול יחסית, כ-9-10 שנים, בצפון', expectRegion: 'north' },
+
+  // ── Category 9: Semantic Equivalence — Time Rephrasings (64-72) ─────────
+  { id: 64, query: 'רוצה לצאת בשישי הקרוב בצפון', expectTimingRegex: /שישי|שבת/ },
+  { id: 65, query: 'ביום ראשון הבא בדרום עם הילדים', expectTimingRegex: /ראשון/ },
+  { id: 66, query: 'בסוף שבוע הקרוב הולכים לצפון', expectTimingRegex: /שבת|שישי/ },
+  { id: 67, query: 'מחר בבוקר רוצים לצאת לטיול בצפון', expectRegion: 'north' },
+  { id: 68, query: 'עוד יומיים בירושלים', expectRegion: 'jerusalem' },
+  { id: 69, query: 'אחרי מחר בצפון עם הילדים', expectRegion: 'north' },
+  { id: 70, query: 'ב-15 לנובמבר רוצים טיול בצפון', expectTimingRegex: /15 בנובמבר|נובמבר/ },
+  { id: 71, query: 'שבת הקרובה בחיפה לילדים קטנים', expectTimingRegex: /שבת/ },
+  { id: 72, query: 'יציאה מתוכננת ליום חמישי בצפון', expectTimingRegex: /חמישי/ },
+
+  // ── Category 10: Semantic Equivalence — Water Exclusion Rephrasings (73-77) ──
+  // Water exclusion gate must fire for all of these variants.
+  { id: 73, query: 'טיול ביבש, לא ליד נחל בכלל, בצפון', expectNoWater: true },
+  { id: 74, query: 'אנחנו לא אוהבים מים, רק יבש בצפון', expectNoWater: true },
+  { id: 75, query: 'יבש בלבד, ללא מים ממש, בצפון מחר', expectNoWater: true },
+  { id: 76, query: 'טיול שטח ללא קשר למים בדרום', expectRegion: 'south' },
+  { id: 77, query: 'נחל לא מעניין אותנו, מחפשים טיול יבש בירושלים', expectNoWater: true, expectRegion: 'jerusalem' },
 ];
 
-describe('Golden Dataset 52-Query Benchmark Suite (Finding A1 & Climate Contradictions)', { timeout: 15000 }, () => {
+describe('Golden Dataset 77-Query Benchmark Suite (Finding A1, Climate Contradictions, Flood Forecast & Semantic Equivalence)', { timeout: 15000 }, () => {
   GOLDEN_50_QUERIES.forEach((item) => {
     it(`Query #${item.id}: "${item.query}"`, async () => {
       const res = await AgentBotService.processUserMessage(item.query, null);
@@ -135,6 +171,26 @@ describe('Golden Dataset 52-Query Benchmark Suite (Finding A1 & Climate Contradi
       if (item.expectCrisisSafeHaven) {
         expect(res.text).toMatch(/(מקלט בטוח|פינוי|זהירות|עומס חום|שיטפון|זיהום|בטוח|חלופ)/);
         expect(res.toolActivity).toBeDefined();
+        return;
+      }
+
+      // 5.5 Desert Flood Watch & Forecast
+      if (item.expectFloodForecast) {
+        expect(res.text).toMatch(/(אין סיכוי|אפשרות|שיטפון)/);
+        expect(res.options.length).toBeGreaterThan(0);
+        return;
+      }
+
+      // 5.6 Water Exclusion — proposals must not include water sites
+      if (item.expectNoWater) {
+        if (res.proposals && res.proposals.length > 0) {
+          const hasWaterSite = res.proposals.some((p) =>
+            (p.type || []).some((t) =>
+              t.includes('מים') || t.includes('נחל') || t.includes('מעיין') || t.includes('חוף')
+            ) || (p.category === 'water' || p.category === 'coast')
+          );
+          expect(hasWaterSite).toBe(false);
+        }
         return;
       }
 

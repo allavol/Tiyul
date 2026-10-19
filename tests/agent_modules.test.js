@@ -11,8 +11,11 @@ import {
   checkClimateContradictions,
   parseAgeFromText, 
   extractParameters, 
-  applyTypoCorrections 
+  applyTypoCorrections,
+  isDesertFloodInquiry
 } from '../src/services/agent/AgentNLUParser.js';
+
+import { AgentBotService } from '../src/services/AgentBotService.js';
 
 import { 
   getSiteHazardScenario, 
@@ -315,4 +318,38 @@ describe('AgentAuditLogger Unit Tests (Least Privilege & ISO Timestamps)', () =>
     expect(fullMarkdown).toContain('```json');
   });
 });
+
+describe('Desert Flood Watch & Forecast Unit Tests', () => {
+  it('correctly detects desert flood inquiries and excludes What-If crisis scenarios', () => {
+    expect(isDesertFloodInquiry('לראות שיטפון במדבר')).toBe(true);
+    expect(isDesertFloodInquiry('רוצה לראות שיטפון')).toBe(true);
+    expect(isDesertFloodInquiry('יש שיטפון במדבר?')).toBe(true);
+    expect(isDesertFloodInquiry('ציידי שיטפונות בים המלח')).toBe(true);
+    expect(isDesertFloodInquiry('תחזית לשיטפון במדבר')).toBe(true);
+
+    // Crisis What-If should NOT be treated as flood watch
+    expect(isDesertFloodInquiry('מה אם יש שיטפון בעין גדי?')).toBe(false);
+    expect(isDesertFloodInquiry('מה אם שיטפון פתאומי?')).toBe(false);
+    expect(isDesertFloodInquiry('תרחיש שיטפון בנחל דוד')).toBe(false);
+
+    // SOS Emergency distress should NOT be treated as flood watch
+    expect(isDesertFloodInquiry('הלכנו לאיבוד ושיטפון עולה בערוץ')).toBe(false);
+  });
+
+  it('handleDesertFloodInquiry returns "אין סיכוי" when weather is dry and safe alternatives', async () => {
+    const res = await AgentBotService.handleDesertFloodInquiry('לראות שיטפון במדבר', null, { forcePossibility: false });
+    expect(res).toBeDefined();
+    expect(res.text).toContain('אין סיכוי');
+    expect(res.options.length).toBeGreaterThan(0);
+  });
+
+  it('handleDesertFloodInquiry confirms possibility and includes strict safety directives', async () => {
+    const res = await AgentBotService.handleDesertFloodInquiry('לראות שיטפון במדבר', null, { forcePossibility: true });
+    expect(res).toBeDefined();
+    expect(res.text).toMatch(/(אפשרות לשיטפונות|אפשרות)/);
+    expect(res.text).toContain('צפייה בטוחה');
+    expect(res.options.length).toBeGreaterThan(0);
+  });
+});
+
 

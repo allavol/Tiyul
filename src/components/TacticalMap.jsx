@@ -64,6 +64,9 @@ export default function TacticalMap({
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
+    // Defer init by one frame so the flex container has settled to its final size.
+    // Without this, Leaflet measures 0×0 when rendered inside a flex child and crashes.
+    const initMap = () => {
     const map = L.map(mapContainerRef.current, {
       center: [31.5, 35.1],
       zoom: 8,
@@ -109,9 +112,35 @@ export default function TacticalMap({
     // Store map instance
     mapInstanceRef.current = map;
 
+    // Immediately invalidate size so Leaflet re-measures the now-visible container
+    requestAnimationFrame(() => {
+      map.invalidateSize({ animate: false });
+    });
+
+    // Also watch for container resize (e.g. panel open/close, window resize)
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize({ animate: false });
+        }
+      });
+      ro.observe(mapContainerRef.current);
+      map._resizeObserver = ro;
+    }
+    }; // end initMap
+
+    // Run after the browser has painted so the container has real dimensions
+    const rafId = requestAnimationFrame(initMap);
+
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
+      cancelAnimationFrame(rafId);
+      if (mapInstanceRef.current) {
+        if (mapInstanceRef.current._resizeObserver) {
+          mapInstanceRef.current._resizeObserver.disconnect();
+        }
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
   }, []);
 
