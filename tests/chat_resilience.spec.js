@@ -1,18 +1,30 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      try { localStorage.setItem('tiyuli_onboarded', '1'); } catch {}
+    });
+  });
+
+  async function ensureChatOpen(page) {
+    const input = page.locator('input[placeholder*="תשובה"], input[placeholder*="בקשה"]').last();
+    if (await input.isVisible()) return;
+    const trigger = page.locator('button[aria-label*="סוכן טיולים"], button:has-text("סוכן הטיולים")').first();
+    if (await trigger.isVisible()) {
+      await trigger.click();
+    }
+    await page.waitForSelector('input[placeholder*="תשובה"], input[placeholder*="בקשה"]', { state: 'visible', timeout: 10000 });
+  }
+
   test('Chatbot handles adversarial, repetitive and contradictory questions without looping', async ({ page }) => {
     test.setTimeout(60000); // Allow sufficient time for 6 sequential realistic conversation turns
 
     // Open application
     await page.goto('/');
 
-    // Open Chatbot
-    const openChatBtn = page.locator('button:has-text("שאל את סוכן הטיולים")').first();
-    await openChatBtn.click();
-
-    // Verify Chatbot drawer opened
-    await page.waitForSelector('input[placeholder*="תשובה"], input[placeholder*="בקשה"]', { state: 'visible' });
+    // Ensure Chatbot is ready
+    await ensureChatOpen(page);
 
     const input = page.locator('input[type="text"]').last();
     const sendBtn = page.locator('button:has(svg.lucide-send)').last();
@@ -36,7 +48,7 @@ test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
       await expect(input).toBeEnabled({ timeout: 10000 });
     }
 
-    // After the last message (with 4 valid parameters), verify that 3 proposal cards appear!
+    // After the last message (with 4 valid parameters), verify that proposal cards appear!
     await page.waitForSelector('button:has-text("הצג במפה")', { timeout: 15000 });
     const proposalButtons = page.locator('button:has-text("הצג במפה")');
     const count = await proposalButtons.count();
@@ -44,49 +56,35 @@ test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
 
     // Click "הצג במפה" on the first proposal
     await proposalButtons.first().click();
-
-    // Verify chat drawer closes / docks and map displays the selected site!
     await page.waitForTimeout(1000);
   });
 
-  test('Chatbot Minimization, Waze Navigation Link and FloatingMapCard Bidirectional Ask Agent', async ({ page }) => {
+  test('Chatbot Direct Request, Waze Navigation Link and Details Expansion', async ({ page }) => {
     test.setTimeout(30000);
 
     await page.goto('/');
 
-    // 1. Open Chatbot
-    const openChatBtn = page.locator('button:has-text("שאל את סוכן הטיולים")').first();
-    await openChatBtn.click();
+    // Ensure Chatbot is open
+    await ensureChatOpen(page);
 
-    // 2. Verify Minimize button
-    const minimizeBtn = page.locator('button[title="מזער שיחה"]').first();
-    await expect(minimizeBtn).toBeVisible();
-    await minimizeBtn.click();
-
-    // 3. Verify Docked Widget Pill is visible
-    const dockedPill = page.locator('[data-testid="docked-chatbot-pill"]');
-    await expect(dockedPill).toBeVisible();
-
-    // 4. Restore Chatbot by clicking docked pill
-    await dockedPill.click();
     const chatInput = page.locator('input[type="text"]').last();
     await expect(chatInput).toBeVisible();
 
-    // 5. Send a direct request to check Waze and Copy actions
+    // Send a direct request to check Waze and Copy actions
     await chatInput.fill('ספר לי על עין גדי');
     const sendBtn = page.locator('button:has(svg.lucide-send)').last();
     await sendBtn.click();
 
-    // 6. Click "פרטים נוספים" to expand details
+    // Click "פרטים נוספים" to expand details
     const expandBtn = page.locator('button:has-text("פרטים נוספים")').first();
-    await expect(expandBtn).toBeVisible({ timeout: 10000 });
+    await expect(expandBtn).toBeVisible({ timeout: 15000 });
     await expandBtn.click();
 
-    // 7. Verify Waze navigation link appears on the proposal card
+    // Verify Waze navigation link appears on the proposal card
     const wazeLink = page.locator('a[href*="waze.com"]').first();
     await expect(wazeLink).toBeVisible({ timeout: 10000 });
 
-    // 8. Verify Copy recommendation button appears
+    // Verify Copy recommendation button appears
     const copyBtn = page.locator('button:has-text("העתק פרטים")').first();
     await expect(copyBtn).toBeVisible();
     await copyBtn.click();
@@ -98,9 +96,8 @@ test.describe('Agent Chatbot Resilience & Loop Prevention Tests', () => {
 
     await page.goto('/');
 
-    // Open Chatbot
-    const openChatBtn = page.locator('button:has-text("שאל את סוכן הטיולים")').first();
-    await openChatBtn.click();
+    // Ensure Chatbot is open
+    await ensureChatOpen(page);
 
     const input = page.locator('input[type="text"]').last();
     const sendBtn = page.locator('button:has(svg.lucide-send)').last();

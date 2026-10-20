@@ -17,8 +17,6 @@ import {
   Radio,
   CheckCircle2,
   AlertTriangle,
-  Minimize2,
-  Maximize2,
   Navigation,
   Copy,
   Check,
@@ -108,10 +106,10 @@ export default function AgentChatBot({
       sender: 'bot',
       text: 'שלום וברוכים הבאים! 🧭 אני סוכן הטיולים החכם שלכם.\n\nספרו לי: לאן תרצו לטייל ומתי? (למשל: "רוצים לטייל מחר בצפון עם ילדים קטנים בני 3, מחפשים מים").',
       options: [
-        { label: '🎲 הפתע אותי!', value: 'הפתע אותי עם מסלול טיול מומלץ ומותאם להיום' },
-        { label: '🏞️ טיול מים בצפון למחר (גיל 4+)', value: 'אני רוצה לטייל מחר בצפון עם ילדים קטנים בני 4, מחפשים מסלול מים' },
-        { label: '👶 טיול עגלות מוצל בשרון (0+)', value: 'מחפשים מסלול נגיש לעגלות מוצל בשרון לתינוק 0+' },
-        { label: '🏰 טיול נוף ומבצרים בירושלים (6+)', value: 'מחפשים טיול נוף ועתיקות בירושלים לילד בן 6' },
+        { label: 'תפתיע אותי!', value: 'תפתיע אותי עם מסלול טיול מומלץ ומותאם להיום' },
+        { label: 'טיול מים בצפון למחר (גיל 4+)', value: 'אני רוצה לטייל מחר בצפון עם ילדים קטנים בני 4, מחפשים מסלול מים' },
+        { label: 'טיול עגלות מוצל בשרון (0+)', value: 'מחפשים מסלול נגיש לעגלות מוצל בשרון לתינוק 0+' },
+        { label: 'טיול נוף ומבצרים בירושלים (6+)', value: 'מחפשים טיול נוף ועתיקות בירושלים לילד בן 6' },
       ],
       proposals: [],
       toolActivity: null,
@@ -165,7 +163,6 @@ export default function AgentChatBot({
 
   const [inputVal, setInputVal] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [expandedCards, setExpandedCards] = useState({});
   const [exportedAudit, setExportedAudit] = useState(false);
@@ -347,50 +344,6 @@ export default function AgentChatBot({
 
   if (!isOpen && !isPanelMode) return null;
 
-  /* Minimized Docked Widget Pill */
-  if (isMinimized) {
-    return (
-      <div className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-[1200] pointer-events-auto animate-floating-card font-body select-none">
-        <button
-          onClick={() => setIsMinimized(false)}
-          data-testid="docked-chatbot-pill"
-          title="הרחב שיחת סוכן"
-          className={`flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-2xl transition-all group ${
-            isLightMode
-              ? 'bg-white text-slate-800 border-slate-200 shadow-slate-900/10 hover:border-teal-300'
-              : 'glass-panel border-accent/40 bg-brand-deep/95 text-zinc-100 hover:border-accent hover:bg-brand-card'
-          }`}
-        >
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow ${
-            isLightMode ? 'bg-teal-50 text-teal-700' : 'bg-accent/20 text-accent'
-          }`}>
-            <Compass className="w-4 h-4 animate-spin-slow" />
-          </div>
-          <div className="text-right">
-            <div className={`text-xs font-black flex items-center gap-1.5 ${
-              isLightMode ? 'text-slate-900' : 'text-white'
-            }`}>
-              <span>סוכן הטיולים</span>
-              {sessionState.lastProposals?.length > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-bold ${
-                  isLightMode
-                    ? 'bg-teal-50 text-teal-700 border-teal-200'
-                    : 'bg-accent/20 text-accent border-accent/30'
-                }`}>
-                  {sessionState.lastProposals.length} הצעות
-                </span>
-              )}
-            </div>
-            <div className={`text-[10px] ${isLightMode ? 'text-slate-400' : 'text-zinc-400'}`}>לחץ להרחבת השיחה ↗</div>
-          </div>
-          <Maximize2 className={`w-4 h-4 transition ml-1 ${
-            isLightMode ? 'text-slate-400 group-hover:text-teal-600' : 'text-zinc-400 group-hover:text-accent'
-          }`} />
-        </button>
-      </div>
-    );
-  }
-
   return (
     /* Panel mode (desktop side panel) or floating drawer (mobile) */
     <div
@@ -421,7 +374,7 @@ export default function AgentChatBot({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className={`font-black text-base tracking-tight font-display ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <h3 className={`font-black text-lg sm:text-xl tracking-tight font-sans ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   סוכן הטיולים
                 </h3>
                 <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-accent bg-accent/[0.08] px-1.5 py-0.5 rounded-full border border-accent/20">
@@ -483,28 +436,20 @@ export default function AgentChatBot({
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
-            <button
-              onClick={() => setIsMinimized(true)}
-              title="מזער שיחה"
-              className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
-                isLightMode
-                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              <Minimize2 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={onClose}
-              title="סגור"
-              className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
-                isLightMode
-                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {/* Close button - only on floating/mobile drawer mode */}
+            {!isPanelMode && onClose && (
+              <button
+                onClick={onClose}
+                title="סגור"
+                className={`w-8 h-8 rounded-xl flex items-center justify-center transition ${
+                  isLightMode
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -815,17 +760,19 @@ export default function AgentChatBot({
                 {/* Quick Selection Options / Pills */}
                 {msg.options && msg.options.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-1 max-w-[95%]">
-                    {msg.options.map((opt, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSendMessage(opt.value)}
-                        disabled={isProcessing}
-                        className="teal-chip text-right"
-                        style={{ fontSize: '11px' }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                    {msg.options.map((opt, idx) => {
+                      const cleanLabel = (opt.label || '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E0}-\u{1F1FF}\u{FE00}-\u{FE0F}]/gu, '').trim();
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleSendMessage(opt.value)}
+                          disabled={isProcessing}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl font-sans font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] border border-emerald-500/50 shadow-sm transition-all cursor-pointer text-right disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {cleanLabel || opt.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -878,7 +825,7 @@ export default function AgentChatBot({
           <div className={`flex items-center justify-center text-[10px] mt-2 px-1 ${
             isLightMode ? 'text-slate-500' : 'text-zinc-500'
           }`}>
-            <span>🛡️ שיחה מאובטחת • נתונים מאומתים מ-INPA</span>
+            <span>🌿 נתונים רשמיים מרשות הטבע והגנים (רט״ג) • פרטיות מלאה</span>
           </div>
         </div>
 

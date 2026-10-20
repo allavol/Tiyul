@@ -1,9 +1,9 @@
 # 🛡️ דוח ולידציה ובקרת איכות לסוכן הטיולים (Validation Audit Report)
 
-**תאריך ריצה:** `2026-10-19 07:02:32 UTC`  
+**תאריך ריצה:** `2026-10-20 10:42:21 UTC`  
 **סוכן בודק:** `Agent BAAL Sandboxed Validator (Least-Privilege Engine)`  
 **מדיניות עלות:** `0.00$ Verified`  
-**מקור נתונים:** `C:\Projects\Tyul\logs\incoming`  
+**מקור נתונים:** `C:\Projects\Tiyuli\logs\incoming`  
 
 ---
 

@@ -39,8 +39,20 @@
   }
 
   /* Utility overrides for light mode to avoid hardcoded JSX changes */
-  .light .text-white, .light .text-zinc-100, .light .text-zinc-200, .light .text-zinc-300 {
+  .light .text-white:not(.text-pure-white):not(.bg-emerald-600):not(.bg-accent),
+  .light .text-zinc-100:not(.bg-emerald-600),
+  .light .text-zinc-200:not(.bg-emerald-600),
+  .light .text-zinc-300:not(.bg-emerald-600) {
     color: var(--text-primary) !important;
+  }
+
+  /* Solid accent / emerald buttons & badges always keep crisp white text */
+  .text-pure-white,
+  .light .bg-emerald-600,
+  .light .bg-emerald-600 *,
+  .light button.bg-emerald-600,
+  .light span.bg-emerald-600 {
+    color: #ffffff !important;
   }
   .light .text-zinc-400, .light .text-zinc-500, .light .text-zinc-600 {
     color: var(--text-secondary) !important;
@@ -75,10 +87,22 @@
   .badge-age-10 { background-color: rgba(59, 7, 100, 0.8); color: #d8b4fe; border-color: rgba(126, 34, 206, 0.6); }
   .light .badge-age-10 { background-color: #7e22ce; color: #faf5ff; border-color: #581c87; }
 
-  body {
+  html, body, #root, button, input, textarea, select {
     background-color: var(--bg-deep);
     color: var(--text-primary);
-    font-family: 'Inter', 'Heebo', sans-serif;
+    font-family: 'Assistant', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  }
+
+  h1, h2, h3, h4, h5, h6, p, span, div, a, label {
+    font-family: 'Assistant', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .font-sans, .font-body, .font-display, .font-hebrew {
+    font-family: 'Assistant', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  }
+
+  .font-mono, code, pre, kbd {
+    font-family: 'JetBrains Mono', monospace !important;
   }
 }
 

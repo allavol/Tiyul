@@ -59,6 +59,7 @@ export default function TacticalMap({
 
   const [isFallbackTiles, setIsFallbackTiles] = useState(false);
   const fallbackTriggeredRef = useRef(false);
+  const [mapReady, setMapReady] = useState(0);
 
   // Initialize Map
   useEffect(() => {
@@ -109,8 +110,9 @@ export default function TacticalMap({
     // Zoom control at bottom-left
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
-    // Store map instance
+    // Store map instance and signal readiness so marker effects run immediately
     mapInstanceRef.current = map;
+    setMapReady((prev) => prev + 1);
 
     // Immediately invalidate size so Leaflet re-measures the now-visible container
     requestAnimationFrame(() => {
@@ -211,7 +213,7 @@ export default function TacticalMap({
             border-radius: 9999px;
             font-size: 9px;
             font-weight: 800;
-            font-family: 'Outfit', 'Heebo', sans-serif;
+            font-family: 'Assistant', sans-serif;
             display: flex;
             align-items: center;
             gap: 2px;
@@ -239,7 +241,7 @@ export default function TacticalMap({
 
       markersRef.current[asset.id] = marker;
     });
-  }, [filteredAssets, selectedAssetId, onSelectAsset]);
+  }, [filteredAssets, selectedAssetId, onSelectAsset, mapReady]);
 
   // Smoothly frame newly recommended proposals when they are first generated
   useEffect(() => {
@@ -257,7 +259,7 @@ export default function TacticalMap({
       const bounds = L.latLngBounds(sites.map((a) => [a.lat, a.lng]));
       map.flyToBounds(bounds, { padding: [60, 60], maxZoom: 11, duration: 1.0 });
     }
-  }, [recommendedAssetIds, assets]);
+  }, [recommendedAssetIds, assets, mapReady]);
 
   // Handle flyTo when a single asset is selected
   useEffect(() => {
@@ -275,7 +277,7 @@ export default function TacticalMap({
     } else if (!selectedAssetId) {
       prevSelectedIdRef.current = null;
     }
-  }, [selectedAssetId, assets]);
+  }, [selectedAssetId, assets, mapReady]);
 
   // Teal Routing Line matching Surfline accent
   useEffect(() => {

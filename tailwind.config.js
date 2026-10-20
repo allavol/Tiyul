@@ -5,6 +5,13 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    fontFamily: {
+      sans: ['Assistant', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+      display: ['Assistant', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+      body: ['Assistant', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+      mono: ['JetBrains Mono', 'monospace'],
+      hebrew: ['Assistant', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+    },
     extend: {
       colors: {
         // Surfline-style deep charcoal palette linked to CSS variables
@@ -23,12 +30,6 @@ export default {
           glow: 'var(--accent-glow)',
           muted: 'var(--border-accent)',
         },
-      },
-      fontFamily: {
-        display: ['Outfit', 'Heebo', 'Inter', 'sans-serif'],
-        body: ['Inter', 'Heebo', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-        hebrew: ['Heebo', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 4s linear infinite',

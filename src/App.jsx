@@ -8,7 +8,7 @@ import AgentChatBot from './components/AgentChatBot';
 import LuxeTopBar from './components/LuxeTopBar';
 import OnboardingModal from './components/OnboardingModal';
 import { AgentService } from './services/AgentService';
-import { getDefaultDayIndex } from './utils/weatherUtils';
+import { getDefaultDayIndex, isWaterAsset } from './utils/weatherUtils';
 
 export default function App() {
   // Initialize assets from assets_db.json
@@ -95,13 +95,40 @@ export default function App() {
   // Filtered & Sorted Assets Pipeline
   const filteredAssets = useMemo(() => {
     let list = assets.filter((asset) => {
-      // 1. Search query filter
+      // 1. Smart Search Anchor Filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchName = asset.name?.toLowerCase().includes(q) || asset.name_en?.toLowerCase().includes(q);
-        const matchRegion = asset.region?.toLowerCase().includes(q);
+        const matchRegion = asset.region?.toLowerCase().includes(q) || asset.region_group?.toLowerCase().includes(q);
         const matchType = asset.type?.some((t) => t.toLowerCase().includes(q));
-        if (!matchName && !matchRegion && !matchType) return false;
+        const matchDesc = asset.description?.toLowerCase().includes(q);
+
+        // Smart keyword anchors
+        const isStrollerQuery = q.includes('עגל') || q.includes('נגיש') || q === '0' || q === '0+';
+        const matchStroller = isStrollerQuery && (asset.stroller_accessible || asset.min_age === 0);
+
+        const isWaterQuery = q.includes('מים') || q.includes('מעיין') || q.includes('נחל') || q.includes('שכשוך') || q.includes('בריכ');
+        const matchWater = isWaterQuery && isWaterAsset(asset);
+
+        const isForestQuery = q.includes('יער') || q.includes('חורש') || q.includes('צל') || q.includes('מוצל');
+        const matchForest = isForestQuery && (asset.type?.some(t => t.includes('חורש') || t.includes('יער')) || asset.category === 'forest');
+
+        const isAntiquityQuery = q.includes('עתיק') || q.includes('ארכיאולוג') || q.includes('מבצר') || q.includes('מורשת');
+        const matchAntiquity = isAntiquityQuery && (asset.type?.some(t => t.includes('ארכיאולוגיה') || t.includes('עתיקות') || t.includes('מורשת') || t.includes('מבצר')));
+
+        const isDesertQuery = q.includes('מדבר') || q.includes('נגב') || q.includes('דיונ') || q.includes('ערבה');
+        const matchDesert = isDesertQuery && (asset.region_group === 'south' || asset.type?.some(t => t.includes('מדבר')));
+
+        const isFreeQuery = q.includes('חינם') || q.includes('ללא תשלום');
+        const matchFree = isFreeQuery && (!asset.entry_fee || asset.entry_fee.includes('חינם'));
+
+        // Age number match (e.g. "4", "7", "10")
+        const ageMatch = q.match(/\b(0|4|7|10|12)\b/);
+        const matchAge = ageMatch ? asset.min_age <= Number(ageMatch[1]) : false;
+
+        if (!matchName && !matchRegion && !matchType && !matchDesc && !matchStroller && !matchWater && !matchForest && !matchAntiquity && !matchDesert && !matchFree && !matchAge) {
+          return false;
+        }
       }
 
       // 2. Region filter
@@ -114,6 +141,8 @@ export default function App() {
           if (!isHaven) return false;
         } else if (selectedCategory === 'spni') {
           if (asset.category !== 'spni' && !asset.org?.includes('החברה להגנת הטבע')) return false;
+        } else if (selectedCategory === 'water') {
+          if (!isWaterAsset(asset)) return false;
         } else if (asset.category !== selectedCategory) {
           return false;
         }
@@ -123,7 +152,7 @@ export default function App() {
       if (selectedAgeFilter !== 'all') {
         const reqAge = Number(selectedAgeFilter);
         if (reqAge === 0) {
-          if (asset.min_age !== 0) return false;
+          if (asset.min_age !== 0 && !asset.stroller_accessible) return false;
         } else if (reqAge === 4) {
           if (asset.min_age > 4) return false;
         } else if (reqAge === 7) {
@@ -303,7 +332,11 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden min-h-0">
 
         {/* ── AI Panel: visible on desktop (md+), hidden on mobile ── */}
-        <aside className="hidden md:flex md:w-[400px] lg:w-[440px] flex-shrink-0 flex-col border-l border-white/[0.07] bg-brand-card overflow-hidden z-10">
+        <aside className={`hidden md:flex md:w-[400px] lg:w-[440px] flex-shrink-0 flex-col border-l overflow-hidden z-[1000] relative ${
+          isLightMode
+            ? 'border-slate-300/90 shadow-[-10px_0_24px_rgba(0,0,0,0.16)] bg-white'
+            : 'border-white/[0.12] shadow-[-14px_0_36px_rgba(0,0,0,0.65)] bg-brand-card'
+        }`}>
           <AgentChatBot
             isOpen={true}
             onClose={() => {}}

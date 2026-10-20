@@ -1,0 +1,321 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 820" width="1536" height="820" style="background:#0a0d14; font-family:'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <!-- Left Boundary Shadow (Casting shadow over map from AI Panel) -->
+    <filter id="panelLeftShadow" x="-30%" y="-10%" width="140%" height="120%">
+      <feDropShadow dx="-14" dy="0" stdDeviation="18" flood-color="#000000" flood-opacity="0.65"/>
+    </filter>
+
+    <!-- Top Bar Bottom Shadow -->
+    <filter id="topBarShadow" x="0%" y="0%" width="100%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+
+    <!-- Map Elements Shadow -->
+    <filter id="pillShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+
+    <!-- Accent Glow -->
+    <filter id="accentGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="8" flood-color="#0d9488" flood-opacity="0.5"/>
+    </filter>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&amp;display=swap');
+      text { font-family: 'Assistant', sans-serif; }
+    </style>
+  </defs>
+
+  <!-- ========================================================================= -->
+  <!-- 1. MAP BACKGROUND & CANVAS (Left side in RTL: x: 0 to 1116) -->
+  <!-- ========================================================================= -->
+  <g id="TacticalMap">
+    <!-- Dark Matter Basemap Canvas -->
+    <rect id="Map-Base" x="0" y="96" width="1116" height="724" fill="#121721"/>
+
+    <!-- Mediterranean Sea Polygon (Tactical Dark Blue / Slate) -->
+    <path id="Mediterranean-Sea" d="M 0 96 L 680 96 Q 660 180 650 250 Q 640 330 620 420 Q 590 500 560 540 Q 510 570 440 590 Q 330 630 190 670 L 0 720 Z" fill="#0b111a"/>
+    
+    <!-- Red Sea / Gulf of Eilat -->
+    <path id="Red-Sea-Eilat" d="M 480 750 L 530 820 L 450 820 Z" fill="#0b111a"/>
+
+    <!-- Tactical Topographic Road Grid Lines & Borders -->
+    <path d="M 650 250 L 700 280 L 730 360 L 690 470 L 630 560 L 530 750" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+    <path d="M 680 96 L 720 200 L 710 300 L 740 400 L 680 520 L 620 620" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <path d="M 590 500 L 640 510 L 700 490" fill="none" stroke="#f59e0b" stroke-width="1.8" opacity="0.4"/>
+    <path d="M 620 420 L 670 410 L 730 420" fill="none" stroke="#ef4444" stroke-width="1.8" opacity="0.4"/>
+
+    <!-- Topographic Labels -->
+    <text x="440" y="380" font-size="28" font-weight="800" fill="#1e293b" text-anchor="middle">הים התיכון</text>
+    <text x="640" y="355" font-size="14" font-weight="700" fill="#94a3b8" text-anchor="end">תל אביב - יפו</text>
+    <text x="655" y="255" font-size="13" font-weight="700" fill="#94a3b8" text-anchor="end">חיפה</text>
+    <text x="700" y="440" font-size="14" font-weight="800" fill="#cbd5e1" text-anchor="middle">ירושלים</text>
+    <text x="660" y="550" font-size="13" font-weight="700" fill="#94a3b8" text-anchor="middle">באר שבע</text>
+    <text x="540" y="770" font-size="12" font-weight="700" fill="#94a3b8" text-anchor="middle">אילת</text>
+    <text x="770" y="400" font-size="16" font-weight="800" fill="#334155" text-anchor="middle">ירדן</text>
+    <text x="360" y="730" font-size="16" font-weight="800" fill="#334155" text-anchor="middle">מצרים - סיני</text>
+
+    <!-- Tactical Marker Pins (Live 126 Verified Sites Cluster) -->
+    <g id="MapPins">
+      <!-- Pin 1: Dan Springs (North) -->
+      <g id="Pin-Dan" transform="translate(685, 155)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">💧</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+
+      <!-- Pin 2: Banias -->
+      <g id="Pin-Banias" transform="translate(710, 180)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">💧</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+
+      <!-- Pin 3: Carmel Forest -->
+      <g id="Pin-Carmel" transform="translate(670, 260)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">🌲</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+
+      <!-- Pin 4: Sharon Stroller Park -->
+      <g id="Pin-Sharon" transform="translate(635, 345)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">👶</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+
+      <!-- Pin 5: Jerusalem Citadel -->
+      <g id="Pin-Jerusalem" transform="translate(695, 435)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">🏰</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+
+      <!-- Pin 6: Ein Gedi Oasis -->
+      <g id="Pin-EinGedi" transform="translate(720, 480)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">💧</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+
+      <!-- Pin 7: Ramon Crater -->
+      <g id="Pin-Ramon" transform="translate(635, 600)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">☀️</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+
+      <!-- Pin 8: Eilat Coral Beach -->
+      <g id="Pin-Eilat" transform="translate(535, 745)">
+        <ellipse cx="0" cy="0" rx="19" ry="15" fill="#0f172a" stroke="#10b981" stroke-width="2.5" filter="url(#pillShadow)"/>
+        <text x="0" y="5" font-size="14" text-anchor="middle">🏖️</text>
+        <rect x="-16" y="11" width="32" height="12" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="0" y="20" font-size="9" font-weight="800" fill="#34d399" text-anchor="middle">100✓</text>
+      </g>
+    </g>
+
+    <!-- Floating Map Filter Capsule (Top Center of Map) -->
+    <g id="Floating-Filter-Pill" transform="translate(380, 116)">
+      <rect x="0" y="0" width="320" height="40" rx="20" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255,255,255,0.15)" stroke-width="1" filter="url(#pillShadow)"/>
+      <!-- Active 'הכל' pill -->
+      <rect x="258" y="4" width="54" height="32" rx="16" fill="#0d9488"/>
+      <text x="285" y="24" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">הכל</text>
+      
+      <text x="220" y="24" font-size="13" font-weight="700" fill="#e2e8f0" text-anchor="middle">💧 מים</text>
+      <text x="145" y="24" font-size="13" font-weight="700" fill="#e2e8f0" text-anchor="middle">👶 עגלות</text>
+      <text x="65" y="24" font-size="13" font-weight="700" fill="#e2e8f0" text-anchor="middle">🛡️ בטוח כעת</text>
+    </g>
+
+    <!-- Floating Brain Button & Dark Mode (Top Left of Map) -->
+    <g id="Floating-Left-Controls" transform="translate(24, 116)">
+      <!-- Agent Brain Button -->
+      <rect x="42" y="0" width="85" height="40" rx="14" fill="#0f172a" stroke="rgba(45,212,191,0.4)" stroke-width="1.2" filter="url(#pillShadow)"/>
+      <circle cx="108" cy="20" r="5" fill="#2dd4bf"/>
+      <text x="75" y="25" font-size="13" font-weight="800" fill="#2dd4bf" text-anchor="middle">מוח 🛡️</text>
+
+      <!-- Moon / Theme Toggle -->
+      <rect x="0" y="0" width="36" height="40" rx="14" fill="#0f172a" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" filter="url(#pillShadow)"/>
+      <text x="18" y="25" font-size="15" text-anchor="middle">🌙</text>
+    </g>
+
+    <!-- Zoom Controls (Bottom Left) -->
+    <g id="Zoom-Controls" transform="translate(24, 735)">
+      <rect x="0" y="0" width="32" height="64" rx="10" fill="#0f172a" stroke="rgba(255,255,255,0.15)" stroke-width="1" filter="url(#pillShadow)"/>
+      <text x="16" y="24" font-size="18" font-weight="800" fill="#cbd5e1" text-anchor="middle">+</text>
+      <line x1="0" y1="32" x2="32" y2="32" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="16" y="54" font-size="18" font-weight="800" fill="#cbd5e1" text-anchor="middle">−</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- 2. AGENT CHAT BOT PANEL (Desktop Panel on Right: x: 1116 to 1536) -->
+  <!-- Includes Shadow to the Left of the Border Line casting over Map -->
+  <!-- ========================================================================= -->
+  <g id="AgentChatBot-Panel" filter="url(#panelLeftShadow)">
+    <!-- Panel Background (Full Height: y: 96 to 820) -->
+    <rect x="1116" y="96" width="420" height="724" fill="#0e131b"/>
+    <!-- Left Boundary Line -->
+    <line x1="1116" y1="96" x2="1116" y2="820" stroke="rgba(255,255,255,0.12)" stroke-width="1.2"/>
+
+    <!-- ── Bot Panel Header ── -->
+    <g id="ChatBot-Header">
+      <!-- Header Border Bottom -->
+      <line x1="1116" y1="168" x2="1536" y2="168" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+      <!-- Compass Icon Box -->
+      <rect x="1480" y="112" width="40" height="40" rx="12" fill="rgba(45,212,191,0.15)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+      <circle cx="1500" cy="132" r="11" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+      <polygon points="1500,125 1504,132 1500,131 1496,132" fill="#ffffff"/>
+      <polygon points="1500,139 1504,132 1500,133 1496,132" fill="#2dd4bf"/>
+
+      <!-- Title: סוכן הטיולים (Enlarged to 20px Assistant Bold) -->
+      <text x="1468" y="132" font-size="20" font-weight="900" fill="#ffffff" text-anchor="end">סוכן הטיולים</text>
+      
+      <!-- AI Guide Badge -->
+      <rect x="1335" y="116" width="68" height="22" rx="11" fill="rgba(45,212,191,0.08)" stroke="rgba(45,212,191,0.25)" stroke-width="1"/>
+      <circle cx="1346" cy="127" r="3" fill="#2dd4bf"/>
+      <text x="1372" y="131" font-size="10" font-weight="800" fill="#2dd4bf" text-anchor="middle">AI GUIDE</text>
+
+      <!-- Subtitle -->
+      <text x="1468" y="152" font-size="12" font-weight="600" fill="#94a3b8" text-anchor="end">תכנון מסלולים מונחה בטיחות ונתוני שטח</text>
+
+      <!-- Action Buttons (Left: Reset, Bug Report, Download) -->
+      <g id="Header-Actions" transform="translate(1132, 122)">
+        <!-- Download Log Button -->
+        <rect x="0" y="0" width="28" height="28" rx="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)"/>
+        <text x="14" y="19" font-size="12" fill="#94a3b8" text-anchor="middle">📥</text>
+        <!-- Audit Report Button -->
+        <rect x="34" y="0" width="28" height="28" rx="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)"/>
+        <text x="48" y="19" font-size="12" fill="#94a3b8" text-anchor="middle">🐞</text>
+        <!-- Reset Conversation Button -->
+        <rect x="68" y="0" width="28" height="28" rx="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)"/>
+        <text x="82" y="19" font-size="12" fill="#94a3b8" text-anchor="middle">🔄</text>
+      </g>
+    </g>
+
+    <!-- ── Bot Chat Body ── -->
+    <g id="ChatBot-Body" transform="translate(1132, 184)">
+      <!-- Bot Message Bubble -->
+      <g id="Bot-Welcome-Bubble">
+        <rect x="0" y="0" width="388" height="110" rx="16" fill="#141a24" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="372" y="28" font-size="14" font-weight="800" fill="#ffffff" text-anchor="end">שלום וברוכים הבאים! 🧭 אני סוכן הטיולים החכם שלכם.</text>
+        <text x="372" y="56" font-size="13" font-weight="600" fill="#cbd5e1" text-anchor="end">ספרו לי: לאן תרצו לטייל ומתי? (למשל: "רוצים לטייל מחר</text>
+        <text x="372" y="78" font-size="13" font-weight="600" fill="#cbd5e1" text-anchor="end">בצפון עם ילדים קטנים בני 4, מחפשים מים").</text>
+      </g>
+
+      <!-- Quick Selection Options / Pills (Emerald Background with White Text matching 'היום' button) -->
+      <g id="QuickSelectionPills" transform="translate(0, 126)">
+        <!-- Pill 1: תפתיע אותי! -->
+        <rect x="290" y="0" width="98" height="34" rx="12" fill="#059669" stroke="#10b981" stroke-width="1"/>
+        <text x="339" y="21" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">תפתיע אותי!</text>
+
+        <!-- Pill 2: טיול מים בצפון למחר -->
+        <rect x="75" y="0" width="205" height="34" rx="12" fill="#059669" stroke="#10b981" stroke-width="1"/>
+        <text x="177" y="21" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">טיול מים בצפון למחר (גיל 4+)</text>
+
+        <!-- Pill 3: טיול עגלות מוצל בשרון -->
+        <rect x="180" y="44" width="208" height="34" rx="12" fill="#059669" stroke="#10b981" stroke-width="1"/>
+        <text x="284" y="65" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">טיול עגלות מוצל בשרון (0+)</text>
+
+        <!-- Pill 4: טיול נוף ומבצרים בירושלים -->
+        <rect x="-10" y="44" width="180" height="34" rx="12" fill="#059669" stroke="#10b981" stroke-width="1"/>
+        <text x="80" y="65" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">טיול נוף ומבצרים בירושלים (6+)</text>
+      </g>
+    </g>
+
+    <!-- ── Bot Chat Footer & Input ── -->
+    <g id="ChatBot-Footer" transform="translate(1132, 746)">
+      <!-- Input Box Capsule -->
+      <rect x="0" y="0" width="388" height="42" rx="12" fill="#141a24" stroke="rgba(255,255,255,0.14)" stroke-width="1.2"/>
+      <!-- Placeholder Text -->
+      <text x="370" y="26" font-size="13" font-weight="600" fill="#64748b" text-anchor="end">כתבו בקשה חופשית... (למשל: טיול מים מחר בצפון לגיל 4)</text>
+      
+      <!-- Send Button Circle -->
+      <rect x="8" y="6" width="30" height="30" rx="8" fill="#0d9488"/>
+      <!-- Paper Plane Icon -->
+      <polygon points="20,13 30,21 20,29 23,21" fill="#ffffff"/>
+
+      <!-- Security / INPA Footnote -->
+      <text x="194" y="58" font-size="10" font-weight="600" fill="#64748b" text-anchor="middle">🛡️ נתונים מאומתים מ-רשות הטבע והגנים (INPA) • קק"ל</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- 3. LUXE TOP BAR (Single Harmonized Controls Row, No Black Container, No Duplicate Chips) -->
+  <!-- ========================================================================= -->
+  <g id="LuxeTopBar" filter="url(#topBarShadow)">
+    <!-- Topbar Outer Background (Full Width: 1536, Height: 96) -->
+    <rect x="0" y="0" width="1536" height="96" fill="#0c1017" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+    <!-- ── Row 1: Brand (לאן נטייל? in Assistant Bold + strictly 126 אתרים) ── -->
+    <g id="TopBar-Brand" transform="translate(1484, 8)">
+      <!-- Compass Icon Box -->
+      <rect x="0" y="0" width="36" height="36" rx="10" fill="#0d9488" filter="url(#accentGlow)"/>
+      <circle cx="18" cy="18" r="10" fill="none" stroke="#ffffff" stroke-width="2"/>
+      <polygon points="18,10 22,18 18,17 14,18" fill="#ffffff"/>
+      <polygon points="18,26 22,18 18,19 14,18" fill="#5eead4"/>
+
+      <!-- Title: לאן נטייל? (Assistant Bold) -->
+      <text x="-12" y="24" font-size="20" font-weight="800" fill="#ffffff" text-anchor="end">לאן נטייל?</text>
+      
+      <!-- Counter Badge: strictly '126 אתרים' -->
+      <rect x="-175" y="6" width="85" height="24" rx="12" fill="rgba(13,148,136,0.15)" stroke="#0d9488" stroke-opacity="0.3" stroke-width="1"/>
+      <text x="-132" y="22" font-size="12" font-weight="700" fill="#2dd4bf" text-anchor="middle">126 אתרים</text>
+    </g>
+
+    <!-- ── Row 2: Harmonized Controls Row (Search + Region + Category + Difficulty + Date + Reset) ── -->
+    <!-- All elements: Height 38px, rounded-xl (10px), border-white/14, Assistant Bold font -->
+    <g id="TopBar-Controls-Row" transform="translate(20, 48)">
+
+      <!-- Region Filter -->
+      <g id="Control-Region" transform="translate(1300, 0)">
+        <rect x="0" y="0" width="195" height="38" rx="10" fill="#111620" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+        <text x="176" y="24" font-size="14">📍</text>
+        <text x="156" y="24" font-size="13" font-weight="700" fill="#ffffff" text-anchor="end">כל האזורים</text>
+        <text x="18" y="24" font-size="10" fill="#94a3b8">▼</text>
+      </g>
+
+      <!-- Category Filter -->
+      <g id="Control-Category" transform="translate(1090, 0)">
+        <rect x="0" y="0" width="195" height="38" rx="10" fill="#111620" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+        <text x="176" y="24" font-size="14">🏷️</text>
+        <text x="156" y="24" font-size="13" font-weight="700" fill="#ffffff" text-anchor="end">כל השמורות</text>
+        <text x="18" y="24" font-size="10" fill="#94a3b8">▼</text>
+      </g>
+
+      <!-- Difficulty Filter -->
+      <g id="Control-Difficulty" transform="translate(880, 0)">
+        <rect x="0" y="0" width="195" height="38" rx="10" fill="#111620" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+        <text x="176" y="24" font-size="14">🥾</text>
+        <text x="156" y="24" font-size="13" font-weight="700" fill="#ffffff" text-anchor="end">כל הרמות</text>
+        <text x="18" y="24" font-size="10" fill="#94a3b8">▼</text>
+      </g>
+
+      <!-- Date Horizon Filter + Badge -->
+      <g id="Control-Date" transform="translate(670, 0)">
+        <rect x="0" y="0" width="195" height="38" rx="10" fill="#111620" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+        <text x="176" y="24" font-size="14">📅</text>
+        <text x="156" y="24" font-size="13" font-weight="700" fill="#ffffff" text-anchor="end">10/20/2026</text>
+        <!-- Forecast status badge: '✓ היום' -->
+        <rect x="10" y="6" width="60" height="26" rx="6" fill="#059669"/>
+        <text x="40" y="23" font-size="11" font-weight="800" fill="#ffffff" text-anchor="middle">✓ היום</text>
+      </g>
+
+      <!-- Reset Button -->
+      <g id="Control-Reset" transform="translate(570, 0)">
+        <rect x="0" y="0" width="85" height="38" rx="10" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+        <text x="20" y="24" font-size="13">🔄</text>
+        <text x="52" y="24" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">איפוס</text>
+      </g>
+
+    </g>
+  </g>
+</svg>
