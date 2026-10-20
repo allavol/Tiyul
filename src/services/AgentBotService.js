@@ -11,7 +11,7 @@
 
 import assetsData from '../../assets_db.json' with { type: 'json' };
 import { WeatherService } from './WeatherService.js';
-import { getWaterAdvisory } from '../utils/weatherUtils.js';
+import { getWaterAdvisory, isWaterAsset } from '../utils/weatherUtils.js';
 import { calculateHaversineDistanceKm } from '../utils/geoUtils.js';
 
 // Import modular sub-engines
@@ -1141,6 +1141,9 @@ export class AgentBotService {
         );
         if (!isShadeForest) return false;
       }
+      if (state.feature === 'water' || state.feature === 'spring') {
+        if (!isWaterAsset(site)) return false;
+      }
       return true;
     });
 
@@ -1284,7 +1287,7 @@ export class AgentBotService {
         return rain > 10 || cond.includes('גשם') || cond.includes('סוער') || cond.includes('סערה') || !p.weather.isRainSafe;
       });
       if (hasRainyWeather) {
-        rainWarning = '\n\n⚠️ **שימו לב: צפויים משקעים באזור. הליכה בתוך נחלות ביום גשום עלולה להיות מסוכנת (סכנת שיטפונות בזק).** שקלו מסלול מוצל/יבש כחלופה בטוחה.';
+        rainWarning = '\n\n⚠️ **שימו לב: צפויים משקעים באזור. הליכה בתוך נחלים ביום גשום עלולה להיות מסוכנת (סכנת שיטפונות בזק).** שקלו מסלול מוצל/יבש כחלופה בטוחה.';
       }
     }
 

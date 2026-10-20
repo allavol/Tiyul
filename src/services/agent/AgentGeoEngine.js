@@ -136,25 +136,34 @@ export function filterCandidatesByGeo(candidates, state) {
   return candidates.filter((site) => {
     // 1. Strict regional boundary check
     if (state.region && state.region !== 'all' && state.region !== 'radius') {
-      const siteRegion = (site.region || '') + ' ' + (site.name || '') + ' ' + (site.type || []).join(' ');
+      // Subregions of North MUST strictly belong to north or haifa_carmel
+      if (['west_galilee', 'golan', 'upper_galilee', 'carmel', 'north'].includes(state.region)) {
+        if (site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
+      }
+
+      const siteGeoText = `${site.region || ''} ${site.name || ''}`;
+
       if (state.region === 'west_galilee') {
-        return siteRegion.includes('גליל מערבי') || siteRegion.includes('חוף הגליל') || siteRegion.includes('כזיב') || 
-               siteRegion.includes('חרדלית') || siteRegion.includes('מונפורט') || siteRegion.includes('גורן') || 
-               siteRegion.includes('ראש הנקרה') || siteRegion.includes('אכזיב');
+        return siteGeoText.includes('גליל מערבי') || siteGeoText.includes('חוף הגליל') || siteGeoText.includes('כזיב') || 
+               siteGeoText.includes('חרדלית') || siteGeoText.includes('מונפורט') || siteGeoText.includes('גורן') || 
+               siteGeoText.includes('ראש הנקרה') || siteGeoText.includes('אכזיב') || siteGeoText.includes('בצת');
       }
       if (state.region === 'golan') {
-        return siteRegion.includes('גולן') || siteRegion.includes('חרמון') || siteRegion.includes('גמלא') || 
-               siteRegion.includes('מג׳רסה') || siteRegion.includes('מג\'רסה') || siteRegion.includes('דליות') || 
-               siteRegion.includes('יהודיה') || siteRegion.includes('משושים') || siteRegion.includes('בנטל') || 
-               siteRegion.includes('כנף') || siteRegion.includes('מוקש') || siteRegion.includes('פיק');
+        return siteGeoText.includes('גולן') || siteGeoText.includes('חרמון') || siteGeoText.includes('גמלא') || 
+               siteGeoText.includes('מג׳רסה') || siteGeoText.includes('מג\'רסה') || siteGeoText.includes('דליות') || 
+               siteGeoText.includes('יהודיה') || siteGeoText.includes('משושים') || siteGeoText.includes('בנטל') || 
+               siteGeoText.includes('כנף') || siteGeoText.includes('מוקש') || siteGeoText.includes('עלמין') ||
+               siteGeoText.includes('עין פיק') || siteGeoText.includes('אפיק') || siteGeoText.includes('מפל עיט') ||
+               siteGeoText.includes('דיבשה') || siteGeoText.includes('סער') || siteGeoText.includes('גילבון') ||
+               siteGeoText.includes('זוויתן');
       }
       if (state.region === 'upper_galilee') {
-        return siteRegion.includes('גליל עליון') || siteRegion.includes('אצבע הגליל') || siteRegion.includes('עמק החולה') || 
-               siteRegion.includes('דן') || siteRegion.includes('שניר') || siteRegion.includes('חצבני') || 
-               siteRegion.includes('ביריה') || siteRegion.includes('מירון') || siteRegion.includes('עיון');
+        return siteGeoText.includes('גליל עליון') || siteGeoText.includes('אצבע הגליל') || siteGeoText.includes('עמק החולה') || 
+               siteGeoText.includes('תל דן') || siteGeoText.includes('נחל דן') || siteGeoText.includes('שניר') || siteGeoText.includes('חצבני') || 
+               siteGeoText.includes('ביריה') || siteGeoText.includes('מירון') || siteGeoText.includes('נחל עיון');
       }
       if (state.region === 'carmel') {
-        return site.region_group === 'haifa_carmel' || siteRegion.includes('כרמל') || siteRegion.includes('רמות מנשה');
+        return site.region_group === 'haifa_carmel' || siteGeoText.includes('כרמל') || siteGeoText.includes('רמות מנשה');
       }
       if (state.region === 'north' && site.region_group !== 'north' && site.region_group !== 'haifa_carmel') return false;
       if (state.region === 'center' && site.region_group !== 'center') return false;

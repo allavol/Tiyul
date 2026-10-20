@@ -893,6 +893,36 @@ await runTest('Edge Case 61: Semantic Distinction between What-If Crisis and Flo
   assert.ok(!watchRes.text.includes('What-If'), 'Watch query must NOT be confused with a crisis What-If simulation');
 });
 
+// ── Test 62: Golan Water Query Precision (Zero South Leak & Genuine Water Filter) ──
+await runTest('Edge Case 62: Golan Water Query Precision ("בא לי לטייל מחר בגולן באתר עם מים")', async () => {
+  const res = await AgentBotService.processUserMessage('בא לי לטייל מחר בגולן באתר עם מים');
+  assert.strictEqual(res.state.region, 'golan', 'Region should be golan');
+  assert.strictEqual(res.state.feature, 'water', 'Feature should be water');
+  assert.strictEqual(res.state.timing, 'tomorrow', 'Timing should be tomorrow');
+  assert.ok(res.proposals && res.proposals.length > 0, 'Must return Golan water proposals');
+
+  for (const p of res.proposals) {
+    // 1. Must NOT be in the South
+    assert.notStrictEqual(p.id, 802, 'Must NOT return Sapir Park in Arava (id 802)');
+    assert.ok(!p.name.includes('ספיר'), 'Proposal must not be Sapir Park');
+    assert.ok(!p.name.includes('ערבה'), 'Proposal must not be in Arava');
+
+    // 2. Must be genuine water site
+    assert.ok(!p.name.includes('מצפה השלום'), 'Must NOT return dry viewpoints like מצפה השלום when water is requested');
+    assert.ok(
+      p.category === 'water' || (p.types || []).includes('מים') || p.name.includes('מעיין') || p.name.includes('מפל') || p.name.includes('בריכ'),
+      `Proposal ${p.name} must be a genuine water asset`
+    );
+  }
+
+  // 3. What-If hazard scenario must NOT be about extreme heat in Sapir Park
+  const whatIfOption = res.options?.find(o => o.value?.includes('מה אם') || o.label?.includes('What-If'));
+  if (whatIfOption) {
+    assert.ok(!whatIfOption.label?.includes('ספיר'), 'What-If option must not mention Sapir Park');
+    assert.ok(!whatIfOption.value?.includes('ספיר'), 'What-If prompt must not mention Sapir Park');
+  }
+});
+
 console.log(`\n==================================================`);
 console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed (${((passedTests/totalTests)*100).toFixed(0)}%)`);
 console.log(`==================================================\n`);
