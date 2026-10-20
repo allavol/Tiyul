@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 הצעות מעודכנות לפישוט כרטיסיית האתר (V2) // לאן נטייל?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0b0f19;
+      color: #e2e8f0;
+      font-family: 'Rubik', sans-serif;
+      padding: 30px 20px 80px;
+      line-height: 1.5;
+    }
+    header {
+      text-align: center;
+      max-width: 960px;
+      margin: 0 auto 36px;
+    }
+    h1 {
+      font-family: 'Heebo', sans-serif;
+      font-size: 30px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #2dd4bf, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .changes-summary {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .change-chip {
+      background: rgba(45, 212, 191, 0.12);
+      border: 1px solid rgba(45, 212, 191, 0.35);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #99f6e4;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 28px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card-proposal {
+      background: #131b2e;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card-proposal:hover {
+      transform: translateY(-4px);
+      border-color: #2dd4bf;
+    }
+    .card-header {
+      padding: 18px 22px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .badge-1 { background: rgba(45, 212, 191, 0.15); color: #2dd4bf; border: 1px solid rgba(45, 212, 191, 0.3); }
+    .badge-2 { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-3 { background: rgba(244, 114, 182, 0.15); color: #f472b6; border: 1px solid rgba(244, 114, 182, 0.3); }
+    .card-header h2 {
+      font-size: 19px;
+      color: #ffffff;
+      font-weight: 800;
+    }
+    .card-header p {
+      font-size: 12.5px;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+    .img-container {
+      padding: 14px;
+      background: #080c14;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .img-container img {
+      width: 100%;
+      max-width: 370px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease;
+    }
+    .img-container img:hover {
+      transform: scale(1.02);
+    }
+    .card-body {
+      padding: 18px 22px;
+      flex: 1;
+    }
+    .bullet-list {
+      list-style: none;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .bullet-list li {
+      position: relative;
+      padding-right: 20px;
+      margin-bottom: 9px;
+    }
+    .bullet-list li::before {
+      content: '✓';
+      position: absolute;
+      right: 0;
+      color: #2dd4bf;
+      font-weight: bold;
+    }
+    .nav-back {
+      display: block;
+      text-align: center;
+      margin-top: 40px;
+      color: #2dd4bf;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>הצעות מעודכנות לפישוט כרטיסיית האתר (V2)</h1>
+    <div class="changes-summary">
+      <span class="change-chip">🚗 Waze כאייקון בלבד (מימין ל-X)</span>
+      <span class="change-chip">❌ כפתור X בקצה השמאלי הקיצוני</span>
+      <span class="change-chip">📍 הגדרת מוצא נסיעה (מת״א / ממיקומך)</span>
+      <span class="change-chip">💳 סטטוס כניסה (בתשלום / חינם)</span>
+      <span class="change-chip">🎚️ סליידר שעות מלא (06:00 עד 20:00)</span>
+      <span class="change-chip">🛡️ הסרת אחריות מעודנת בתחתית</span>
+    </div>
+    <div style="margin-top: 18px;">
+      <a href="/interactive-card-preview.html" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0d9488, #0284c7); color: white; padding: 10px 22px; border-radius: 999px; text-decoration: none; font-weight: 800; font-size: 14px; box-shadow: 0 4px 20px rgba(13,148,136,0.4);">
+        ✨ פתח את הכרטיסייה החיה והאינטראקטיבית ב-Look & Feel המקורי של האפליקציה ←
+      </a>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Option 1 -->
+    <div class="card-proposal">
+      <div class="card-header">
+        <span class="badge badge-1">אפשרות 1 מעודכנת — החלפה בין X ל-Waze</span>
+        <h2>Clean Slider Glance (סליידר שעות נקי)</h2>
+        <p>X בקצה הקיצוני, Waze כאייקון בלבד, מוצא מת״א, תשלום וסליידר</p>
+      </div>
+      <div class="img-container">
+        <a href="/proposals/v2_option1_slider_glance_swapped.jpg" target="_blank" title="לחץ לפתיחה בגודל מלא">
+          <img src="/proposals/v2_option1_slider_glance_swapped.jpg" alt="Option 1 V2 Slider Glance Swapped">
+        </a>
+      </div>
+      <div class="card-body">
+        <ul class="bullet-list">
+          <li><strong>החלפה בין Waze ל-X:</strong> כפתור הסגירה X בקצה השמאלי, ואייקון Waze מימינו (בלי מלל).</li>
+          <li><strong>מקור זמן נסיעה:</strong> הוגדר מפורשות <code>מת״א 122 דק׳</code> (ובמכשיר נייד עם GPS יציג <code>ממיקומך</code>).</li>
+          <li><strong>כניסה בתשלום:</strong> תגית <code>בתשלום</code> ברורה ונקייה.</li>
+          <li><strong>סליידר שעות (06:00 עד 20:00):</strong> בחירת שעה ספציפית עם תצוגת טמפרטורה (<code>14:00 · 36°C</code>).</li>
+          <li><strong>הסרת אחריות:</strong> שורה מעודנת בתחתית.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="card-proposal">
+      <div class="card-header">
+        <span class="badge badge-2">אפשרות 2 מעודכנת</span>
+        <h2>Iconic Timeline (סרגל שעות מודולרי)</h2>
+        <p>אייקונים אוניברסליים + סרגל שעות עם סימוני ביניים</p>
+      </div>
+      <div class="img-container">
+        <a href="/proposals/v2_option2_iconic_timeline.jpg" target="_blank" title="לחץ לפתיחה בגודל מלא">
+          <img src="/proposals/v2_option2_iconic_timeline.jpg" alt="Option 2 V2 Iconic Timeline">
+        </a>
+      </div>
+      <div class="card-body">
+        <ul class="bullet-list">
+          <li><strong>Waze:</strong> אייקון עגול בלבד בראש הכרטיסייה.</li>
+          <li><strong>סרגל שעות עם שנתות:</strong> סימונים ל-08:00, 11:00, 14:00, 17:00, 20:00 עם בועית גרירה פעילה (<code>10:00 · 29°C</code>).</li>
+          <li><strong>מדדים ואייקונים:</strong> <code>+4</code>, עגלה חסומה <code>🚼̸</code>, רכב <code>2:00</code> ותג <code>בתשלום</code>.</li>
+          <li><strong>הסרת אחריות:</strong> שורת תחתית מסודרת עם אייקון אזהרה מינימלי.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="card-proposal">
+      <div class="card-header">
+        <span class="badge badge-3">אפשרות 3 מעודכנת</span>
+        <h2>Apple Scrubber (גרדיאנט טמפרטורה רציף)</h2>
+        <p>טיפוגרפיה רציפה וסליידר גרדיאנט חום/קור מתוחכם</p>
+      </div>
+      <div class="img-container">
+        <a href="/proposals/v2_option3_apple_scrubber.jpg" target="_blank" title="לחץ לפתיחה בגודל מלא">
+          <img src="/proposals/v2_option3_apple_scrubber.jpg" alt="Option 3 V2 Apple Scrubber">
+        </a>
+      </div>
+      <div class="card-body">
+        <ul class="bullet-list">
+          <li><strong>Waze:</strong> כפתור אייקון עגול ומינימליסטי בלבד.</li>
+          <li><strong>שורת סיכום רציפה:</strong> <code>4+ למשפחות · ללא עגלות · שעתיים מת"א · אתר בתשלום</code>.</li>
+          <li><strong>סליידר טמפרטורה רציף:</strong> פס צבע (גרדיאנט כחול-צהוב-אדום) עם בועית שעה מדויקת (<code>14:00 — 36°C</code>).</li>
+          <li><strong>הסרת אחריות:</strong> שורה טיפוגרפית שקטה ומאופקת בתחתית.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <a class="nav-back" href="/">← חזרה לאפליקציה הראשית</a>
+
+</body>
+</html>

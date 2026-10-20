@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>השוואה ישירה: כרטיסייה נוכחית מול כרטיסייה מפושטת // לאן נטייל?</title>
+  <!-- Google Fonts: Heebo, Rubik, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heebo: ['Heebo', 'sans-serif'],
+            rubik: ['Rubik', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 20%, #1e293b, #0f172a, #020617);
+      min-height: 100vh;
+      font-family: 'Heebo', sans-serif;
+    }
+    .font-active-heebo { font-family: 'Heebo', sans-serif; }
+    .font-active-rubik { font-family: 'Rubik', sans-serif; }
+
+    /* Custom Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: linear-gradient(to right, #38bdf8, #2dd4bf, #f59e0b, #ef4444);
+      border-radius: 999px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid #0f766e;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -7px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  </style>
+</head>
+<body class="p-4 sm:p-8 text-slate-100 font-active-heebo" id="appRoot">
+
+  <!-- Top Bar & Controls -->
+  <header class="max-w-6xl mx-auto text-center mb-8">
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-bold mb-3">
+      <span>⚖️ מבחן השוואה אחד על אחד</span>
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-black text-white">בחר את הכרטיסייה המועדפת עליך</h1>
+    <p class="text-sm text-slate-400 mt-1 max-w-xl mx-auto">
+      השוואה מלאה: הכרטיסייה הנוכחית (עמוסה) מול הכרטיסייה המפושטת (סליידר שעות, Waze כאייקון, מוצא מת״א, תשלום, ביטול כפילויות).
+    </p>
+
+    <!-- Font Switcher & Info -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mt-4">
+      <span class="text-xs text-slate-400">פונט מוצג:</span>
+      <button onclick="setFont('heebo')" id="btnHeebo" class="px-3 py-1 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 shadow-sm transition">
+        Heebo (ברירת המחדל באפליקציה)
+      </button>
+      <button onclick="setFont('rubik')" id="btnRubik" class="px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+        Rubik (חלופה מעוגלת)
+      </button>
+    </div>
+  </header>
+
+  <!-- Side-by-Side Comparison Container -->
+  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- CARD 1: CURRENT BASELINE (הכרטיסייה הנוכחית - עמוסה)              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="flex flex-col items-center">
+      <div class="w-full max-w-[390px] mb-2 flex items-center justify-between px-1">
+        <span class="text-xs font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2.5 py-0.5 rounded-full">
+          🔴 מצב קיים (נוכחי באפליקציה)
+        </span>
+        <span class="text-xs text-slate-400">עמוס · כפולות אייקונים</span>
+      </div>
+
+      <!-- Current Card Body -->
+      <div class="w-full max-w-[390px] bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-200/90 shadow-[0_20px_60px_rgba(15,23,42,0.25)] p-3.5 text-slate-800 select-none">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-200/80 mb-2.5">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-emerald-50 border border-emerald-200 shadow-sm">
+              <span>💧</span>
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-base font-black truncate leading-tight text-slate-900">
+                שמורת טבע עין גדי
+              </h3>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full border bg-slate-100 text-slate-600 border-slate-200">
+                  INPA-103
+                </span>
+                <span class="text-[10px] font-bold text-teal-700">
+                  ים המלח ומדבר יהודה
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <div class="flex items-center gap-1 px-3 py-1.5 rounded-xl font-black text-xs bg-teal-500 text-slate-950 shadow-md">
+              <span>🚗</span>
+              <span>Waze</span>
+            </div>
+            <div class="p-1.5 rounded-full border bg-slate-100 text-slate-600 border-slate-200">
+              ✕
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Metrics (Baby, Stroller, Clock) -->
+        <div class="grid grid-cols-3 gap-1.5 mb-2.5">
+          <div class="p-2 rounded-2xl border border-slate-200/80 bg-slate-50 flex flex-col items-center justify-center text-center">
+            <div class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+              <span>👶</span>
+              <span>סף גיל</span>
+            </div>
+            <span class="text-xs font-black mt-0.5 px-2 py-0.5 rounded-lg border bg-blue-50 text-blue-700 border-blue-200">
+              +4
+            </span>
+          </div>
+
+          <div class="p-2 rounded-2xl border border-slate-200/80 bg-slate-50 flex flex-col items-center justify-center text-center">
+            <div class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+              <span>♿</span>
+              <span>עגלות</span>
+            </div>
+            <span class="text-[11px] font-bold mt-0.5 text-slate-500">
+              ללא עגלות
+            </span>
+          </div>
+
+          <div class="p-2 rounded-2xl border border-slate-200/80 bg-slate-50 flex flex-col items-center justify-center text-center">
+            <div class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+              <span>⏰</span>
+              <span>נסיעה מת"א</span>
+            </div>
+            <span class="text-[11px] font-black mt-0.5 text-slate-900">
+              122 דק'
+            </span>
+          </div>
+        </div>
+
+        <!-- 4-Day Forecast (5 lines per column) -->
+        <div class="p-2.5 rounded-2xl border border-slate-200/80 bg-slate-50 mb-2.5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              תחזית 4 ימים • בחר יום לבדיקה
+            </span>
+            <span class="text-[10.5px] font-mono font-bold text-teal-700">
+              מחר (20/10)
+            </span>
+          </div>
+
+          <div class="grid grid-cols-4 gap-1.5 text-center">
+            <div class="p-1 rounded-xl border border-slate-200 bg-white">
+              <div class="text-[10px] font-bold text-slate-600">היום</div>
+              <div class="text-[8px] text-slate-400">19/10</div>
+              <div class="text-sm my-0.5">☀️</div>
+              <div class="text-xs font-black">37°</div>
+              <div class="text-[7.5px] text-slate-500 bg-slate-100 rounded">0 מ"מ</div>
+              <div class="text-[7.5px] font-bold text-emerald-600 bg-emerald-50 rounded mt-0.5">✓ בטוח</div>
+            </div>
+
+            <div class="p-1 rounded-xl border border-teal-500 bg-teal-50 shadow-sm">
+              <div class="text-[10px] font-bold text-teal-800">מחר</div>
+              <div class="text-[8px] text-slate-500">20/10</div>
+              <div class="text-sm my-0.5">☀️</div>
+              <div class="text-xs font-black text-teal-900">36°</div>
+              <div class="text-[7.5px] text-slate-600 bg-slate-200/80 rounded">0 מ"מ</div>
+              <div class="text-[7.5px] font-bold text-emerald-700 bg-emerald-100 rounded mt-0.5">✓ בטוח</div>
+            </div>
+
+            <div class="p-1 rounded-xl border border-slate-200 bg-white">
+              <div class="text-[10px] font-bold text-slate-600">יום ד׳</div>
+              <div class="text-[8px] text-slate-400">21/10</div>
+              <div class="text-sm my-0.5">☀️</div>
+              <div class="text-xs font-black">35°</div>
+              <div class="text-[7.5px] text-slate-500 bg-slate-100 rounded">0 מ"מ</div>
+              <div class="text-[7.5px] font-bold text-emerald-600 bg-emerald-50 rounded mt-0.5">✓ בטוח</div>
+            </div>
+
+            <div class="p-1 rounded-xl border border-slate-200 bg-white">
+              <div class="text-[10px] font-bold text-slate-600">יום ה׳</div>
+              <div class="text-[8px] text-slate-400">22/10</div>
+              <div class="text-sm my-0.5">☀️</div>
+              <div class="text-xs font-black">37°</div>
+              <div class="text-[7.5px] text-slate-500 bg-slate-100 rounded">0 מ"מ</div>
+              <div class="text-[7.5px] font-bold text-emerald-600 bg-emerald-50 rounded mt-0.5">✓ בטוח</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hourly 3 Pills + Big Banner -->
+        <div class="p-2.5 rounded-2xl border border-slate-200/80 bg-slate-50 mb-2.5">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[10px] font-bold uppercase text-slate-500">
+              טמפרטורה שעתית (בוקר / צהריים / ערב)
+            </span>
+            <span class="text-[11px] font-black text-teal-700">32°C (ערב נוח ונעים)</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-1 p-0.5 rounded-xl border bg-slate-100 border-slate-200 text-center text-[10px] font-bold">
+            <div class="py-1 px-1 text-slate-600">בוקר (08:00) <br><span class="text-[8.5px] font-normal">3°-</span></div>
+            <div class="py-1 px-1 text-slate-600">צהריים (14:00) <br><span class="text-[8.5px] font-normal">שיא</span></div>
+            <div class="py-1 px-1 bg-teal-500 text-slate-950 rounded-lg shadow-sm">ערב (19:00) <br><span class="text-[8.5px]">4°-</span></div>
+          </div>
+
+          <div class="mt-2 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <span>🛡️</span>
+            <span>בטוח לטיול בערב (32°C) ✓</span>
+          </div>
+        </div>
+
+        <!-- Features (Ruler, Shoe, Ticket, Water, Desert) -->
+        <div class="p-2.5 rounded-2xl border border-slate-200/80 bg-slate-50 mb-2.5">
+          <div class="flex items-center justify-between text-[11px] font-medium">
+            <div class="flex items-center gap-1">
+              <span>📏</span>
+              <span>מסלול מעגלי קל</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span>🥾</span>
+              <span class="text-slate-500">קל למשפחות</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span>🎟️</span>
+              <span class="font-bold text-emerald-600">חינם</span>
+            </div>
+          </div>
+          <div class="flex gap-1 mt-2 pt-2 border-t border-slate-200">
+            <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
+              <span>💧</span> <span>מים</span>
+            </span>
+            <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
+              <span>🏜️</span> <span>מדבר</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Big Yellow Disclaimer -->
+        <div class="p-2.5 rounded-xl text-[9px] leading-relaxed flex items-start gap-1.5 border border-amber-300 bg-amber-50 text-amber-900 mb-2">
+          <span>⚠️</span>
+          <p>
+            <strong>אחריות ובטיחות:</strong> הנתונים מבוססים על מודלים ואומדנים ואינם מחליפים בדיקה עצמאית. חובה לוודא אישורי פתיחה והתרעות באתר רט"ג טרם היציאה.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="pt-1.5 border-t border-slate-200 text-[8.5px] flex items-center justify-between text-slate-400">
+          <span>תחזית ליום 2</span>
+          <span>רט"ג ומשרד הבריאות</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- CARD 2: SIMPLIFIED PROPOSAL (הכרטיסייה המפושטת - נקייה ומדויקת)     -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="flex flex-col items-center">
+      <div class="w-full max-w-[390px] mb-2 flex items-center justify-between px-1">
+        <span class="text-xs font-bold text-teal-300 bg-teal-500/20 border border-teal-500/40 px-2.5 py-0.5 rounded-full">
+          🟢 הצעה מפושטת (סליידר שעות, Waze כאייקון, מוצא מת"א, תשלום)
+        </span>
+        <span class="text-xs text-teal-400 font-bold">אינטראקטיבי!</span>
+      </div>
+
+      <!-- Simplified Card Body -->
+      <div class="w-full max-w-[390px] bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-200/90 shadow-[0_20px_60px_rgba(15,23,42,0.25)] p-4 text-slate-800 select-none">
+        
+        <!-- Header: X on far-left, Waze icon next to it, Site Title on right -->
+        <div class="flex items-center justify-between gap-2 pb-3 border-b border-slate-200/80 mb-3">
+          
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-emerald-50 border border-emerald-200 shadow-sm">
+              <span>💧</span>
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-base font-black truncate leading-tight text-slate-900">
+                שמורת טבע עין גדי
+              </h3>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full border bg-slate-100 text-slate-600 border-slate-200">
+                  INPA-103
+                </span>
+                <span class="text-[10px] font-bold text-teal-700">
+                  ים המלח ומדבר יהודה
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Swapped Action Area: X on far edge, Waze next to it -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <!-- Waze (Icon Only, No text) -->
+            <a 
+              href="https://waze.com/ul?ll=31.4655,35.3884&navigate=yes" 
+              target="_blank"
+              title="נווט ב-Waze"
+              class="w-8 h-8 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-950 flex items-center justify-center shadow-sm transition active:scale-95"
+            >
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2.05 21.4c-.16.5.3.96.8.8l4.33-1.33C8.68 21.6 10.28 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+              </svg>
+            </a>
+
+            <!-- Close X -->
+            <button 
+              title="סגור"
+              class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 flex items-center justify-center transition active:scale-95"
+            >
+              <svg class="w-4 h-4 stroke-current" stroke-width="2.2" viewBox="0 0 24 24" fill="none">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Clean Status Chips (No double icons) -->
+        <div class="grid grid-cols-4 gap-1.5 mb-3">
+          <div class="p-2 rounded-2xl border border-slate-200/80 bg-slate-50 flex flex-col items-center justify-center text-center">
+            <span class="text-[10px] font-bold text-slate-400">גיל</span>
+            <span class="text-xs font-black mt-0.5 text-teal-800 bg-teal-100/80 px-2 py-0.5 rounded-lg border border-teal-300">
+              +4
+            </span>
+          </div>
+
+          <div class="p-2 rounded-2xl border border-slate-200/80 bg-slate-50 flex flex-col items-center justify-center text-center">
+            <span class="text-[10px] font-bold text-slate-400">עגלות</span>
+            <span class="text-[11px] font-black mt-0.5 text-slate-600">
+              ללא עגלות
+            </span>
+          </div>
+
+          <div class="p-2 rounded-2xl border border-slate-200/80 bg-slate-50 flex flex-col items-center justify-center text-center">
+            <span class="text-[10px] font-bold text-slate-400">מת״א</span>
+            <span class="text-[11px] font-black mt-0.5 text-slate-800">
+              122 דק׳
+            </span>
+          </div>
+
+          <div class="p-2 rounded-2xl border border-slate-200/80 bg-slate-50 flex flex-col items-center justify-center text-center">
+            <span class="text-[10px] font-bold text-slate-400">כניסה</span>
+            <span class="text-[11px] font-black mt-0.5 text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded border border-amber-200">
+              בתשלום
+            </span>
+          </div>
+        </div>
+
+        <!-- 4-Day Strip (Clean minimal) -->
+        <div class="p-2.5 rounded-2xl border border-slate-200/80 bg-slate-50 mb-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              תחזית 4 ימים
+            </span>
+            <span class="text-[10.5px] font-mono font-bold text-teal-700" id="propForecastLabel">
+              מחר (20/10)
+            </span>
+          </div>
+
+          <div class="grid grid-cols-4 gap-1.5 text-center">
+            <button onclick="propSelectDay('היום (19/10)', 37)" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 transition flex flex-col items-center">
+              <span class="text-[10px] font-bold text-slate-600">היום</span>
+              <span class="text-base my-0.5">☀️</span>
+              <span class="text-xs font-black font-mono">37°</span>
+              <span class="text-[7.5px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded mt-1">בטוח</span>
+            </button>
+
+            <button onclick="propSelectDay('מחר (20/10)', 36)" class="p-1.5 rounded-xl border border-teal-500 bg-teal-50 text-teal-900 shadow-sm flex flex-col items-center">
+              <span class="text-[10px] font-bold text-teal-700">מחר</span>
+              <span class="text-base my-0.5">☀️</span>
+              <span class="text-xs font-black font-mono text-teal-900">36°</span>
+              <span class="text-[7.5px] font-bold text-emerald-700 bg-emerald-100 px-1 rounded mt-1">בטוח</span>
+            </button>
+
+            <button onclick="propSelectDay('יום ד׳ (21/10)', 35)" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 transition flex flex-col items-center">
+              <span class="text-[10px] font-bold text-slate-600">יום ד׳</span>
+              <span class="text-base my-0.5">🌤️</span>
+              <span class="text-xs font-black font-mono">35°</span>
+              <span class="text-[7.5px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded mt-1">בטוח</span>
+            </button>
+
+            <button onclick="propSelectDay('יום ה׳ (22/10)', 37)" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 transition flex flex-col items-center">
+              <span class="text-[10px] font-bold text-slate-600">יום ה׳</span>
+              <span class="text-base my-0.5">☀️</span>
+              <span class="text-xs font-black font-mono">37°</span>
+              <span class="text-[7.5px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded mt-1">בטוח</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Hourly SLIDER -->
+        <div class="p-3 rounded-2xl border border-slate-200/80 bg-slate-50 mb-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              סליידר שעות (גרור לבדיקת שעה מדויקת)
+            </span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-black font-mono text-slate-900" id="propHourLabel">14:00</span>
+              <span class="text-xs font-black text-teal-600 font-mono" id="propTempLabel">36°C</span>
+            </div>
+          </div>
+
+          <div class="relative py-1">
+            <input 
+              type="range" 
+              id="propSlider" 
+              min="6" 
+              max="20" 
+              value="14" 
+              step="1"
+              oninput="propUpdateHour(this.value)"
+            >
+          </div>
+
+          <div class="flex justify-between text-[9px] font-mono font-bold text-slate-400 mt-1">
+            <span>06:00</span>
+            <span>09:00</span>
+            <span>12:00</span>
+            <span>15:00</span>
+            <span>18:00</span>
+            <span>20:00</span>
+          </div>
+
+          <div id="propSafetyBanner" class="mt-2.5 py-1.5 px-2.5 rounded-xl text-center text-xs font-black border transition-all bg-emerald-50 text-emerald-700 border-emerald-200">
+            בטוח לטיול ב-14:00 (36°C) — שיא החום, מומלץ להצטייד במים רבים
+          </div>
+        </div>
+
+        <!-- Trail Specs: Pure Text -->
+        <div class="p-2.5 rounded-2xl border border-slate-200/80 bg-slate-50 flex items-center justify-between text-xs mb-3 font-bold text-slate-700">
+          <span>2.5 ק״מ</span>
+          <span class="text-slate-300">•</span>
+          <span>מסלול מעגלי</span>
+          <span class="text-slate-300">•</span>
+          <span class="text-teal-700">מעיינות ומים זורמים</span>
+          <span class="text-slate-300">•</span>
+          <span class="text-slate-500">קל למשפחות</span>
+        </div>
+
+        <!-- Compact Disclaimer -->
+        <div class="text-[9.5px] leading-relaxed text-slate-400 text-center pt-2 border-t border-slate-200/60">
+          הנתונים מבוססים על מודלים ואומדנים. חובה לוודא אישור פתיחה והתרעות באתר רט״ג טרם היציאה.
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="text-center mt-12 pb-8">
+    <a href="/" class="text-teal-400 hover:text-teal-300 font-bold text-sm">← חזרה למפה הראשית של האפליקציה</a>
+  </div>
+
+  <script>
+    let currentBaseTemp = 36;
+
+    function setFont(fontKey) {
+      const root = document.getElementById('appRoot');
+      const btnH = document.getElementById('btnHeebo');
+      const btnR = document.getElementById('btnRubik');
+      if (fontKey === 'rubik') {
+        root.className = "p-4 sm:p-8 text-slate-100 font-active-rubik";
+        btnR.className = "px-3 py-1 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 shadow-sm transition";
+        btnH.className = "px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+      } else {
+        root.className = "p-4 sm:p-8 text-slate-100 font-active-heebo";
+        btnH.className = "px-3 py-1 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 shadow-sm transition";
+        btnR.className = "px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+      }
+    }
+
+    function propSelectDay(label, temp) {
+      currentBaseTemp = temp;
+      document.getElementById('propForecastLabel').innerText = label;
+      const currentHour = document.getElementById('propSlider').value;
+      propUpdateHour(currentHour);
+    }
+
+    function propUpdateHour(val) {
+      const hour = parseInt(val, 10);
+      const hourStr = (hour < 10 ? '0' : '') + hour + ':00';
+      document.getElementById('propHourLabel').innerText = hourStr;
+
+      let delta = 0;
+      if (hour <= 8) delta = -7;
+      else if (hour <= 11) delta = -3;
+      else if (hour <= 15) delta = 0;
+      else if (hour <= 18) delta = -3;
+      else delta = -6;
+
+      const currentTemp = currentBaseTemp + delta;
+      document.getElementById('propTempLabel').innerText = currentTemp + '°C';
+
+      const banner = document.getElementById('propSafetyBanner');
+      if (currentTemp >= 37) {
+        banner.className = "mt-2.5 py-1.5 px-2.5 rounded-xl text-center text-xs font-black border transition-all bg-red-50 text-red-700 border-red-200";
+        banner.innerText = `עומס חום כבד ב-${hourStr} (${currentTemp}°C) — מומלץ להימנע מחשיפה לשמש`;
+      } else if (currentTemp >= 33) {
+        banner.className = "mt-2.5 py-1.5 px-2.5 rounded-xl text-center text-xs font-black border transition-all bg-amber-50 text-amber-800 border-amber-200";
+        banner.innerText = `בטוח לטיול ב-${hourStr} (${currentTemp}°C) — שעות חמות, חובה כובע ומים רבים`;
+      } else {
+        banner.className = "mt-2.5 py-1.5 px-2.5 rounded-xl text-center text-xs font-black border transition-all bg-emerald-50 text-emerald-700 border-emerald-200";
+        banner.innerText = `נעים ומומלץ לטיול ב-${hourStr} (${currentTemp}°C) ✓`;
+      }
+    }
+  </script>
+
+</body>
+</html>

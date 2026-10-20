@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 215" width="480" height="215" style="background: transparent; font-family: 'Heebo', system-ui, -apple-system, sans-serif;">
+  <defs>
+    <!-- Card Drop Shadow Filter -->
+    <filter id="card-shadow" x="-5%" y="-5%" width="115%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.07" />
+    </filter>
+  </defs>
+
+  <!-- ── 1. MAIN CARD BACKGROUND ── -->
+  <g id="card-container">
+    <rect 
+      id="card-bg"
+      x="12" 
+      y="12" 
+      width="456" 
+      height="190" 
+      rx="24" 
+      fill="#ffffff" 
+      stroke="#e2e8f0" 
+      stroke-width="1.2" 
+      filter="url(#card-shadow)"
+    />
+  </g>
+
+  <!-- ── 2. HEADER ROW (Title, Leaf, Age Badge, Top Collapse Chevron) ── -->
+  <g id="header-row">
+    <!-- Top Collapse Chevron Button (Left-most) -->
+    <g id="top-chevron-btn">
+      <rect x="25" y="26" width="28" height="28" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+      <path d="M 33 37 L 39 43 L 45 37" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <!-- Age & Stroller Badge (Dark Green Pill) -->
+    <g id="age-badge">
+      <rect x="61" y="25" width="84" height="30" rx="15" fill="#134e48" />
+      <text x="103" y="45" text-anchor="middle" fill="#2dd4bf" font-size="12" font-weight="800">0+ עגלות 👶</text>
+    </g>
+
+    <!-- Title & Leaf (Right-Aligned) -->
+    <g id="title-group">
+      <!-- Site Name -->
+      <text x="410" y="46" text-anchor="end" fill="#0f172a" font-size="18" font-weight="900" letter-spacing="-0.3">גן לאומי קיסריה</text>
+      <!-- Leaf Icon -->
+      <g transform="translate(418, 30)">
+        <path d="M 3, 14 C 11, 14 18, 6 17, -2 C 12, -2 4, 3 3, 14 Z M 10, 7 C 7, -1 3, -4 -1, -6" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </g>
+    </g>
+  </g>
+
+  <!-- ── 3. METADATA ROW (Region, Authority ID, Temperature) ── -->
+  <g id="metadata-row">
+    <!-- Sub-region (Cyan / Teal) -->
+    <text x="444" y="77" text-anchor="end" fill="#0284c7" font-size="13" font-weight="700">חוף הכרמל והשרון</text>
+
+    <!-- Separator Dot 1 -->
+    <circle cx="334" cy="73" r="2.2" fill="#cbd5e1" />
+
+    <!-- Authority ID (Slate Monospace) -->
+    <text x="324" y="77" text-anchor="end" fill="#64748b" font-size="11.5" font-weight="600" font-family="monospace">INPA-104</text>
+
+    <!-- Separator Dot 2 -->
+    <circle cx="260" cy="73" r="2.2" fill="#cbd5e1" />
+
+    <!-- Min/Max Temperature (Amber) -->
+    <text x="250" y="77" text-anchor="end" fill="#d97706" font-size="13.5" font-weight="800">15° / 25°</text>
+  </g>
+
+  <!-- ── 4. CHIPS / TAGS ROW ── -->
+  <g id="chips-row">
+    <!-- Chip 1: Stroller Friendly (Mint / Emerald) -->
+    <g id="chip-stroller">
+      <rect x="345" y="96" width="99" height="28" rx="14" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.2" />
+      <!-- Green Checkbox Square -->
+      <rect x="422" y="103" width="14" height="14" rx="3.5" fill="#10b981" />
+      <path d="M 425 110 L 428 113 L 433 107" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      <!-- Text -->
+      <text x="416" y="114.5" text-anchor="end" fill="#047857" font-size="11.5" font-weight="800">עגלה-ידידותי</text>
+    </g>
+
+    <!-- Chip 2: Weather Temp Tag (Warm Amber) -->
+    <g id="chip-weather">
+      <rect x="274" y="96" width="63" height="28" rx="14" fill="#fefce8" stroke="#fde047" stroke-width="1.2" />
+      <text x="305" y="114.5" text-anchor="middle" fill="#b45309" font-size="12" font-weight="800">15° / 25°</text>
+    </g>
+  </g>
+
+  <!-- ── 5. ACTION BUTTONS ROW ── -->
+  <g id="action-buttons-row">
+    <!-- Primary CTA: Show on Map (הצג במפה) -->
+    <g id="btn-show-map">
+      <rect x="150" y="138" width="294" height="38" rx="12" fill="#0d9488" />
+      <!-- Map Icon 🗺️ -->
+      <text x="255" y="162" font-size="13" text-anchor="middle">🗺️</text>
+      <!-- Label -->
+      <text x="296" y="162" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="800" letter-spacing="-0.2">הצג במפה</text>
+      <!-- Pin Icon 📍 -->
+      <path d="M 338 150 C 334.5 150 331.5 153 331.5 156.5 C 331.5 161 338 166 338 166 C 338 166 344.5 161 344.5 156.5 C 344.5 153 341.5 150 338 150 Z M 338 154.5 C 339.1 154.5 340 155.4 340 156.5 C 340 157.6 339.1 158.5 338 158.5 C 336.9 158.5 336 157.6 336 156.5 C 336 155.4 336.9 154.5 338 154.5 Z" 
+            fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <!-- Secondary CTA: More Details (פרטים נוספים) -->
+    <g id="btn-more-details">
+      <rect x="25" y="138" width="115" height="38" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" />
+      <text x="75" y="162" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="800" letter-spacing="-0.2">פרטים נוספים</text>
+      <!-- Down Chevron -->
+      <path d="M 116 158 L 121 163 L 126 158" fill="none" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </g>
+</svg>
