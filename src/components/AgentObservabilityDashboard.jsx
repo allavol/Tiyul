@@ -136,7 +136,7 @@ export default function AgentObservabilityDashboard({ isOpen, onClose, initialTr
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">חמ"ל טלמטריה וצפיות סוכן BAAL</h2>
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">לוח סטטוס וטלמטריה — סוכן הטיולים</h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-cyan-950/80 text-cyan-400 border border-cyan-700/50">
                   OpenTelemetry GenAI v1.39
                 </span>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Compass, Sun, Moon, ShieldAlert } from 'lucide-react';
+import { Compass, Sun, Moon, ShieldAlert, CloudRain, Flame, RotateCcw, AlertTriangle } from 'lucide-react';
 import initialAssetsData from '../assets_db.json';
 import TacticalMap from './components/TacticalMap';
 import MapErrorBoundary from './components/MapErrorBoundary';
@@ -181,11 +181,12 @@ export default function App() {
     try {
       const evaluation = await AgentService.evaluateThreat(
         'SIMULATE_FLOOD',
-        initialAssetsData
+        initialAssetsData,
+        selectedAssetId
       );
 
       if (evaluation.error) {
-        const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData);
+        const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData, selectedAssetId);
         applyEvaluation(fallbackEval);
         setAgentLastDecision(fallbackEval.reasoning_log);
         setAgentStatus('ALERT_REROUTED');
@@ -196,7 +197,7 @@ export default function App() {
       setAgentLastDecision(evaluation.reasoning_log);
       setAgentStatus('ALERT_REROUTED');
     } catch (err) {
-      const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData);
+      const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData, selectedAssetId);
       applyEvaluation(fallbackEval);
       setAgentLastDecision(fallbackEval.reasoning_log);
       setAgentStatus('ALERT_REROUTED');
@@ -213,7 +214,7 @@ export default function App() {
     setActiveScenario('HEATWAVE');
 
     try {
-      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_HEATWAVE', initialAssetsData);
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_HEATWAVE', initialAssetsData, selectedAssetId);
       applyEvaluation(evaluation);
       setAgentLastDecision(evaluation.reasoning_log);
       setAgentStatus('ALERT_REROUTED');
@@ -230,7 +231,7 @@ export default function App() {
     setActiveScenario('POLLUTION');
 
     try {
-      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_POLLUTION', initialAssetsData);
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_POLLUTION', initialAssetsData, selectedAssetId);
       applyEvaluation(evaluation);
       setAgentLastDecision(evaluation.reasoning_log);
       setAgentStatus('ALERT_REROUTED');
@@ -247,7 +248,7 @@ export default function App() {
     setActiveScenario('STROLLER');
 
     try {
-      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_STROLLER', initialAssetsData);
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_STROLLER', initialAssetsData, selectedAssetId);
       applyEvaluation(evaluation);
       setAgentLastDecision(evaluation.reasoning_log);
       setAgentStatus('ALERT_REROUTED');
@@ -356,10 +357,75 @@ export default function App() {
             queryTrigger={chatBotQueryTrigger}
             onClearQueryTrigger={() => setChatBotQueryTrigger(null)}
           />
+
+          {/* ── Crisis Scenario Strip (desktop AI panel bottom) ── */}
+          <div className={`flex-shrink-0 px-4 py-3 border-t ${isLightMode ? 'border-zinc-200 bg-zinc-50' : 'border-white/[0.06] bg-brand-deep/60'}`} dir="rtl">
+            <p className={`text-[9px] font-bold uppercase tracking-widest mb-2 ${isLightMode ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              בדוק תרחיש בטיחות
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSimulateFlood}
+                disabled={isProcessing || agentStatus === 'ALERT_REROUTED'}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-[11px] font-bold transition border active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
+                  isLightMode
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                    : 'bg-blue-500/10 text-blue-300 border-blue-500/30 hover:bg-blue-500/20'
+                }`}
+                title="סמלץ גשם כבד — הסוכן יחסום אתרי שיטפון וינתב למקלט הקרוב"
+              >
+                <CloudRain size={13} />
+                <span>גשם / שיטפון</span>
+              </button>
+              <button
+                onClick={handleSimulateHeatwave}
+                disabled={isProcessing || agentStatus === 'ALERT_REROUTED'}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-[11px] font-bold transition border active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
+                  isLightMode
+                    ? 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100'
+                    : 'bg-orange-500/10 text-orange-300 border-orange-500/30 hover:bg-orange-500/20'
+                }`}
+                title="סמלץ שרב קיצוני — הסוכן יחסום אתרים חשופים וינתב למקלט מוצל"
+              >
+                <Flame size={13} />
+                <span>שרב קיצוני</span>
+              </button>
+              {agentStatus === 'ALERT_REROUTED' && (
+                <button
+                  onClick={handleClear}
+                  className={`flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl text-[11px] font-bold transition border active:scale-95 ${
+                    isLightMode
+                      ? 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200'
+                      : 'bg-white/[0.06] text-zinc-400 border-white/[0.1] hover:bg-white/[0.12]'
+                  }`}
+                  title="איפוס מצב החירום"
+                >
+                  <RotateCcw size={13} />
+                </button>
+              )}
+            </div>
+          </div>
         </aside>
 
         {/* ── Map Panel ── */}
         <div className="flex-1 relative z-10 min-w-0">
+
+          {/* ── Crisis Alert Banner (visible on map when reroute is active) ── */}
+          {agentStatus === 'ALERT_REROUTED' && agentLastDecision && (
+            <div className="absolute top-0 left-0 right-0 z-[1100] flex items-center gap-3 px-4 py-2.5 bg-red-600/95 backdrop-blur-sm shadow-lg animate-fade-in pointer-events-auto" dir="rtl">
+              <AlertTriangle size={16} className="text-white flex-shrink-0 animate-pulse" />
+              <p className="text-white text-xs font-bold leading-snug flex-1 truncate">
+                {agentLastDecision}
+              </p>
+              <button
+                onClick={handleClear}
+                className="flex-shrink-0 text-white/70 hover:text-white text-[10px] font-bold underline underline-offset-2 transition"
+              >
+                איפוס
+              </button>
+            </div>
+          )}
+
           <MapErrorBoundary>
             <TacticalMap
               assets={filteredAssets}
