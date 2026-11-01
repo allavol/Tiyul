@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar, getSafeAlternatives } from '../utils/weatherUtils';
 import { WeatherService } from '../services/WeatherService';
+import { getDriveTimeFromOrigin } from '../services/osrmService';
 import assetsData from '../../assets_db.json';
 
 /**
@@ -35,8 +36,23 @@ export default function FloatingMapCard({
   const [activeDay, setActiveDay] = useState(selectedDayIndex);
   const [selectedHour, setSelectedHour] = useState(14); // 06 to 20
   const [liveWeather, setLiveWeather] = useState(null);
+  const [driveInfo, setDriveInfo] = useState(null);
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [alternatives, setAlternatives] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (asset?.lat && asset?.lng) {
+      getDriveTimeFromOrigin(asset.lat, asset.lng)
+        .then((info) => {
+          if (isMounted && info?.durationMins) setDriveInfo(info);
+        })
+        .catch(() => {});
+    } else {
+      setDriveInfo(null);
+    }
+    return () => { isMounted = false; };
+  }, [asset?.lat, asset?.lng]);
 
   // Build 4-day forecast data
   const fourDaysForecast = useMemo(() => {
@@ -198,6 +214,11 @@ export default function FloatingMapCard({
               <span className={`text-[10px] font-bold ${theme.accentText}`}>
                 {asset.region}
               </span>
+              {driveInfo?.label && (
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full border bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-zinc-300 border-slate-300 dark:border-white/10">
+                  ⏱️ {driveInfo.label}
+                </span>
+              )}
             </div>
           </div>
         </div>

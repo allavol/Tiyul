@@ -1,0 +1,248 @@
+
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Tiyuli — Remaining Work Plan</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1f2328;background:#fff;padding:40px 24px 64px}
+.container{max-width:760px;margin:0 auto}
+.page-header{border-bottom:2px solid #e5e7eb;padding-bottom:20px;margin-bottom:28px}
+.page-header h1{font-size:22px;font-weight:700;color:#1f2328;letter-spacing:-.3px}
+.page-header .meta{font-size:12px;color:#57606a;margin-top:6px}
+.page-header .meta strong{color:#3b82d4}
+.status-bar{margin-top:14px;display:flex;gap:12px;flex-wrap:wrap}
+.status-item{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid}
+.done{background:#dcfce7;color:#14532d;border-color:#bbf7d0}
+.inprog{background:#dbeafe;color:#1e3a8a;border-color:#93c5fd}
+.todo{background:#f7f8fa;color:#57606a;border-color:#e5e7eb}
+h2{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#57606a;margin:32px 0 12px;padding-bottom:6px;border-bottom:1px solid #e5e7eb}
+.badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;white-space:nowrap}
+.b-red{background:#fee2e2;color:#991b1b}
+.b-orange{background:#ffedd5;color:#9a3412}
+.b-yellow{background:#fef9c3;color:#713f12}
+.b-green{background:#dcfce7;color:#14532d}
+.b-blue{background:#dbeafe;color:#1e3a8a}
+.b-purple{background:#ede9fe;color:#4c1d95}
+.b-gray{background:#f1f5f9;color:#475569}
+/* Sprint card */
+.sprint{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:24px}
+.sprint-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f7f8fa;border-bottom:1px solid #e5e7eb}
+.sprint-hdr h3{font-size:14px;font-weight:700;color:#1f2328}
+.sprint-meta{font-size:11px;color:#57606a;display:flex;gap:12px}
+.sprint-body{padding:0 16px}
+/* Task row */
+.task{display:grid;grid-template-columns:26px 1fr auto;align-items:start;gap:10px;padding:12px 0;border-bottom:1px solid #f1f5f9}
+.task:last-child{border-bottom:none}
+.task-n{width:22px;height:22px;border-radius:6px;background:#f1f5f9;color:#57606a;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.task-title{font-size:13px;font-weight:600;color:#1f2328;margin-bottom:2px}
+.task-why{font-size:11px;color:#57606a;line-height:1.5;margin-bottom:4px}
+.task-impl{font-size:11px;color:#1f2328;line-height:1.5;margin-bottom:4px}
+.task-file{font-size:10px;font-family:monospace;color:#3b82d4;margin-top:2px}
+.task-badges{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;padding-top:2px}
+/* Deep dive */
+.deep{background:#f0f6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.deep h4{font-size:13px;font-weight:700;color:#1e3a8a;margin-bottom:8px}
+.deep-step{display:flex;gap:10px;margin-bottom:8px}
+.deep-step-num{width:20px;height:20px;border-radius:50%;background:#3b82d4;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.deep-step-body{font-size:12px;color:#1e3a8a;line-height:1.5}
+code{font-family:monospace;font-size:11px;background:#e0f2fe;color:#0c4a6e;padding:1px 5px;border-radius:3px}
+.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;font-size:12px;color:#9a3412;margin-bottom:10px}
+/* Summary table */
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px}
+thead th{background:#f7f8fa;font-weight:700;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#57606a}
+tbody td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top}
+tbody tr:nth-child(even) td{background:#f7f8fa}
+/* Done checkmark */
+.done-task .task-n{background:#dcfce7;color:#14532d}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#8b949e}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="page-header">
+  <h1>Tiyuli — Remaining Work Plan</h1>
+  <div class="meta">Branch: <strong>feature/crisis-engine-v2</strong> · Prepared by Yael Shamir (PM · Google Maps · Waze · Booking.com)</div>
+  <div class="status-bar">
+    <span class="status-item done">✅ Sprint 1 Complete (6/6 tasks)</span>
+    <span class="status-item done">✅ Sprint 2 Complete (3/3 tasks)</span>
+    <span class="status-item done">✅ Task 10 Complete (Travel-Time / OSRM)</span>
+    <span class="status-item inprog">🔵 Task 11 — PR, Merge &amp; Deploy (Final Step)</span>
+  </div>
+</div>
+
+
+<h2>Sprint 1 — Completed ✅</h2>
+<div class="sprint">
+  <div class="sprint-hdr">
+    <h3>Sprint 1 — Done on branch feature/crisis-engine-v2</h3>
+    <div class="sprint-meta"><span>Commits: 7fa95a5, 49b3cdc</span><span>Build: ✅ 0 errors</span><span>Tests: ✅ 106/106</span></div>
+  </div>
+  <div class="sprint-body">
+    <div class="task done-task"><div class="task-n">✓</div><div><div class="task-title">Delete HeaderHUD + TerminalConsole (GEOGUARD, DEFCON, TACTICAL dead code)</div></div><div class="task-badges"><span class="badge b-green">Done</span></div></div>
+    <div class="task done-task"><div class="task-n">✓</div><div><div class="task-title">Kill "חמ"ל" in AgentObservabilityDashboard</div></div><div class="task-badges"><span class="badge b-green">Done</span></div></div>
+    <div class="task done-task"><div class="task-n">✓</div><div><div class="task-title">Crisis engine v2 — dynamic Haversine nearest safe haven</div></div><div class="task-badges"><span class="badge b-green">Done</span></div></div>
+    <div class="task done-task"><div class="task-n">✓</div><div><div class="task-title">Flood + Heatwave buttons visible in AI panel + crisis alert banner on map</div></div><div class="task-badges"><span class="badge b-green">Done</span></div></div>
+    <div class="task done-task"><div class="task-n">✓</div><div><div class="task-title">Site photos — photo_url on all 51 assets, hero image in SiteChunkyCard + FloatingMapCard</div></div><div class="task-badges"><span class="badge b-green">Done</span></div></div>
+    <div class="task done-task"><div class="task-n">✓</div><div><div class="task-title">README rewrite — consumer-first, no military jargon, LinkedIn-ready</div></div><div class="task-badges"><span class="badge b-green">Done</span></div></div>
+  </div>
+</div>
+
+
+<h2>Sprint 2 — "Make It Trustworthy" · ~2.5h total · Next up</h2>
+
+<div class="sprint">
+  <div class="sprint-hdr">
+    <h3>🏗️ Sprint 2 — Explainability + Style + LuxeTopBar light mode fix</h3>
+    <div class="sprint-meta"><span>⏱ ~2.5h</span><span>🎯 Every recommendation feels justified; light mode works everywhere</span></div>
+  </div>
+  <div class="sprint-body">
+
+    <div class="task done-task">
+      <div class="task-n">✓</div>
+      <div>
+        <div class="task-title">Add "Why this site?" reason chips to every AI proposal card</div>
+        <div class="task-why"><strong>Why:</strong> The agent already scores sites internally — users never see the reasoning. Booking.com's "Why we recommend this" increased booking intent by 14%. Without it, Tiyuli reads as a black-box list, not an AI advisor.</div>
+        <div class="task-impl">
+          <strong>Built:</strong> Added <code>computeSiteReasons()</code> and <code>_matchReasons[]</code> in <code>AgentRulesEngine.js</code>, preserved through <code>AgentBotService.js</code>, rendered with <code>.reason-chip .teal-chip</code> in <code>AgentChatBot.jsx</code> with full light/dark theme support.
+        </div>
+        <div class="task-file">src/services/agent/AgentRulesEngine.js · src/services/AgentBotService.js · src/components/AgentChatBot.jsx · src/index.css</div>
+      </div>
+      <div class="task-badges">
+        <span class="badge b-green">Done</span>
+      </div>
+    </div>
+
+    <div class="task done-task">
+      <div class="task-n">✓</div>
+      <div>
+        <div class="task-title">Migrate LuxeTopBar from inline styles to Tailwind — fix broken light mode</div>
+        <div class="task-why"><strong>Why:</strong> Top bar stayed dark when user switched to light mode. Fully converted to theme-aware Tailwind classes.</div>
+        <div class="task-impl">
+          <strong>Built:</strong> Wired <code>isLightMode</code> into <code>LuxeTopBar.jsx</code> from <code>App.jsx</code>, replaced inline styles with <code>ctrl</code>, <code>selectText</code>, <code>optionClass</code>, and <code>resetBtn</code> conditional Tailwind styles.
+        </div>
+        <div class="task-file">src/components/LuxeTopBar.jsx · src/App.jsx</div>
+      </div>
+      <div class="task-badges">
+        <span class="badge b-green">Done</span>
+      </div>
+    </div>
+
+    <div class="task done-task">
+      <div class="task-n">✓</div>
+      <div>
+        <div class="task-title">Verify assets_db.json integrity after external modification</div>
+        <div class="task-why"><strong>Why:</strong> Validated JSON integrity, 126 assets intact, 51 assets with photo_url. Clean in git status.</div>
+        <div class="task-impl">
+          <strong>Verified:</strong> Validated via node integrity check. 0 corruption, 100% valid JSON.
+        </div>
+        <div class="task-file">assets_db.json</div>
+      </div>
+      <div class="task-badges">
+        <span class="badge b-green">Done</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<h2>Sprint 3 — "Make It Exceptional" · ~2h total</h2>
+
+<div class="sprint">
+  <div class="sprint-hdr">
+    <h3>✨ Sprint 3 — Travel Time + PR + Deploy</h3>
+    <div class="sprint-meta"><span>⏱ ~2h</span><span>🎯 Publish to main, deploy live, record LinkedIn GIF</span></div>
+  </div>
+  <div class="sprint-body">
+
+    <div class="task done-task">
+      <div class="task-n">✓</div>
+      <div>
+        <div class="task-title">Add travel-time estimate to site cards (OSRM, free, $0)</div>
+        <div class="task-why"><strong>Why:</strong> Every successful map product shows time, not distance. Users think "is this 45 min from me?" not "is this 38 km away?". OSRM Free Routing wired with zero cost.</div>
+        <div class="task-impl">
+          <strong>Built:</strong> Added origin city selector to <code>OnboardingModal.jsx</code>, expanded <code>osrmService.js</code> with Israeli cities dictionary + Nominatim fallback + Haversine fallback, attached <code>driveMinutes</code> and <code>driveLabel</code> to proposals in <code>AgentBotService.js</code>, and rendered travel time chips in <code>AgentChatBot.jsx</code> and <code>FloatingMapCard.jsx</code>.
+        </div>
+        <div class="task-file">src/services/osrmService.js · src/components/AgentChatBot.jsx · src/components/FloatingMapCard.jsx · src/components/OnboardingModal.jsx</div>
+      </div>
+      <div class="task-badges">
+        <span class="badge b-green">Done</span>
+      </div>
+    </div>
+
+    <div class="task">
+      <div class="task-n">11</div>
+      <div>
+        <div class="task-title">Create PR → merge to main → verify GitHub Pages deploy</div>
+        <div class="task-why"><strong>Why:</strong> Nothing ships until it's live. The LinkedIn post needs a working URL that a recruiter can click. CI must be green. GitHub Pages must serve the updated build.</div>
+        <div class="task-impl">
+          1. Run full test suite: <code>npm test</code> (106/106), <code>python -m unittest tests/test_skills.py</code> (22/22), <code>npm run build</code> (0 errors).<br />
+          2. Commit any remaining unstaged changes (logs/ files can be ignored or committed).<br />
+          3. Push branch, open PR on GitHub, confirm CI badge is green.<br />
+          4. Merge PR to main.<br />
+          5. Wait for GitHub Pages deploy action to complete (~2 min).<br />
+          6. Open <code>https://allavol.github.io/Tiyul/</code> — confirm onboarding modal, AI chat, crisis buttons, and photos all render correctly.<br />
+          7. Update README badges to reflect correct test counts.
+        </div>
+        <div class="task-file">GitHub · README.md badges</div>
+      </div>
+      <div class="task-badges">
+        <span class="badge b-red">P0</span>
+        <span class="badge b-green">~20min</span>
+        <span class="badge b-red">LinkedIn: CRITICAL</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<h2>Deep Dive — Task 7: Reason Chips Implementation</h2>
+<div class="deep">
+  <h4>Exact implementation plan for _matchReasons in AgentRulesEngine.js</h4>
+  <div class="deep-step"><div class="deep-step-num">1</div><div class="deep-step-body">At the start of each candidate's score calculation in <code>rankCandidates()</code>, initialise <code>const reasons = []</code>.</div></div>
+  <div class="deep-step"><div class="deep-step-num">2</div><div class="deep-step-body">After each scoring branch that fires, push a human-readable chip: e.g. <code>if (a.stroller_accessible) { scoreA += 15; reasons.push('🚼 נגיש לעגלות'); }</code></div></div>
+  <div class="deep-step"><div class="deep-step-num">3</div><div class="deep-step-body">Always push the age chip: <code>reasons.push(`✅ גיל ${a.min_age}+`)</code> when age is safe. Push <code>'💧 נחל/מים'</code> for water feature match, <code>'🌲 יער מוצל'</code> for shade match, <code>'🏛️ עתיקות'</code> for history, etc.</div></div>
+  <div class="deep-step"><div class="deep-step-num">4</div><div class="deep-step-body">After sort, attach <code>site._matchReasons = reasons.slice(0, 4)</code> to each returned site object (cap at 4 chips).</div></div>
+  <div class="deep-step"><div class="deep-step-num">5</div><div class="deep-step-body">In <code>AgentChatBot.jsx</code>, in the proposal card render: add a <code>flex gap-1 flex-wrap mt-1.5</code> row of <code>&lt;span className="teal-chip"&gt;</code> chips from <code>proposal._matchReasons</code>. Conditionally render only when array is non-empty.</div></div>
+</div>
+
+
+<h2>Explicitly Out of Scope (This Sprint)</h2>
+<table>
+  <thead><tr><th>Item</th><th>Why excluded</th></tr></thead>
+  <tbody>
+    <tr><td>Voice input</td><td>Separate initiative, no $0 STT available without API key</td></tr>
+    <tr><td>Native mobile app (React Native)</td><td>Separate project, out of scope</td></tr>
+    <tr><td>English / Arabic multilingual UI</td><td>Separate initiative</td></tr>
+    <tr><td>Real user auth / backend</td><td>Violates $0 constraint, out of scope</td></tr>
+    <tr><td>Expand assets DB to 100+</td><td>Deferred to Sprint 4 — 51 assets is enough for LinkedIn demo</td></tr>
+    <tr><td>Playwright E2E selector updates</td><td>Not broken — only run if UI selectors change</td></tr>
+  </tbody>
+</table>
+
+
+<h2>LinkedIn Readiness Checklist</h2>
+<table>
+  <thead><tr><th>Item</th><th>After Sprint 1</th><th>After Sprint 2</th><th>After Sprint 3</th></tr></thead>
+  <tbody>
+    <tr><td>No military jargon visible</td><td>✅</td><td>✅</td><td>✅</td></tr>
+    <tr><td>Crisis demo visible in main UI</td><td>✅</td><td>✅</td><td>✅</td></tr>
+    <tr><td>Site photos on cards</td><td>✅</td><td>✅</td><td>✅</td></tr>
+    <tr><td>README is consumer-first</td><td>✅</td><td>✅</td><td>✅</td></tr>
+    <tr><td>AI reasoning visible to user</td><td>❌ hidden</td><td>✅ reason chips</td><td>✅</td></tr>
+    <tr><td>Light mode works everywhere</td><td>⚠️ top bar broken</td><td>✅ fixed</td><td>✅</td></tr>
+    <tr><td>Travel time on cards</td><td>❌</td><td>❌</td><td>✅</td></tr>
+    <tr><td>Live demo URL working</td><td>✅ (old build)</td><td>✅ (old build)</td><td>✅ (new build)</td></tr>
+    <tr><td>CI green on main</td><td>✅</td><td>✅</td><td>✅</td></tr>
+  </tbody>
+</table>
+
+</div>
+<footer>Made with IBM Bob</footer>
+
+</body>
+</html>

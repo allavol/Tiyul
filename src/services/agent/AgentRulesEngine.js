@@ -8,6 +8,80 @@
  */
 
 /**
+ * Compute human-readable match reasons ("Why this site?") for an asset proposal card
+ * @param {Object} site - Hiking site asset
+ * @param {Object} state - Current conversational session state
+ * @param {string} [rawText=''] - Raw user message text
+ * @returns {Array<string>} List of 2-4 concise reason chips
+ */
+export function computeSiteReasons(site, state = {}, rawText = '') {
+  const reasons = [];
+  const types = (site.type || []).join(' ') + ' ' + (site.name || '');
+  const raw = rawText || '';
+
+  // 1. Primary Feature / Intent match
+  const isWaterIntent = state.feature === 'water' || state.feature === 'spring' || raw.includes('מים') || raw.includes('רטוב') || raw.includes('מעיין') || raw.includes('שכשוך');
+  const isWaterSite = site.category === 'water' || types.includes('מים') || types.includes('מעיין') || types.includes('נחל') || types.includes('בריכ') || types.includes('שכשוך') || types.includes('שניר') || types.includes('דן') || types.includes('דליות') || types.includes('מג׳רסה') || types.includes('מג\'רסה');
+
+  const isShadeIntent = state.feature === 'shade' || raw.includes('צל') || raw.includes('מוצל') || raw.includes('יער') || raw.includes('חורש');
+  const isShadeSite = types.includes('חורש') || types.includes('יער') || types.includes('כרמל') || types.includes('מירון') || types.includes('מוצל') || types.includes('צל') || types.includes('אלונים') || types.includes('אורנים') || types.includes('כלח') || types.includes('ביריה') || types.includes('שווייצריה');
+
+  const isAdventureIntent = state.feature === 'adventure' || raw.includes('אתגרי') || raw.includes('סנפלינג') || raw.includes('מצוק');
+  const isAdventureSite = types.includes('הרים') || types.includes('אתגרי') || types.includes('מצוק') || types.includes('סנפלינג');
+
+  if (isWaterIntent && isWaterSite) {
+    reasons.push('💧 נחל/מים');
+  } else if (isShadeIntent && isShadeSite) {
+    reasons.push('🌲 יער מוצל');
+  } else if (isAdventureIntent && isAdventureSite) {
+    reasons.push('🧗 מסלול אתגרי');
+  }
+
+  // 2. Age / Accessibility suitability
+  if (site.stroller_accessible || site.min_age === 0) {
+    reasons.push('🚼 נגיש לעגלות');
+  } else if (site.min_age !== undefined && site.min_age !== null) {
+    reasons.push(`✅ גיל ${site.min_age}+`);
+  }
+
+  // 3. Fallback feature if none pushed yet
+  if (!reasons.some((r) => r.includes('💧') || r.includes('🌲') || r.includes('🧗'))) {
+    if (isWaterSite) reasons.push('💧 נחל/מים');
+    else if (isShadeSite) reasons.push('🌲 יער מוצל');
+    else if (isAdventureSite) reasons.push('🧗 מסלול אתגרי');
+  }
+
+  // 4. Semantic Concept / Theme boosts
+  if ((state.concept === 'cool_haven' || raw.includes('קריר') || raw.includes('מערה')) && (types.includes('מער') || site.name.includes('גוברין') || site.category === 'safe_haven')) {
+    reasons.push('❄️ מערה קרירה');
+  } else if ((state.concept === 'history' || raw.includes('עתיקות') || raw.includes('מבצר') || raw.includes('ארכיאולוגיה')) && (types.includes('עתיקות') || types.includes('ארכיאולוגיה') || types.includes('מבצר') || site.name.includes('מצדה') || site.name.includes('נמרוד') || site.name.includes('ציפורי'))) {
+    reasons.push('🏛️ עתיקות ומבצר');
+  } else if ((state.concept === 'wildlife' || raw.includes('חיות') || raw.includes('ציפור')) && (types.includes('צפרות') || types.includes('אגם') || types.includes('עופות') || site.name.includes('צבאים') || site.name.includes('גמלא'))) {
+    reasons.push('🦅 צפרות וטבע');
+  } else if ((state.concept === 'sunset' || raw.includes('שקיעה') || raw.includes('תצפית')) && (types.includes('מצפור') || types.includes('תצפית') || site.name.includes('שלום') || site.name.includes('בנטל'))) {
+    reasons.push('🌅 תצפית נוף');
+  } else if ((state.concept === 'picnic' || raw.includes('קפה') || raw.includes('פיקניק')) && (types.includes('יער') || types.includes('חניון') || types.includes('פארק'))) {
+    reasons.push('☕ פיקניק וקפה');
+  } else if (types.includes('מכתש') || site.name.includes('מכתש') || site.name.includes('רמון')) {
+    reasons.push('🏜️ מכתש ומדבר');
+  }
+
+  // 5. Geographic context (Distance if present, otherwise Region)
+  if (site._distKm !== undefined && site._distKm !== null && !isNaN(site._distKm)) {
+    reasons.push(`📍 ${Math.round(site._distKm)} ק"מ`);
+  } else if (site.region) {
+    const regionName = site.region === 'north' ? 'צפון' :
+                       site.region === 'south' ? 'דרום' :
+                       site.region === 'center' ? 'מרכז' :
+                       site.region === 'jerusalem' ? 'ירושלים' : site.region;
+    reasons.push(`📍 ${regionName}`);
+  }
+
+  // Deduplicate and cap at 4 chips max
+  return Array.from(new Set(reasons)).slice(0, 4);
+}
+
+/**
  * Rank candidates by feature preference, proximity, age suitability, and keyword boosts
  * @param {Array<Object>} candidates - List of candidate hiking site assets
  * @param {Object} state - Current conversational session state
@@ -21,7 +95,7 @@ export function rankCandidates(candidates, state, rawText = '') {
     (rawText.includes('יהב') || rawText.includes('עין יהב') || rawText.includes('ספיר') || rawText.includes('שיזף')) ? 'yahav' : null
   );
 
-  return candidates.sort((a, b) => {
+  candidates.sort((a, b) => {
     const aTypes = (a.type || []).join(' ') + ' ' + (a.name || '');
     const bTypes = (b.type || []).join(' ') + ' ' + (b.name || '');
 
@@ -149,6 +223,13 @@ export function rankCandidates(candidates, state, rawText = '') {
 
     return 0;
   });
+
+  // Attach _matchReasons to each candidate (cap at 4 chips)
+  for (const site of candidates) {
+    site._matchReasons = computeSiteReasons(site, state, rawText);
+  }
+
+  return candidates;
 }
 
 /**

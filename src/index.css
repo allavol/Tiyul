@@ -87,6 +87,27 @@
   .badge-age-10 { background-color: rgba(59, 7, 100, 0.8); color: #d8b4fe; border-color: rgba(126, 34, 206, 0.6); }
   .light .badge-age-10 { background-color: #7e22ce; color: #faf5ff; border-color: #581c87; }
 
+  /* Reason Chips & Teal Chips for AI Proposals */
+  .teal-chip, .reason-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    background-color: rgba(45, 212, 191, 0.12);
+    color: #2DD4BF;
+    white-space: nowrap;
+    line-height: 1.25;
+  }
+  .light .teal-chip, .light .reason-chip {
+    border-color: rgba(13, 148, 136, 0.4);
+    background-color: rgba(13, 148, 136, 0.1);
+    color: #0F766E;
+  }
+
   html, body, #root, button, input, textarea, select {
     background-color: var(--bg-deep);
     color: var(--text-primary);

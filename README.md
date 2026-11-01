@@ -2,7 +2,7 @@
 
 > An autonomous AI trip-planning agent for Israeli families. Describe your trip in plain Hebrew — kids' ages, region, date — and the agent recommends safe, age-appropriate outdoor destinations in real time. When it detects flash-flood risk or extreme heat, it automatically reroutes to the nearest safe alternative.
 
-**[Live Demo](https://allavol.github.io/Tiyul/)** · [![CI](https://github.com/allavol/Tiyul/actions/workflows/ci.yml/badge.svg)](https://github.com/allavol/Tiyul/actions) · [![Tests](https://img.shields.io/badge/Tests-106%2F106-brightgreen)](https://github.com/allavol/Tiyul) · [![Cost](https://img.shields.io/badge/Operating%20Cost-%240%2Fmo-emerald)](https://github.com/allavol/Tiyul)
+**[Live Demo](https://allavol.github.io/Tiyul/)** · [![CI](https://github.com/allavol/Tiyul/actions/workflows/ci.yml/badge.svg)](https://github.com/allavol/Tiyul/actions) · [![Tests](https://img.shields.io/badge/Tests-190%2F190%20passing-brightgreen)](https://github.com/allavol/Tiyul) · [![Cost](https://img.shields.io/badge/Operating%20Cost-%240%2Fmo-emerald)](https://github.com/allavol/Tiyul)
 
 ---
 

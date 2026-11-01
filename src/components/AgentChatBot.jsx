@@ -520,6 +520,12 @@ export default function AgentChatBot({
                         reasonChips.push({ label: `📍 ${Math.round(prop._distKm)} ק"מ`, color: 'chip-dist' });
                       }
 
+                      const displayChips = (prop._matchReasons && prop._matchReasons.length > 0)
+                        ? prop._matchReasons
+                        : reasonChips.map((c) => c.label);
+
+                      const photoUrl = fullAsset?.photo_url || prop.photo_url;
+
                       return (
                         <div
                           key={cardKey}
@@ -530,6 +536,19 @@ export default function AgentChatBot({
                           }`}
                           style={isLightMode ? undefined : { borderColor: 'var(--border-accent)' }}
                         >
+                          {/* Hero Photo (if available) */}
+                          {photoUrl && (
+                            <div className="w-full h-24 overflow-hidden rounded-xl mb-2 relative bg-zinc-800">
+                              <img
+                                src={photoUrl}
+                                alt={prop.name}
+                                loading="lazy"
+                                onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            </div>
+                          )}
+
                           {/* Card Header (Always visible - compact & clickable) */}
                           <div className="flex items-center justify-between gap-2">
                             <div 
@@ -550,6 +569,14 @@ export default function AgentChatBot({
                                 <span className={`font-mono text-[10px] ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>
                                   {prop.authority_id}
                                 </span>
+                                {prop.driveLabel && (
+                                  <>
+                                    <span className={isLightMode ? 'text-slate-300' : 'text-zinc-600'}>•</span>
+                                    <span className={`text-[10px] font-bold ${isLightMode ? 'text-slate-600' : 'text-zinc-300'}`}>
+                                      ⏱️ {prop.driveLabel}
+                                    </span>
+                                  </>
+                                )}
                                 {prop.weather?.temp && (
                                   <>
                                     <span className={isLightMode ? 'text-slate-300' : 'text-zinc-600'}>•</span>
@@ -584,32 +611,15 @@ export default function AgentChatBot({
                             </div>
                           </div>
 
-                          {/* Reason Chips (always visible) */}
-                          {reasonChips.length > 0 && (
-                            <div className="flex flex-wrap gap-1 pt-2">
-                              {reasonChips.slice(0, 4).map((chip, ci) => (
+                          {/* Reason Chips (always visible - Why this site?) */}
+                          {displayChips.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-2">
+                              {displayChips.slice(0, 4).map((chipText, ci) => (
                                 <span
                                   key={ci}
-                                  className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                    chip.color === 'chip-age'
-                                      ? isLightMode
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
-                                      : chip.color === 'chip-water'
-                                      ? isLightMode
-                                        ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                        : 'bg-blue-500/10 text-blue-400 border-blue-500/25'
-                                      : chip.color === 'chip-weather'
-                                      ? isLightMode
-                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/25'
-                                      : isLightMode
-                                        ? 'bg-slate-100 text-slate-600 border-slate-200'
-                                        : 'bg-white/[0.06] text-zinc-400 border-white/[0.1]'
-                                  }`}
+                                  className="reason-chip teal-chip"
                                 >
-                                  {chip.color === 'chip-age' && <span>✅</span>}
-                                  {chip.label}
+                                  {chipText}
                                 </span>
                               ))}
                             </div>

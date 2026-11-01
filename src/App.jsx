@@ -327,6 +327,7 @@ export default function App() {
         isProcessing={isProcessing}
         totalAssetsCount={initialAssetsData.length}
         visibleAssetsCount={filteredAssets.length}
+        isLightMode={isLightMode}
       />
 
       {/* ── Main Content Area ── */}

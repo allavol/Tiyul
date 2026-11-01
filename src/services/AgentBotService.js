@@ -13,6 +13,7 @@ import assetsData from '../../assets_db.json' with { type: 'json' };
 import { WeatherService } from './WeatherService.js';
 import { getWaterAdvisory, isWaterAsset } from '../utils/weatherUtils.js';
 import { calculateHaversineDistanceKm } from '../utils/geoUtils.js';
+import { getDriveTimeFromOrigin } from './osrmService.js';
 
 // Import modular sub-engines
 import { 
@@ -217,6 +218,8 @@ export class AgentBotService {
       if (safeDesert) {
         proposalsList = [{
           ...safeDesert,
+          _matchReasons: safeDesert._matchReasons || ['🏜️ מדבר יבש', '🛡️ בטוח משיטפונות', `✅ גיל ${safeDesert.min_age || 4}+`],
+          photo_url: safeDesert.photo_url || null,
           matchRationale: `מסלול מדברי בטוח ויבש (${safeDesert.name}) ללא סכנת שיטפונות היום`
         }];
       }
@@ -234,6 +237,8 @@ export class AgentBotService {
       if (safeHaven) {
         proposalsList = [{
           ...safeHaven,
+          _matchReasons: safeHaven._matchReasons || ['🛡️ מקלט בטוח', '🏛️ מקום מוגן', `✅ גיל ${safeHaven.min_age || 0}+`],
+          photo_url: safeHaven.photo_url || null,
           matchRationale: `מקלט בטוח מבוצר (${safeHaven.name}) מחוץ לאזור הסכנה השיטפונית`
         }];
       }
@@ -1232,6 +1237,11 @@ export class AgentBotService {
         // Fallback gracefully
       }
 
+      let driveInfo = null;
+      try {
+        driveInfo = await getDriveTimeFromOrigin(site.lat, site.lng);
+      } catch (e) {}
+
       const advisory = getWaterAdvisory(site);
       const isSafe = (!weather || weather.isTempSafe) && (!weather || weather.isRainSafe) && !advisory;
 
@@ -1246,6 +1256,10 @@ export class AgentBotService {
         stroller_accessible: site.stroller_accessible,
         category: site.category,
         types: site.type || [],
+        _matchReasons: site._matchReasons || [],
+        photo_url: site.photo_url || null,
+        driveMinutes: driveInfo?.durationMins || null,
+        driveLabel: driveInfo?.label || null,
         weather: weather ? {
           temp: weather.temp,
           conditions: weather.conditions,

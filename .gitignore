@@ -28,5 +28,6 @@ test-results/
 # IDE & OS files
 .vscode/
 .idea/
+.bob/
 .DS_Store
 Thumbs.db
