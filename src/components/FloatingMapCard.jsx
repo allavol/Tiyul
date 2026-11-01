@@ -260,6 +260,19 @@ export default function FloatingMapCard({
         </div>
       </div>
 
+      {/* ── 1.5 Hero Photo ───────────────────────────────────────────────────── */}
+      {asset.photo_url && (
+        <div className="w-full h-36 rounded-2xl overflow-hidden mb-2.5 bg-slate-900 flex-shrink-0">
+          <img
+            src={asset.photo_url}
+            alt={asset.name_en || asset.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
+          />
+        </div>
+      )}
+
       {/* ── 2. Upper Metrics: 4 Clean Universal Status Chips ────────────────── */}
       {/* No redundant icons, no Tel Aviv assumptions */}
       <div className="grid grid-cols-4 gap-1.5 mb-2.5">

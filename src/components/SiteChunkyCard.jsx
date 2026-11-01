@@ -16,7 +16,7 @@ export default function SiteChunkyCard({
   return (
     <div
       onClick={() => onSelect?.(asset.id)}
-      className={`rounded-xl p-3 mb-3 border transition cursor-pointer select-none flex flex-col gap-2.5 ${
+      className={`rounded-xl mb-3 border transition cursor-pointer select-none flex flex-col overflow-hidden ${
         isSelected
           ? 'bg-slate-800 border-accent shadow-[0_0_15px_rgba(45,212,191,0.2)]'
           : isAlert
@@ -24,6 +24,21 @@ export default function SiteChunkyCard({
           : 'bg-slate-800/50 border-slate-700/50 hover:border-slate-600'
       }`}
     >
+      {/* Hero Photo */}
+      {asset.photo_url && (
+        <div className="w-full h-28 overflow-hidden flex-shrink-0 bg-slate-900">
+          <img
+            src={asset.photo_url}
+            alt={asset.name_en || asset.name}
+            className="w-full h-full object-cover opacity-80"
+            loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+        </div>
+      )}
+
+      <div className="p-3 flex flex-col gap-2.5">
+
       {/* Contingency Banner if Alert */}
       {isAlert && (
         <div className="bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg px-3 py-2 text-xs font-bold flex items-center gap-2">
@@ -100,6 +115,7 @@ export default function SiteChunkyCard({
           </>
         )}
       </button>
+      </div>
     </div>
   );
 }

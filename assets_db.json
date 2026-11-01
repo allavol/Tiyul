@@ -29,7 +29,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "INPA-101"
+    "authority_id": "INPA-101",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Tel_Dan_nature_reserve.jpg/640px-Tel_Dan_nature_reserve.jpg"
   },
   {
     "id": 102,
@@ -59,7 +60,8 @@
     "min_age": 7,
     "age_group": "7+",
     "stroller_accessible": false,
-    "authority_id": "INPA-102"
+    "authority_id": "INPA-102",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Masada_by_David_Shankbone.jpg/640px-Masada_by_David_Shankbone.jpg"
   },
   {
     "id": 103,
@@ -89,7 +91,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "INPA-103"
+    "authority_id": "INPA-103",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Ein_Gedi_waterfall.jpg/640px-Ein_Gedi_waterfall.jpg"
   },
   {
     "id": 104,
@@ -119,7 +122,8 @@
     "min_age": 0,
     "age_group": "0+ עגלות",
     "stroller_accessible": true,
-    "authority_id": "INPA-104"
+    "authority_id": "INPA-104",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Caesarea_Maritima_harbor.jpg/640px-Caesarea_Maritima_harbor.jpg"
   },
   {
     "id": 105,
@@ -150,7 +154,8 @@
     "min_age": 0,
     "age_group": "0+ עגלות",
     "stroller_accessible": true,
-    "authority_id": "INPA-105"
+    "authority_id": "INPA-105",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Bell_Caves_at_Beit_Guvrin.jpg/640px-Bell_Caves_at_Beit_Guvrin.jpg"
   },
   {
     "id": 106,
@@ -180,7 +185,8 @@
     "min_age": 0,
     "age_group": "0+ עגלות",
     "stroller_accessible": true,
-    "authority_id": "INPA-106"
+    "authority_id": "INPA-106",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Tzipori_mosaic.jpg/640px-Tzipori_mosaic.jpg"
   },
   {
     "id": 107,
@@ -207,7 +213,8 @@
     "vulnerabilities": [
       "עומס חום קל"
     ],
-    "description": "שמורת טבע מופלאה עם שביל סכר רומי מונגש ומוצל, טחנות קמח עתיקות, אמת מים ובריכות נחל צלולות. מושלם לכל המשפחה, עגלות ופעוטות (מתאים לגילאי 0+ ו-4+)."
+    "description": "שמורת טבע מופלאה עם שביל סכר רומי מונגש ומוצל, טחנות קמח עתיקות, אמת מים ובריכות נחל צלולות. מושלם לכל המשפחה, עגלות ופעוטות (מתאים לגילאי 0+ ו-4+).",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Nahal_Taninim.jpg/640px-Nahal_Taninim.jpg"
   },
   {
     "id": 201,
@@ -240,7 +247,8 @@
     "min_age": 7,
     "age_group": "7+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-201"
+    "authority_id": "SPNI-201",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Mount_Hermon_snow.jpg/640px-Mount_Hermon_snow.jpg"
   },
   {
     "id": 202,
@@ -273,7 +281,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-202"
+    "authority_id": "SPNI-202",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Golan_Heights_landscape.jpg/640px-Golan_Heights_landscape.jpg"
   },
   {
     "id": 203,
@@ -306,7 +315,8 @@
     "min_age": 7,
     "age_group": "7+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-203"
+    "authority_id": "SPNI-203",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Mount_Meron_forest.jpg/640px-Mount_Meron_forest.jpg"
   },
   {
     "id": 204,
@@ -339,7 +349,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-204"
+    "authority_id": "SPNI-204",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Achziv_beach_Israel.jpg/640px-Achziv_beach_Israel.jpg"
   },
   {
     "id": 205,
@@ -371,7 +382,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-205"
+    "authority_id": "SPNI-205",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Carmel_forest_Israel.jpg/640px-Carmel_forest_Israel.jpg"
   },
   {
     "id": 206,
@@ -404,7 +416,8 @@
     "min_age": 0,
     "age_group": "0+ עגלות",
     "stroller_accessible": true,
-    "authority_id": "SPNI-206"
+    "authority_id": "SPNI-206",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Hof_HaCarmel_coast.jpg/640px-Hof_HaCarmel_coast.jpg"
   },
   {
     "id": 207,
@@ -437,7 +450,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-207"
+    "authority_id": "SPNI-207",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Nitzanim_beach_dunes.jpg/640px-Nitzanim_beach_dunes.jpg"
   },
   {
     "id": 208,
@@ -469,7 +483,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-208"
+    "authority_id": "SPNI-208",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Ein_Gedi_waterfall.jpg/640px-Ein_Gedi_waterfall.jpg"
   },
   {
     "id": 209,
@@ -502,7 +517,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-209"
+    "authority_id": "SPNI-209",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Makhtesh_Ramon_panorama.jpg/640px-Makhtesh_Ramon_panorama.jpg"
   },
   {
     "id": 210,
@@ -537,7 +553,8 @@
     "min_age": 0,
     "age_group": "0+ עגלות",
     "stroller_accessible": true,
-    "authority_id": "SPNI-210"
+    "authority_id": "SPNI-210",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Eilat_beach_coral_reef.jpg/640px-Eilat_beach_coral_reef.jpg"
   },
   {
     "id": 211,
@@ -570,7 +587,8 @@
     "min_age": 0,
     "age_group": "0+ עגלות",
     "stroller_accessible": true,
-    "authority_id": "SPNI-211"
+    "authority_id": "SPNI-211",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Kfar_Etzion_landscape.jpg/640px-Kfar_Etzion_landscape.jpg"
   },
   {
     "id": 212,
@@ -603,7 +621,8 @@
     "min_age": 0,
     "age_group": "0+ עגלות",
     "stroller_accessible": true,
-    "authority_id": "SPNI-212"
+    "authority_id": "SPNI-212",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Jerusalem_Bird_Observatory.jpg/640px-Jerusalem_Bird_Observatory.jpg"
   },
   {
     "id": 213,
@@ -636,7 +655,8 @@
     "min_age": 4,
     "age_group": "4+",
     "stroller_accessible": false,
-    "authority_id": "SPNI-213"
+    "authority_id": "SPNI-213",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Sde_Boker_Negev.jpg/640px-Sde_Boker_Negev.jpg"
   },
   {
     "id": 301,
@@ -666,7 +686,8 @@
     "category": "water",
     "stroller_accessible": true,
     "min_age": 0,
-    "age_group": "0+ עגלות"
+    "age_group": "0+ עגלות",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Nahal_Taninim.jpg/640px-Nahal_Taninim.jpg"
   },
   {
     "id": 302,
@@ -698,7 +719,8 @@
     "category": "water",
     "stroller_accessible": false,
     "min_age": 4,
-    "age_group": "4+"
+    "age_group": "4+",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Snir_stream_Israel.jpg/640px-Snir_stream_Israel.jpg"
   },
   {
     "id": 303,
@@ -730,7 +752,8 @@
     "category": "safe_haven",
     "stroller_accessible": true,
     "min_age": 0,
-    "age_group": "0+ עגלות"
+    "age_group": "0+ עגלות",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Ein_Avdat_canyon.jpg/640px-Ein_Avdat_canyon.jpg"
   },
   {
     "id": 304,
@@ -762,7 +785,8 @@
     "category": "desert",
     "stroller_accessible": true,
     "min_age": 0,
-    "age_group": "0+ עגלות"
+    "age_group": "0+ עגלות",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Golan_Heights_landscape.jpg/640px-Golan_Heights_landscape.jpg"
   },
   {
     "id": 305,
@@ -794,7 +818,8 @@
     "category": "water",
     "stroller_accessible": false,
     "min_age": 4,
-    "age_group": "4+"
+    "age_group": "4+",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Makhtesh_Ramon_panorama.jpg/640px-Makhtesh_Ramon_panorama.jpg"
   },
   {
     "id": 306,
@@ -826,7 +851,8 @@
     "category": "water",
     "stroller_accessible": false,
     "min_age": 4,
-    "age_group": "4+"
+    "age_group": "4+",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Ein_Avdat_canyon.jpg/640px-Ein_Avdat_canyon.jpg"
   },
   {
     "id": 501,
@@ -858,7 +884,8 @@
     "category": "coast",
     "stroller_accessible": true,
     "min_age": 0,
-    "age_group": "0+ עגלות"
+    "age_group": "0+ עגלות",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Palmachim_beach_Israel.jpg/640px-Palmachim_beach_Israel.jpg"
   },
   {
     "id": 502,
@@ -889,7 +916,8 @@
     "category": "safe_haven",
     "stroller_accessible": true,
     "min_age": 0,
-    "age_group": "0+ עגלות"
+    "age_group": "0+ עגלות",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Yatir_forest_pine.jpg/640px-Yatir_forest_pine.jpg"
   },
   {
     "id": 503,
@@ -920,7 +948,8 @@
     "category": "water",
     "stroller_accessible": false,
     "min_age": 4,
-    "age_group": "4+"
+    "age_group": "4+",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Snir_stream_Israel.jpg/640px-Snir_stream_Israel.jpg"
   },
   {
     "id": 504,
@@ -952,7 +981,8 @@
     "category": "safe_haven",
     "stroller_accessible": true,
     "min_age": 0,
-    "age_group": "0+ עגלות"
+    "age_group": "0+ עגלות",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Biriya_forest_Safed.jpg/640px-Biriya_forest_Safed.jpg"
   },
   {
     "id": 505,
@@ -984,7 +1014,8 @@
     "category": "desert",
     "stroller_accessible": true,
     "min_age": 0,
-    "age_group": "0+ עגלות"
+    "age_group": "0+ עגלות",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Mamshit_Nabataean_ruins.jpg/640px-Mamshit_Nabataean_ruins.jpg"
   },
   {
     "id": 506,
@@ -1015,7 +1046,8 @@
     "category": "water",
     "stroller_accessible": false,
     "min_age": 4,
-    "age_group": "4+"
+    "age_group": "4+",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Majrase_Nature_Reserve.jpg/640px-Majrase_Nature_Reserve.jpg"
   },
   {
     "id": 507,
@@ -1047,7 +1079,8 @@
     "category": "desert",
     "stroller_accessible": false,
     "min_age": 10,
-    "age_group": "10+"
+    "age_group": "10+",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Mount_Arbel_cliffs.jpg/640px-Mount_Arbel_cliffs.jpg"
   },
   {
     "id": 601,
@@ -1078,7 +1111,8 @@
     "vulnerabilities": [
       "בוץ בחורף"
     ],
-    "description": "דרך נוף כפרית יפהפייה ורחבה בין מטעי שקדים, גבעות ירוקות ונחלים זורמים ברמות מנשה. מיושרת ומושלמת לעגלות ולכל גיל."
+    "description": "דרך נוף כפרית יפהפייה ורחבה בין מטעי שקדים, גבעות ירוקות ונחלים זורמים ברמות מנשה. מיושרת ומושלמת לעגלות ולכל גיל.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Ramot_Menashe_landscape.jpg/640px-Ramot_Menashe_landscape.jpg"
   },
   {
     "id": 602,
@@ -1108,7 +1142,8 @@
     "vulnerabilities": [
       "עומס חום בקיץ"
     ],
-    "description": "שביל חקלאי מסודר החוצה כרמי גפנים עתיקים, גתות קדומות ונופי עמק תנכיים. מתאים מאוד למשפחות עם ילדים בני 4 ומעלה."
+    "description": "שביל חקלאי מסודר החוצה כרמי גפנים עתיקים, גתות קדומות ונופי עמק תנכיים. מתאים מאוד למשפחות עם ילדים בני 4 ומעלה.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Elah_Valley_vineyards.jpg/640px-Elah_Valley_vineyards.jpg"
   },
   {
     "id": 603,
@@ -1138,7 +1173,8 @@
     "vulnerabilities": [
       "עומס חום קל"
     ],
-    "description": "טיילת שדות סלולה ונגישה לצד חוות תבלינים, מטעי זיתים ושמורת אלוני תבור. חוויה שלווה ונגישה לעגלות, פעוטות וילדים."
+    "description": "טיילת שדות סלולה ונגישה לצד חוות תבלינים, מטעי זיתים ושמורת אלוני תבור. חוויה שלווה ונגישה לעגלות, פעוטות וילדים.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Jezreel_Valley_fields.jpg/640px-Jezreel_Valley_fields.jpg"
   },
   {
     "id": 604,
@@ -1168,7 +1204,8 @@
     "vulnerabilities": [
       "בוץ חורפי"
     ],
-    "description": "שביל נוף מישורי בין כרמי אלונה, מעיינות אפרים ומטעי נשירים. מסלול קסום המותאם למשפחות וילדים."
+    "description": "שביל נוף מישורי בין כרמי אלונה, מעיינות אפרים ומטעי נשירים. מסלול קסום המותאם למשפחות וילדים.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Bik_at_HaNadiv_orchards.jpg/640px-Bik_at_HaNadiv_orchards.jpg"
   },
   {
     "id": 611,
@@ -1198,7 +1235,8 @@
     "vulnerabilities": [
       "החלקה בסלעים רטובים"
     ],
-    "description": "שביל מעגלי מוצל ואיכותי העובר בין עצי קטלב ואורן עם תצפית מרשימה על פיתולי נחל שורק. מתאים מאוד לילדים מגיל 4 ומעלה."
+    "description": "שביל מעגלי מוצל ואיכותי העובר בין עצי קטלב ואורן עם תצפית מרשימה על פיתולי נחל שורק. מתאים מאוד לילדים מגיל 4 ומעלה.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Judean_Hills_forest_trail.jpg/640px-Judean_Hills_forest_trail.jpg"
   },
   {
     "id": 612,
@@ -1230,7 +1268,8 @@
     "vulnerabilities": [
       "עומס מבקרים בשבתות"
     ],
-    "description": "מקטע קסום וסלול של שביל ישראל לצד נחל אלכסנדר, מרפסת תצפית על צבי הענק הרכים ומרחבי דשא. מונגש לחלוטין לעגלות ולכל גיל."
+    "description": "מקטע קסום וסלול של שביל ישראל לצד נחל אלכסנדר, מרפסת תצפית על צבי הענק הרכים ומרחבי דשא. מונגש לחלוטין לעגלות ולכל גיל.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Nahal_Alexander_turtles.jpg/640px-Nahal_Alexander_turtles.jpg"
   },
   {
     "id": 613,
@@ -1260,7 +1299,8 @@
     "vulnerabilities": [
       "רוחות בפסגה"
     ],
-    "description": "שביל הליכה מעגלי יפהפה המקיף את פסגת הר תבור עם תצפית של 360 מעלות על עמק יזרעאל והגליל. כולל קטעי סלע ומתאים לגילאי 7+."
+    "description": "שביל הליכה מעגלי יפהפה המקיף את פסגת הר תבור עם תצפית של 360 מעלות על עמק יזרעאל והגליל. כולל קטעי סלע ומתאים לגילאי 7+.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Mount_Tabor_panorama.jpg/640px-Mount_Tabor_panorama.jpg"
   },
   {
     "id": 614,
@@ -1290,7 +1330,8 @@
     "vulnerabilities": [
       "החלקה בחורף"
     ],
-    "description": "מסלול מוצל וקלאסי בלב פארק הכרמל, בין עצי אלון, מורד נחל כלח וגשרי עץ טבעיים. מתאים למשפחות עם ילדים מגיל 4 ומעלה."
+    "description": "מסלול מוצל וקלאסי בלב פארק הכרמל, בין עצי אלון, מורד נחל כלח וגשרי עץ טבעיים. מתאים למשפחות עם ילדים מגיל 4 ומעלה.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Carmel_forest_oak_trail.jpg/640px-Carmel_forest_oak_trail.jpg"
   },
   {
     "id": 621,
@@ -1320,7 +1361,8 @@
     "vulnerabilities": [
       "רוחות חזקות על החומות"
     ],
-    "description": "מבצר צלבני-עות'מאני מרהיב בלב יער יחיעם, עם אולמות מקושתים, מגדלי תצפית אל מפרץ חיפה ושבילי סיור היסטוריים לילדים 4+."
+    "description": "מבצר צלבני-עות'מאני מרהיב בלב יער יחיעם, עם אולמות מקושתים, מגדלי תצפית אל מפרץ חיפה ושבילי סיור היסטוריים לילדים 4+.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Yehiam_Fortress.jpg/640px-Yehiam_Fortress.jpg"
   },
   {
     "id": 622,
@@ -1350,7 +1392,8 @@
     "vulnerabilities": [
       "עומס חום בצהריים"
     ],
-    "description": "שביל מונגש ומסודר לעגלות על מצוק הכורכר של הרצליה, המוביל למבצר צלבני שמור מעל הים הפתוח. מושלם לפעוטות ועגלות (0+)."
+    "description": "שביל מונגש ומסודר לעגלות על מצוק הכורכר של הרצליה, המוביל למבצר צלבני שמור מעל הים הפתוח. מושלם לפעוטות ועגלות (0+).",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Apollonia_fortress_Israel.jpg/640px-Apollonia_fortress_Israel.jpg"
   },
   {
     "id": 623,
@@ -1380,7 +1423,8 @@
     "vulnerabilities": [
       "זחילה במחילות - נדרש פנס"
     ],
-    "description": "אתר היסטורי מרתק בשפלת יהודה עם מערת קולומבריום ענקית, שרידי יישוב יהודי ומחילת זחילה קצרה שילדים בני 4 ומעלה מעריצים."
+    "description": "אתר היסטורי מרתק בשפלת יהודה עם מערת קולומבריום ענקית, שרידי יישוב יהודי ומחילת זחילה קצרה שילדים בני 4 ומעלה מעריצים.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Midras_ruins_Israel.jpg/640px-Midras_ruins_Israel.jpg"
   },
   {
     "id": 624,
@@ -1411,7 +1455,8 @@
     "vulnerabilities": [
       "עומס חום בקיץ"
     ],
-    "description": "עיר הממלכה השנייה בחשיבותה ביהודה המקראית. שביל הליכה נוח, מונגש ורחב אל שער העיר המרשים וארמון המושל, מוקף בכרמי לכיש."
+    "description": "עיר הממלכה השנייה בחשיבותה ביהודה המקראית. שביל הליכה נוח, מונגש ורחב אל שער העיר המרשים וארמון המושל, מוקף בכרמי לכיש.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Tel_Lachish_mound.jpg/640px-Tel_Lachish_mound.jpg"
   },
   {
     "id": 631,
@@ -1443,7 +1488,8 @@
     "vulnerabilities": [
       "עומס מבקרים בשבתות"
     ],
-    "description": "אתר הטבע העירוני הגדול בארץ. עדר של עשרות צבאי ארץ-ישראל חופשיים, אגמים מלאכותיים, מסתורי צפרות ושבילים סלולים ומונגשים לחלוטין (0+)."
+    "description": "אתר הטבע העירוני הגדול בארץ. עדר של עשרות צבאי ארץ-ישראל חופשיים, אגמים מלאכותיים, מסתורי צפרות ושבילים סלולים ומונגשים לחלוטין (0+).",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Gazelle_Valley_Jerusalem.jpg/640px-Gazelle_Valley_Jerusalem.jpg"
   },
   {
     "id": 632,
@@ -1475,7 +1521,8 @@
     "vulnerabilities": [
       "עומס חום בצהריים"
     ],
-    "description": "פארק טבע ענק בלב גוש דן עם טיילת רכס מרהיבה המשקיפה לקו הרקיע של תל אביב, אגמים אקולוגיים ומרחבי דשא מונגשים לעגלות."
+    "description": "פארק טבע ענק בלב גוש דן עם טיילת רכס מרהיבה המשקיפה לקו הרקיע של תל אביב, אגמים אקולוגיים ומרחבי דשא מונגשים לעגלות.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Ariel_Sharon_Park_view.jpg/640px-Ariel_Sharon_Park_view.jpg"
   },
   {
     "id": 633,
@@ -1507,7 +1554,8 @@
     "vulnerabilities": [
       "יתושים בעונת מעבר"
     ],
-    "description": "חורשת טבע שקטה ומבודדת במפגש הנחלים ירקון ואיילון. שבילי הליכה נעימים, מרכז צפרות, חורשת אלונים סלולה ונוחה לעגלות."
+    "description": "חורשת טבע שקטה ומבודדת במפגש הנחלים ירקון ואיילון. שבילי הליכה נעימים, מרכז צפרות, חורשת אלונים סלולה ונוחה לעגלות.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Yarkon_Park_Tel_Aviv.jpg/640px-Yarkon_Park_Tel_Aviv.jpg"
   },
   {
     "id": 634,
@@ -1539,7 +1587,8 @@
     "vulnerabilities": [
       "רוחות ימיות בחורף"
     ],
-    "description": "בריכת חורף טבעית ומרשימה המושכת עופות מים נדירים, מוקפת דקלי וושינגטוניה, גשרי עץ מעל המים ושבילים מונגשים לפעוטות ועגלות."
+    "description": "בריכת חורף טבעית ומרשימה המושכת עופות מים נדירים, מוקפת דקלי וושינגטוניה, גשרי עץ מעל המים ושבילים מונגשים לפעוטות ועגלות.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Winter_pool_Netanya.jpg/640px-Winter_pool_Netanya.jpg"
   },
   {
     "id": 701,
@@ -1572,7 +1621,8 @@
     "vulnerabilities": [
       "עומס חום קל בקיץ"
     ],
-    "description": "שמורת טבע פורחת ברכס הכורכר של השרון. אגם יקום הקסום, צבי מים, פריחת אירוס הארגמן בחורף ושבילים מונגשים לעגלות ופעוטות."
+    "description": "שמורת טבע פורחת ברכס הכורכר של השרון. אגם יקום הקסום, צבי מים, פריחת אירוס הארגמן בחורף ושבילים מונגשים לעגלות ופעוטות.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Sharon_nature_reserve_lake.jpg/640px-Sharon_nature_reserve_lake.jpg"
   },
   {
     "id": 702,
@@ -1604,7 +1654,8 @@
     "vulnerabilities": [
       "יתושים בעונת האביב"
     ],
-    "description": "יער האקליפטוסים הנטוע הגדול בישראל עם בריכת החורף 'סמר', חורשות צל ענקיות ושבילי הליכה מישוריים מושלמים לכל המשפחה."
+    "description": "יער האקליפטוסים הנטוע הגדול בישראל עם בריכת החורף 'סמר', חורשות צל ענקיות ושבילי הליכה מישוריים מושלמים לכל המשפחה.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Hadera_eucalyptus_forest.jpg/640px-Hadera_eucalyptus_forest.jpg"
   },
   {
     "id": 703,
@@ -2949,7 +3000,7 @@
     "age_group": "0+",
     "stroller_accessible": true,
     "authority_id": "OSM-NODE-4001",
-    "trail_length_km": 2.0,
+    "trail_length_km": 2,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "בריכת מעיין צלולה ורחבת ידיים עם שביל סלול מונגש, שולחנות פיקניק וצל עצי איקליפטוס."
@@ -3090,7 +3141,7 @@
     "age_group": "4+",
     "stroller_accessible": false,
     "authority_id": "OSM-NODE-4005",
-    "trail_length_km": 1.0,
+    "trail_length_km": 1,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "מעיין שכבה ובריכת שכשוך מוצלת בערוץ נחל כסלון למרגלות הכפר עין ראפה וקיבוץ צובה."
@@ -3196,7 +3247,7 @@
     "age_group": "4+",
     "stroller_accessible": false,
     "authority_id": "OSM-NODE-4008",
-    "trail_length_km": 3.0,
+    "trail_length_km": 3,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "מסלול מוצל קסום העובר בין פלג מים, עצי תאנה ענקיים ונקבת עין תנור בצורת פרסה."
@@ -3269,7 +3320,7 @@
     "age_group": "4+",
     "stroller_accessible": true,
     "authority_id": "INPA-4010",
-    "trail_length_km": 1.0,
+    "trail_length_km": 1,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "מעיין פועם ייחודי המתמלא ומתרוקן בקצב קבוע בתוך בריכה עגולה מרוצפת פסיפס ביזנטי."
@@ -3520,7 +3571,7 @@
     "age_group": "4+",
     "stroller_accessible": false,
     "authority_id": "OSM-NODE-4018",
-    "trail_length_km": 2.0,
+    "trail_length_km": 2,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "מסלול הליכה רטוב ומרענן בערוץ מים פראי עד למפל שוצף הפורץ מצינור בטון ענקי בצל עצי תאנה."
@@ -3590,7 +3641,7 @@
     "age_group": "0+",
     "stroller_accessible": true,
     "authority_id": "OSM-NODE-4020",
-    "trail_length_km": 1.0,
+    "trail_length_km": 1,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "בריכת מים גדולה עם בית משאבה עתיק בלב חורשת איקליפטוסים עבותה למרגלות תל יזרעאל התנ\"כי."
@@ -3731,7 +3782,7 @@
     "age_group": "4+",
     "stroller_accessible": false,
     "authority_id": "OSM-NODE-4024",
-    "trail_length_km": 3.0,
+    "trail_length_km": 3,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "בריכת מעיין עמוקה וצלולה מוקפת צמחיית קנים ועצי פטל במרחב הביוספרי הפסטורלי של רמת מנשה."
@@ -3839,7 +3890,7 @@
     "age_group": "0+",
     "stroller_accessible": true,
     "authority_id": "AGRI-TRAIL-4027",
-    "trail_length_km": 6.0,
+    "trail_length_km": 6,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "שביל כורכר כבוש ונוח בין שדות חיטה ירוקים, מרעה בקר, מטעי פרי וגבעות טוסקניות מתגלגלות."
@@ -3875,7 +3926,7 @@
     "age_group": "0+",
     "stroller_accessible": true,
     "authority_id": "AGRI-TRAIL-4028",
-    "trail_length_km": 3.0,
+    "trail_length_km": 3,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "הליכה בין כפות תמרים גבוהות, חממות חקלאות מים מליחים ובריכות אידוי ססגוניות בלב המדבר."
@@ -3947,7 +3998,7 @@
     "age_group": "4+",
     "stroller_accessible": false,
     "authority_id": "OSM-NODE-4030",
-    "trail_length_km": 1.0,
+    "trail_length_km": 1,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "ירידה במדרגות מוצלות לבריכת מעיין עמוקה וקרירה תחת מצוק בזלת, עצי תאנה ומפל קטן."
@@ -4090,7 +4141,7 @@
     "age_group": "0+",
     "stroller_accessible": true,
     "authority_id": "OSM-NODE-4034",
-    "trail_length_km": 2.0,
+    "trail_length_km": 2,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "שבילי הליכה נעימים לצד תעלות מים זורמות ופינות ישיבה מוצלות בלב שדות בקעת בית נטופה."
@@ -4125,7 +4176,7 @@
     "min_age": 0,
     "age_group": "0+",
     "stroller_accessible": true,
-    "trail_length_km": 1.0,
+    "trail_length_km": 1,
     "difficulty": "קל",
     "entry_fee": "חינם",
     "description": "מעיין שכבה שופע עם בריכה טבעית גדולה מוקפת צמחי נופר צהוב ועצי ערבה ענקיים בעמק החולה."
