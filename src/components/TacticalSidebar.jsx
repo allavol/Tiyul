@@ -9,7 +9,9 @@ import {
   getAgeBadge, 
   getCategoryIconChar, 
   AGE_TIERS_CONFIG,
-  getFiveDaysList 
+  getFiveDaysList,
+  formatAuthorityBadge,
+  getAuthorityFullName
 } from '../utils/weatherUtils';
 
 const CATEGORIES_CONFIG = [
@@ -288,7 +290,7 @@ export default function TacticalSidebar({
             const isAlert = asset.status === 'CRITICAL' || asset.status === 'REROUTED';
             const isSafeHaven = asset.vulnerabilities?.includes('Safe Haven') || asset.category === 'safe_haven';
             const weather = getSiteWeather(asset, 'NORMAL', selectedDayIndex);
-            const ageBadge = getAgeBadge(asset.min_age);
+            const ageBadge = getAgeBadge(asset.min_age, isLightMode);
             const categoryIcon = getCategoryIconChar(asset);
 
             return (
@@ -329,14 +331,14 @@ export default function TacticalSidebar({
 
                     {/* Region + Authority */}
                     <div className="flex items-center gap-1.5 mt-0.5 text-[10px]">
-                      <span className={`font-semibold uppercase tracking-wider ${
+                      <span className={`font-semibold ${
                         isLightMode ? 'text-teal-700' : 'text-accent/70'
                       }`}>{asset.region}</span>
                       <span className={isLightMode ? 'text-zinc-300' : 'text-zinc-600'}>•</span>
-                      <span className={`font-mono text-[9px] ${
-                        isLightMode ? 'text-zinc-400' : 'text-zinc-600'
-                      }`}>
-                        {asset.authority_id || 'INPA'}
+                      <span className={`text-[9.5px] font-medium whitespace-nowrap ${
+                        isLightMode ? 'text-zinc-600' : 'text-zinc-400'
+                      }`} title={getAuthorityFullName(asset.authority_id)}>
+                        {formatAuthorityBadge(asset.authority_id)}
                       </span>
                     </div>
 

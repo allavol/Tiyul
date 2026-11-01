@@ -7,7 +7,7 @@ import {
   ShieldAlert,
   Radio,
 } from 'lucide-react';
-import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar, getSafeAlternatives } from '../utils/weatherUtils';
+import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar, getSafeAlternatives, formatAuthorityBadge, getAuthorityFullName } from '../utils/weatherUtils';
 import { WeatherService } from '../services/WeatherService';
 import { getDriveTimeFromOrigin } from '../services/osrmService';
 import assetsData from '../../assets_db.json';
@@ -98,7 +98,7 @@ export default function FloatingMapCard({
 
   const fallbackWeather = getSiteWeather(asset, activeScenario, activeDay);
   const waterAdvisory = getWaterAdvisory(asset);
-  const ageBadge = getAgeBadge(asset.min_age);
+  const ageBadge = getAgeBadge(asset.min_age, isLightMode);
   const categoryIcon = getCategoryIconChar(asset);
 
   // Fetch live Tomorrow.io weather when viewing "today"
@@ -204,12 +204,14 @@ export default function FloatingMapCard({
               {asset.name}
             </h3>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full border" style={{
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap" style={{
                 background: isLightMode ? '#f1f5f9' : 'rgba(255,255,255,0.08)',
-                color: isLightMode ? '#475569' : '#94a3b8',
+                color: isLightMode ? '#334155' : '#cbd5e1',
                 borderColor: isLightMode ? '#cbd5e1' : 'rgba(255,255,255,0.1)'
-              }}>
-                {asset.authority_id || 'מאומת רט"ג'}
+              }}
+              title={getAuthorityFullName(asset.authority_id)}
+              >
+                {formatAuthorityBadge(asset.authority_id)}
               </span>
               <span className={`text-[10px] font-bold ${theme.accentText}`}>
                 {asset.region}
@@ -301,8 +303,9 @@ export default function FloatingMapCard({
         {/* Metric 1: Min Age */}
         <div className={`p-1.5 rounded-2xl border flex flex-col items-center justify-center text-center ${theme.boxBg}`}>
           <span className="text-[9.5px] font-bold text-slate-400">גיל מומלץ</span>
-          <span className={`text-xs font-black mt-0.5 px-2 py-0.5 rounded-lg border leading-tight ${ageBadge.color}`}>
-            {ageBadge.label}
+          <span className={`text-xs font-bold mt-0.5 px-2 py-0.5 rounded-lg border leading-tight flex items-center gap-1 ${ageBadge.color}`}>
+            <span>{ageBadge.icon}</span>
+            <span>{ageBadge.label}</span>
           </span>
         </div>
 

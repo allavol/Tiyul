@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { AgentBotService } from '../services/AgentBotService';
 import { AgentAuditLogger } from '../services/AgentAuditLogger';
-import { getCategoryIconChar, getAgeBadge } from '../utils/weatherUtils';
+import { getCategoryIconChar, getAgeBadge, formatAuthorityBadge, getAuthorityFullName } from '../utils/weatherUtils';
 
 const ThinkingIndicator = () => {
   const [phaseIndex, setPhaseIndex] = useState(0);
@@ -494,7 +494,7 @@ export default function AgentChatBot({
                 {msg.proposals && msg.proposals.length > 0 && (
                   <div className="w-full space-y-2 my-1.5">
                     {msg.proposals.map((prop) => {
-                      const ageBadge = getAgeBadge(prop.min_age);
+                      const ageBadge = getAgeBadge(prop.min_age, isLightMode);
                       const fullAsset = assets.find((a) => a.id === prop.id) || prop;
                       const cardKey = `${msg.id || 'msg'}-${prop.id}`;
                       const isExpanded = !!expandedCards[cardKey];
@@ -550,7 +550,7 @@ export default function AgentChatBot({
                           )}
 
                           {/* Card Header (Always visible - compact & clickable) */}
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-start justify-between gap-2">
                             <div 
                               onClick={() => toggleCardExpansion(cardKey)}
                               className="min-w-0 flex-1 cursor-pointer"
@@ -563,39 +563,62 @@ export default function AgentChatBot({
                                   {prop.name}
                                 </h4>
                               </div>
-                              <div className={`flex items-center gap-1.5 text-[11px] mt-0.5 ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>
-                                <span className={isLightMode ? 'text-teal-700 font-semibold' : 'text-accent/80 font-semibold'}>{prop.region}</span>
+
+                              {/* Metadata Badges (clean pills that wrap as solid units without word splitting) */}
+                              <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[11px] mt-1">
+                                <span className={`whitespace-nowrap font-medium ${isLightMode ? 'text-teal-700' : 'text-accent/80'}`}>
+                                  📍 {prop.region}
+                                </span>
                                 <span className={isLightMode ? 'text-slate-300' : 'text-zinc-600'}>•</span>
-                                <span className={`font-mono text-[10px] ${isLightMode ? 'text-slate-500' : 'text-zinc-400'}`}>
-                                  {prop.authority_id}
+                                <span 
+                                  className={`whitespace-nowrap font-medium px-1.5 py-0.2 rounded text-[10px] ${
+                                    isLightMode 
+                                      ? 'bg-slate-100 text-slate-700 border border-slate-200' 
+                                      : 'bg-white/[0.05] text-zinc-300 border border-white/10'
+                                  }`}
+                                  title={getAuthorityFullName(prop.authority_id)}
+                                >
+                                  {formatAuthorityBadge(prop.authority_id)}
                                 </span>
                                 {prop.driveLabel && (
                                   <>
                                     <span className={isLightMode ? 'text-slate-300' : 'text-zinc-600'}>•</span>
-                                    <span className={`text-[10px] font-bold ${isLightMode ? 'text-slate-600' : 'text-zinc-300'}`}>
+                                    <span className={`whitespace-nowrap text-[10px] font-bold ${isLightMode ? 'text-slate-600' : 'text-zinc-300'}`}>
                                       ⏱️ {prop.driveLabel}
                                     </span>
                                   </>
                                 )}
                                 {prop.weather?.temp && (
-                                  <>
-                                    <span className={isLightMode ? 'text-slate-300' : 'text-zinc-600'}>•</span>
-                                    <span className={`font-bold text-[11px] ${isLightMode ? 'text-amber-600' : 'text-amber-300'}`}>{prop.weather.temp}</span>
-                                  </>
+                                  <span 
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-bold whitespace-nowrap shadow-xs ${
+                                      isLightMode 
+                                        ? 'bg-amber-100/90 text-amber-900 border-amber-300' 
+                                        : 'bg-amber-950/70 text-amber-200 border-amber-700/60'
+                                    }`}
+                                    title={prop.weather.conditions || 'מזג אוויר'}
+                                  >
+                                    <span className="text-xs">☀️</span>
+                                    <span className="whitespace-nowrap">{prop.weather.temp}</span>
+                                  </span>
                                 )}
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${ageBadge.color}`}>
-                                {ageBadge.icon} {ageBadge.label}
+                            {/* Header Action Badges (Age Suitability + Expand Chevron) */}
+                            <div className="flex items-center gap-1.5 flex-shrink-0 pt-0.5">
+                              <span 
+                                className={`inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full border font-bold shadow-xs whitespace-nowrap transition ${ageBadge.color}`}
+                                title={`מתאים ל${ageBadge.label}`}
+                              >
+                                <span className="text-sm leading-none">{ageBadge.icon}</span>
+                                <span>{ageBadge.label}</span>
                               </span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   toggleCardExpansion(cardKey);
                                 }}
-                                className={`p-1 rounded-lg flex items-center justify-center text-xs transition ${
+                                className={`p-1.5 rounded-lg flex items-center justify-center text-xs transition ${
                                   isLightMode
                                     ? 'bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900'
                                     : 'bg-white/[0.04] hover:bg-white/[0.1] text-zinc-300 hover:text-white'

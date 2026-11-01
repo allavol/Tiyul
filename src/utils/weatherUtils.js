@@ -31,25 +31,88 @@ export const getSafeAlternatives = (currentAsset, assetsDb, scenario = 'NORMAL',
 
 export const AGE_TIERS_CONFIG = [
   { id: 'all', label: 'הכל' },
-  { id: '0', label: '👶 0+ עגלות' },
-  { id: '4', label: '🧒 4+' },
-  { id: '7', label: '🧗 7+' },
-  { id: '10', label: '🧗‍♂️ 10+' },
+  { id: '0', label: '👶 גיל 0+ (עגלות)' },
+  { id: '4', label: '🧒 גיל 4+ (ילדים)' },
+  { id: '7', label: '🥾 גיל 7+ (לכת)' },
+  { id: '10', label: '🧗 גיל 10+ (אתגרי)' },
 ];
 
-export const getAgeBadge = (minAge) => {
-  switch (Number(minAge)) {
-    case 0:
-      return { label: '0+ עגלות', color: 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60', icon: '👶' };
-    case 4:
-      return { label: '4+', color: 'bg-blue-950/80 text-blue-300 border-blue-700/60', icon: '🧒' };
-    case 7:
-      return { label: '7+', color: 'bg-amber-950/80 text-amber-300 border-amber-700/60', icon: '🧗' };
-    case 10:
-      return { label: '10+', color: 'bg-purple-950/80 text-purple-300 border-purple-700/60', icon: '🧗‍♂️' };
-    default:
-      return { label: '4+', color: 'bg-blue-950/80 text-blue-300 border-blue-700/60', icon: '🧒' };
+/**
+ * Formats authority IDs (e.g., INPA-103, KKL-204, OSM-NODE-4021) into friendly Hebrew agency labels.
+ * Strictly eliminates internal technical acronyms (INPA, OSM) from user-facing views.
+ */
+export const formatAuthorityBadge = (authId) => {
+  if (!authId || typeof authId !== 'string') return 'אתר מאומת';
+  const upper = authId.toUpperCase();
+  if (upper.startsWith('INPA')) return '🌿 שמורת רט״ג';
+  if (upper.startsWith('KKL')) return '🌲 יער קק״ל';
+  if (upper.startsWith('SPNI')) return '🦅 החברה להגנת הטבע';
+  if (upper.startsWith('ITC')) return '🥾 שביל מסומן';
+  if (upper.startsWith('IAA')) return '🏛️ רשות העתיקות';
+  if (upper.startsWith('AGRI')) return '🌾 שביל חקלאי';
+  if (upper.startsWith('MUNI') || upper.startsWith('MUN')) return '🏙️ פארק עירוני';
+  if (upper.startsWith('OSM')) return '🌿 מסלול טבע פתוח';
+  if (upper.startsWith('WATER')) return '💧 רשות המים';
+  if (upper.startsWith('SAFE')) return '🛡️ מקלט בטוח';
+  return 'אתר מאומת';
+};
+
+export const getAuthorityFullName = (authId) => {
+  if (!authId || typeof authId !== 'string') return 'אתר טבע מוסדר ומאומת';
+  const upper = authId.toUpperCase();
+  if (upper.startsWith('INPA')) return 'רשות הטבע והגנים (רט״ג)';
+  if (upper.startsWith('KKL')) return 'קרן קימת לישראל (קק״ל)';
+  if (upper.startsWith('SPNI')) return 'החברה להגנת הטבע (חל״ט)';
+  if (upper.startsWith('ITC')) return 'הוועדה לשבילי ישראל (שביל מסומן)';
+  if (upper.startsWith('IAA')) return 'רשות העתיקות (אתר היסטורי מאומת)';
+  if (upper.startsWith('AGRI')) return 'משרד החקלאות (שביל כפרי / חקלאי)';
+  if (upper.startsWith('MUNI') || upper.startsWith('MUN')) return 'פארק עירוני / רשות מקומית';
+  if (upper.startsWith('OSM')) return 'מיפוי שבילים פתוח (OpenStreetMap)';
+  if (upper.startsWith('WATER')) return 'רשות המים ומשרד הבריאות';
+  if (upper.startsWith('SAFE')) return 'מרחב מוגן ומקלט בטוח מפגעי מזג אוויר';
+  return 'אתר טבע מוסדר ומאומת';
+};
+
+export const getAgeBadge = (minAge, isLightMode = false) => {
+  const age = Number(minAge);
+  if (age === 0) {
+    return {
+      label: 'גיל 0+ (עגלות)',
+      shortLabel: '0+ עגלות',
+      icon: '👶',
+      color: isLightMode
+        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs'
+        : 'bg-emerald-950/70 text-emerald-300 border-emerald-700/60',
+    };
   }
+  if (age <= 4) {
+    return {
+      label: 'גיל 4+ (ילדים)',
+      shortLabel: 'גיל 4+',
+      icon: '🧒',
+      color: isLightMode
+        ? 'bg-sky-50 text-sky-800 border-sky-300 shadow-xs'
+        : 'bg-sky-950/70 text-sky-200 border-sky-700/60',
+    };
+  }
+  if (age <= 7) {
+    return {
+      label: 'גיל 7+ (לכת)',
+      shortLabel: 'גיל 7+',
+      icon: '🥾',
+      color: isLightMode
+        ? 'bg-amber-50 text-amber-900 border-amber-300 shadow-xs'
+        : 'bg-amber-950/70 text-amber-200 border-amber-700/60',
+    };
+  }
+  return {
+    label: 'גיל 10+ (אתגרי)',
+    shortLabel: 'גיל 10+',
+    icon: '🧗',
+    color: isLightMode
+      ? 'bg-purple-50 text-purple-900 border-purple-300 shadow-xs'
+      : 'bg-purple-950/70 text-purple-200 border-purple-700/60',
+  };
 };
 
 /**
@@ -159,6 +222,7 @@ export const getSiteWeather = (asset, scenario = 'NORMAL', dayIndex = 0) => {
   if (!asset) return null;
 
   const dayOffset = typeof dayIndex === 'number' ? dayIndex : (dayIndex === 'tomorrow' ? 1 : 0);
+  const isTomorrow = dayOffset === 1 || dayIndex === 'tomorrow';
   const name = asset.name || '';
   const region = asset.region || '';
   const vulns = asset.vulnerabilities || [];
@@ -249,7 +313,7 @@ export const getSiteWeather = (asset, scenario = 'NORMAL', dayIndex = 0) => {
     alertLevel = 'safe';
   } else if (scenario === 'FLOOD') {
     if (isFloodVulnerable) {
-      alertTitle = day === 'tomorrow' ? `🌧️ מחר: סכנת שיטפונות ב${name}` : `⚠️ סכנת שיטפון בזק באגן נחל ${name}`;
+      alertTitle = isTomorrow ? `🌧️ מחר: סכנת שיטפונות ב${name}` : `⚠️ סכנת שיטפון בזק באגן נחל ${name}`;
       alertDesc = `זרימות נגר חזקות וסכנת חסימת מעברים. המסלול מסוכן ואינו מומלץ לכניסה.`;
       alertLevel = 'danger';
     } else {
@@ -259,7 +323,7 @@ export const getSiteWeather = (asset, scenario = 'NORMAL', dayIndex = 0) => {
     }
   } else if (scenario === 'HEATWAVE') {
     if (isHeatVulnerable || isDeadSea || isAravaEilat) {
-      alertTitle = day === 'tomorrow' ? `🔥 מחר: שיא עומס החום ב${name} (${baseTemp}°C)` : `🔥 עומס חום קיצוני ב${name} (${baseTemp}°C)`;
+      alertTitle = isTomorrow ? `🔥 מחר: שיא עומס החום ב${name} (${baseTemp}°C)` : `🔥 עומס חום קיצוני ב${name} (${baseTemp}°C)`;
       alertDesc = `חריגה מסף עומס חום מותר. סכנת התייבשות ומכת חום במסלולים חשופים.`;
       alertLevel = 'danger';
     } else {
@@ -272,7 +336,7 @@ export const getSiteWeather = (asset, scenario = 'NORMAL', dayIndex = 0) => {
   // Decision Thresholds Matrix
   const tempThreshold = isHeatVulnerable ? 38 : 42;
   const isTempSafe = baseTemp < tempThreshold;
-  const isRainSafe = (scenario !== 'FLOOD') || (day === 'tomorrow') || !isFloodVulnerable;
+  const isRainSafe = (scenario !== 'FLOOD') || isTomorrow || !isFloodVulnerable;
   const isWindSafe = wind < 35;
   const shadeType = isSafeHaven 
     ? 'מוצל וממוזג (מערות/מבנה)' 
@@ -284,7 +348,7 @@ export const getSiteWeather = (asset, scenario = 'NORMAL', dayIndex = 0) => {
     tempVal: baseTemp,
     tempDesc: conditions,
     heatIndex: heatLoad,
-    rain: scenario === 'FLOOD' ? (day === 'tomorrow' ? `5 מ"מ • לחות ${humidity}%` : `${25 + Math.abs(delta * 3)} מ"מ • לחות ${humidity}%`) : `0 מ"מ • לחות ${humidity}%`,
+    rain: scenario === 'FLOOD' ? (isTomorrow ? `5 מ"מ • לחות ${humidity}%` : `${25 + Math.abs(delta * 3)} מ"מ • לחות ${humidity}%`) : `0 מ"מ • לחות ${humidity}%`,
     wind: `${wind} קמ"ש`,
     alertTitle,
     alertDesc,
