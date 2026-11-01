@@ -13,7 +13,7 @@ import assetsData from '../../assets_db.json' with { type: 'json' };
 import { WeatherService } from './WeatherService.js';
 import { getWaterAdvisory, isWaterAsset } from '../utils/weatherUtils.js';
 import { calculateHaversineDistanceKm } from '../utils/geoUtils.js';
-import { getDriveTimeFromOrigin } from './osrmService.js';
+import { getDriveTimeFromOrigin, setOriginCity } from './osrmService.js';
 
 // Import modular sub-engines
 import { 
@@ -1096,6 +1096,11 @@ export class AgentBotService {
     const clonedAssets = typeof structuredClone === 'function'
       ? structuredClone(assetsData)
       : JSON.parse(JSON.stringify(assetsData));
+
+    // Persist & sync detected origin city across UI if present
+    if (state.originName) {
+      setOriginCity(state.originName);
+    }
 
     // 1. Filter candidates by geography / distance, age, stroller, and water exclusion
     let filterSpanId = null;

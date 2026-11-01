@@ -1,5 +1,6 @@
 import React from 'react';
-import { MapPin, Tag, Calendar, RotateCcw, Compass, Footprints } from 'lucide-react';
+import { MapPin, Tag, Calendar, RotateCcw, Compass, Footprints, Car } from 'lucide-react';
+import { KNOWN_CITIES } from '../services/osrmService';
 
 export default function LuxeTopBar({
   selectedRegion,
@@ -8,6 +9,8 @@ export default function LuxeTopBar({
   onCategoryChange,
   selectedDifficulty,
   onDifficultyChange,
+  originCity = 'תל אביב',
+  onOriginCityChange,
   visitDate,
   daysAhead,
   isOutOfHorizon,
@@ -53,6 +56,25 @@ export default function LuxeTopBar({
 
       {/* ── Controls Row ── */}
       <div className="flex items-center gap-2.5 w-full flex-wrap">
+
+        {/* Origin / Departure City Filter */}
+        {onOriginCityChange && (
+          <div className={`flex items-center gap-1.5 h-10 px-3 rounded-xl border transition flex-shrink-0 ${ctrl}`}>
+            <Car size={16} className="text-accent flex-shrink-0" />
+            <select
+              value={originCity}
+              onChange={(e) => onOriginCityChange(e.target.value)}
+              className={`bg-transparent text-sm font-bold outline-none cursor-pointer font-sans border-0 p-0 ${selectText}`}
+              title="נקודת מוצא לחישוב זמני נסיעה ועומסי פקקים"
+            >
+              {Object.keys(KNOWN_CITIES).map((city) => (
+                <option key={city} value={city} className={optionClass}>
+                  🚗 מ{city}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Region Filter */}
         <div className={`flex items-center gap-1.5 h-10 px-3 rounded-xl border transition flex-shrink-0 ${ctrl}`}>

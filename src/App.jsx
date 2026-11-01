@@ -9,6 +9,7 @@ import LuxeTopBar from './components/LuxeTopBar';
 import OnboardingModal from './components/OnboardingModal';
 import { AgentService } from './services/AgentService';
 import { getDefaultDayIndex, isWaterAsset } from './utils/weatherUtils';
+import { getOriginCity, setOriginCity } from './services/osrmService';
 
 export default function App() {
   // Initialize assets from assets_db.json
@@ -37,6 +38,23 @@ export default function App() {
   const [recommendedAssetIds, setRecommendedAssetIds] = useState(null); // null when showing all, or array of IDs
   const [chatBotQueryTrigger, setChatBotQueryTrigger] = useState(null);
   const [isLightMode, setIsLightMode] = useState(true);
+  // ── Origin / Departure City ──
+  const [originCity, setOriginCityState] = useState(() => getOriginCity());
+
+  const handleOriginCityChange = (newCity) => {
+    setOriginCity(newCity);
+    setOriginCityState(newCity);
+  };
+
+  useEffect(() => {
+    const handleCityEvent = (e) => {
+      if (e.detail?.city) {
+        setOriginCityState(e.detail.city);
+      }
+    };
+    window.addEventListener('tiyuli_origin_city_changed', handleCityEvent);
+    return () => window.removeEventListener('tiyuli_origin_city_changed', handleCityEvent);
+  }, []);
 
   // ── Region filter (for LuxeTopBar) ──
   const [selectedRegion, setSelectedRegion] = useState('all');
@@ -179,28 +197,11 @@ export default function App() {
     setActiveScenario('FLOOD');
 
     try {
-      const evaluation = await AgentService.evaluateThreat(
-        'SIMULATE_FLOOD',
-        initialAssetsData,
-        selectedAssetId
-      );
-
-      if (evaluation.error) {
-        const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData, selectedAssetId);
-        applyEvaluation(fallbackEval);
-        setAgentLastDecision(fallbackEval.reasoning_log);
-        setAgentStatus('ALERT_REROUTED');
-        return;
-      }
-
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData, selectedAssetId, recommendedAssetIds);
       applyEvaluation(evaluation);
-      setAgentLastDecision(evaluation.reasoning_log);
-      setAgentStatus('ALERT_REROUTED');
     } catch (err) {
-      const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData, selectedAssetId);
+      const fallbackEval = AgentService.evaluateLocalFailsafe('SIMULATE_FLOOD', initialAssetsData, selectedAssetId, recommendedAssetIds);
       applyEvaluation(fallbackEval);
-      setAgentLastDecision(fallbackEval.reasoning_log);
-      setAgentStatus('ALERT_REROUTED');
     } finally {
       setIsProcessing(false);
     }
@@ -214,10 +215,8 @@ export default function App() {
     setActiveScenario('HEATWAVE');
 
     try {
-      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_HEATWAVE', initialAssetsData, selectedAssetId);
+      const evaluation = AgentService.evaluateLocalFailsafe('SIMULATE_HEATWAVE', initialAssetsData, selectedAssetId, recommendedAssetIds);
       applyEvaluation(evaluation);
-      setAgentLastDecision(evaluation.reasoning_log);
-      setAgentStatus('ALERT_REROUTED');
     } finally {
       setIsProcessing(false);
     }
@@ -259,6 +258,13 @@ export default function App() {
 
   // Helper to apply evaluation results to assets state
   const applyEvaluation = (evalResult) => {
+    if (!evalResult || evalResult.new_status !== 'REROUTED') {
+      setActiveRoute(null);
+      setAgentStatus('SAFE_VERIFIED');
+      setAgentLastDecision(evalResult?.reasoning_log || 'האתר הנבחר בטוח לטיול');
+      return;
+    }
+
     const targetHaven = initialAssetsData.find((a) => a.id === evalResult.fallback_asset_id);
 
     setAssets((prev) =>
@@ -281,6 +287,8 @@ export default function App() {
     });
 
     setSelectedAssetId(evalResult.affected_trip_id);
+    setAgentStatus('ALERT_REROUTED');
+    setAgentLastDecision(evalResult.reasoning_log);
   };
 
   // 3. Clear Trigger
@@ -319,6 +327,8 @@ export default function App() {
         onCategoryChange={setSelectedCategory}
         selectedDifficulty={selectedAgeFilter}
         onDifficultyChange={setSelectedAgeFilter}
+        originCity={originCity}
+        onOriginCityChange={handleOriginCityChange}
         visitDate={visitDate}
         daysAhead={daysAhead}
         isOutOfHorizon={isOutOfHorizon}
@@ -423,6 +433,22 @@ export default function App() {
                 className="flex-shrink-0 text-white/70 hover:text-white text-[10px] font-bold underline underline-offset-2 transition"
               >
                 איפוס
+              </button>
+            </div>
+          )}
+
+          {/* ── Safe Verification Banner (site is safe from scenario threat) ── */}
+          {agentStatus === 'SAFE_VERIFIED' && agentLastDecision && (
+            <div className="absolute top-0 left-0 right-0 z-[1100] flex items-center gap-3 px-4 py-2.5 bg-emerald-700/95 backdrop-blur-sm shadow-lg animate-fade-in pointer-events-auto" dir="rtl">
+              <span className="text-white text-sm font-bold flex-shrink-0">🛡️</span>
+              <p className="text-white text-xs font-bold leading-snug flex-1 truncate">
+                {agentLastDecision}
+              </p>
+              <button
+                onClick={handleClear}
+                className="flex-shrink-0 text-white/80 hover:text-white text-[10px] font-bold underline underline-offset-2 transition"
+              >
+                סגור
               </button>
             </div>
           )}

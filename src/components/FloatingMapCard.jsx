@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { getSiteWeather, getWaterAdvisory, getAgeBadge, getCategoryIconChar, getSafeAlternatives, formatAuthorityBadge, getAuthorityFullName } from '../utils/weatherUtils';
 import { WeatherService } from '../services/WeatherService';
-import { getDriveTimeFromOrigin } from '../services/osrmService';
+import { getDriveTimeFromOrigin, setOriginCity, getOriginCity, KNOWN_CITIES } from '../services/osrmService';
 import assetsData from '../../assets_db.json';
 
 /**
@@ -37,13 +37,16 @@ export default function FloatingMapCard({
   const [selectedHour, setSelectedHour] = useState(14); // 06 to 20
   const [liveWeather, setLiveWeather] = useState(null);
   const [driveInfo, setDriveInfo] = useState(null);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+  const [originCity, setOriginCityState] = useState(() => getOriginCity());
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [alternatives, setAlternatives] = useState([]);
 
+  // Fetch travel time incorporating origin city and target hour traffic
   useEffect(() => {
     let isMounted = true;
     if (asset?.lat && asset?.lng) {
-      getDriveTimeFromOrigin(asset.lat, asset.lng)
+      getDriveTimeFromOrigin(asset.lat, asset.lng, selectedHour)
         .then((info) => {
           if (isMounted && info?.durationMins) setDriveInfo(info);
         })
@@ -52,7 +55,17 @@ export default function FloatingMapCard({
       setDriveInfo(null);
     }
     return () => { isMounted = false; };
-  }, [asset?.lat, asset?.lng]);
+  }, [asset?.lat, asset?.lng, selectedHour, originCity]);
+
+  // Synchronize origin city if changed elsewhere
+  useEffect(() => {
+    const handleCityEvent = (e) => {
+      const newCity = e.detail?.city || getOriginCity();
+      setOriginCityState(newCity);
+    };
+    window.addEventListener('tiyuli_origin_city_changed', handleCityEvent);
+    return () => window.removeEventListener('tiyuli_origin_city_changed', handleCityEvent);
+  }, []);
 
   // Build 4-day forecast data
   const fourDaysForecast = useMemo(() => {
@@ -217,9 +230,51 @@ export default function FloatingMapCard({
                 {asset.region}
               </span>
               {driveInfo?.label && (
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full border bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-zinc-300 border-slate-300 dark:border-white/10">
-                  ⏱️ {driveInfo.label}
-                </span>
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => setShowCityPicker((prev) => !prev)}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-zinc-200 border-slate-300 dark:border-white/10 hover:border-teal-500 transition flex items-center gap-1 cursor-pointer whitespace-nowrap shadow-xs"
+                    title={`זמן נסיעה מ${originCity} (כולל פקקים לפי שעה). לחץ לשינוי נקודת מוצא`}
+                  >
+                    <span>⏱️</span>
+                    <span>{driveInfo.shortLabel || driveInfo.label}</span>
+                    <span className="text-[9px] opacity-60">✏️</span>
+                  </button>
+
+                  {/* Inline Origin City Picker Popup */}
+                  {showCityPicker && (
+                    <div className="absolute top-full right-0 mt-1 z-50 p-2.5 rounded-2xl shadow-2xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 min-w-[200px] text-xs animate-in fade-in zoom-in-95 duration-150">
+                      <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-slate-100 dark:border-slate-800">
+                        <span className="font-bold text-slate-800 dark:text-zinc-200 text-[11px]">מאיפה יוצאים?</span>
+                        <button
+                          onClick={() => setShowCityPicker(false)}
+                          className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <select
+                        value={originCity}
+                        onChange={(e) => {
+                          const c = e.target.value;
+                          setOriginCity(c);
+                          setOriginCityState(c);
+                          setShowCityPicker(false);
+                        }}
+                        className="w-full p-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-zinc-100 font-bold outline-none cursor-pointer text-xs"
+                      >
+                        {Object.keys(KNOWN_CITIES).map((city) => (
+                          <option key={city} value={city}>
+                            🚗 מ{city}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="text-[9px] text-slate-400 mt-1.5 leading-tight">
+                        החישוב מתעדכן אוטומטית לפי שעת היציאה בסליידר ועומסי הפקקים
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -471,6 +526,33 @@ export default function FloatingMapCard({
             </>
           )}
         </div>
+
+        {/* Dynamic Traffic & Drive Time based on selected hour */}
+        {driveInfo && (
+          <div className="mt-2 py-1.5 px-2.5 rounded-xl border flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-white/10">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm">🚗</span>
+              <div className="text-[10.5px] truncate">
+                <span className="font-bold text-slate-700 dark:text-zinc-200">
+                  נסיעה מ{originCity} ({hourString}):
+                </span>{' '}
+                <span className="font-black text-teal-600 dark:text-teal-400 font-mono">
+                  ~{driveInfo.durationMins} דק׳
+                </span>
+                <span className={`mr-1 text-[10px] font-bold ${driveInfo.isPeak ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  ({driveInfo.trafficStatus} {driveInfo.trafficIcon})
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowCityPicker((prev) => !prev)}
+              className="text-[9.5px] font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:underline shrink-0 mr-1 cursor-pointer"
+              title="שינוי נקודת מוצא"
+            >
+              שנה עיר ✏️
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 6. Bottom Specs & Features (Pure Text, No Emojis Next to Words) ─── */}

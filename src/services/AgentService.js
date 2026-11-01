@@ -47,7 +47,7 @@ export class AgentService {
    * dynamically: prefers the currently-selected asset if it matches the threat profile,
    * otherwise falls back to the first matching vulnerable site in the DB.
    */
-  static evaluateLocalFailsafe(triggerEvent, assetsDb, selectedId = null) {
+  static evaluateLocalFailsafe(triggerEvent, assetsDb, selectedId = null, recommendedIds = null) {
 
     // ── FLOOD / RAIN ──────────────────────────────────────────────────────────
     if (triggerEvent === 'SIMULATE_FLOOD') {
@@ -55,8 +55,35 @@ export class AgentService {
         a.vulnerabilities?.some((v) => v.includes('שיטפון') || v.includes('גשם'))
       );
 
-      const selected = floodVulnerable.find((a) => a.id === selectedId);
-      const affected = selected || floodVulnerable[0];
+      const selected = assetsDb.find((a) => a.id === selectedId);
+      const isSelectedVulnerable = selected && floodVulnerable.some((v) => v.id === selected.id);
+
+      const proposedVulnerable = (recommendedIds || [])
+        .map((id) => floodVulnerable.find((v) => v.id === id))
+        .filter(Boolean);
+
+      let affected = null;
+      if (isSelectedVulnerable) {
+        affected = selected;
+      } else if (proposedVulnerable.length > 0) {
+        affected = proposedVulnerable[0];
+      } else if (selected && !isSelectedVulnerable) {
+        // Selected site is SAFE from floods! Do NOT show alternatives or reroute!
+        return {
+          error: false,
+          new_status: 'SAFE',
+          affected_trip_id: selected.id,
+          fallback_asset_id: null,
+          confidence_score: 100,
+          threat_type: 'No Flood Hazard',
+          hazard_label: 'אין סכנת שיטפונות באתר הנבחר',
+          distance_km: 0,
+          reasoning_log: `[סוכן הטיולים] האתר הנבחר (${selected.name}) אינו נמצא באפיק שיטפוני ובטוח לחלוטין לטיול. אין צורך במקום חלופי ✓`,
+        };
+      } else {
+        affected = floodVulnerable[0];
+      }
+
       if (!affected) return { error: true, reasoning_log: 'לא נמצאו אתרים עם חשיפה לשיטפונות במאגר.' };
 
       const result = AgentService._findNearestSafeHaven(affected, assetsDb);
@@ -80,10 +107,38 @@ export class AgentService {
     // ── HEATWAVE ──────────────────────────────────────────────────────────────
     if (triggerEvent === 'SIMULATE_HEATWAVE') {
       const heatVulnerable = assetsDb.filter((a) =>
-        a.vulnerabilities?.some((v) => v.includes('חום') || v.includes('שרב'))
+        a.vulnerabilities?.some((v) => v.includes('חום') || v.includes('שרב')) ||
+        a.region?.includes('ים המלח') || a.region?.includes('ערבה')
       );
-      const selected = heatVulnerable.find((a) => a.id === selectedId);
-      const affected = selected || heatVulnerable[0] || assetsDb[0];
+
+      const selected = assetsDb.find((a) => a.id === selectedId);
+      const isSelectedVulnerable = selected && heatVulnerable.some((v) => v.id === selected.id);
+
+      const proposedVulnerable = (recommendedIds || [])
+        .map((id) => heatVulnerable.find((v) => v.id === id))
+        .filter(Boolean);
+
+      let affected = null;
+      if (isSelectedVulnerable) {
+        affected = selected;
+      } else if (proposedVulnerable.length > 0) {
+        affected = proposedVulnerable[0];
+      } else if (selected && !isSelectedVulnerable) {
+        // Selected site is SAFE from extreme heat! Do NOT show alternatives or reroute!
+        return {
+          error: false,
+          new_status: 'SAFE',
+          affected_trip_id: selected.id,
+          fallback_asset_id: null,
+          confidence_score: 100,
+          threat_type: 'No Heat Hazard',
+          hazard_label: 'אין עומס חום קיצוני באתר הנבחר',
+          distance_km: 0,
+          reasoning_log: `[סוכן הטיולים] האתר הנבחר (${selected.name}) פתוח ובטוח לטיול (ללא חריגת חום קיצונית). אין צורך במקום חלופי ✓`,
+        };
+      } else {
+        affected = heatVulnerable[0] || assetsDb[0];
+      }
 
       const result = AgentService._findNearestSafeHaven(affected, assetsDb);
       const haven = result?.haven;

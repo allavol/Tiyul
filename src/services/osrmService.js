@@ -43,10 +43,66 @@ export function getOriginCity() {
 /**
  * Persist origin city choice
  */
+/**
+ * Persist origin city choice and dispatch update event across components
+ */
 export function setOriginCity(city) {
   try {
-    if (city) localStorage.setItem('tiyuli_origin_city', city.trim());
+    if (city) {
+      localStorage.setItem('tiyuli_origin_city', city.trim());
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('tiyuli_origin_city_changed', { detail: { city: city.trim() } }));
+      }
+    }
   } catch (e) {}
+}
+
+/**
+ * Calculate traffic multiplier based on hour of day in Israel
+ * Reflects authentic Israeli peak congestion (Rush Hours)
+ * @param {number|null} hour - 0 to 23 (or null for current hour)
+ * @returns {{ multiplier: number, trafficStatus: string, trafficIcon: string, isPeak: boolean }}
+ */
+export function getTrafficFactor(hour = null) {
+  const h = typeof hour === 'number' ? hour : new Date().getHours();
+
+  // Peak morning rush: 07:00 - 09:30 (commuters into employment centers, Highways 1, 2, 4, 6, Ayalon)
+  if (h >= 7 && h <= 9) {
+    return {
+      multiplier: 1.45, // +45% travel time
+      trafficStatus: 'עומסי בוקר כבדים',
+      trafficIcon: '🚗🚗',
+      isPeak: true,
+    };
+  }
+
+  // Peak evening rush: 16:00 - 19:30 (commuters heading home)
+  if (h >= 16 && h <= 19) {
+    return {
+      multiplier: 1.40, // +40% travel time
+      trafficStatus: 'עומסי תנועה של אחה״צ',
+      trafficIcon: '🚗🚗',
+      isPeak: true,
+    };
+  }
+
+  // Midday: 10:00 - 15:30 (moderate/flowing traffic)
+  if (h >= 10 && h <= 15) {
+    return {
+      multiplier: 1.05, // +5% standard traffic
+      trafficStatus: 'תנועה זורמת',
+      trafficIcon: '🟢',
+      isPeak: false,
+    };
+  }
+
+  // Early morning / night: 20:00 - 06:00 (free-flow highways)
+  return {
+    multiplier: 0.95, // fast highway flow
+    trafficStatus: 'כבישים פנויים',
+    trafficIcon: '🌙',
+    isPeak: false,
+  };
 }
 
 /**
@@ -143,15 +199,29 @@ export const getDriveTimeFromTelAviv = async (destLat, destLng) => {
 };
 
 /**
- * Get drive time from configured origin city (or Tel Aviv) with label
+ * Get drive time from configured origin city with hour-based traffic adjustment
+ * @param {number} destLat
+ * @param {number} destLng
+ * @param {number|null} [targetHour=null] - hour of day (0-23) for diurnal traffic modeling
  */
-export const getDriveTimeFromOrigin = async (destLat, destLng) => {
+export const getDriveTimeFromOrigin = async (destLat, destLng, targetHour = null) => {
   const origin = await getOriginCoords();
   const res = await getDriveTime(origin.lat, origin.lng, destLat, destLng);
   if (!res) return null;
+
+  const traffic = getTrafficFactor(targetHour);
+  const adjustedMins = Math.round(res.durationMins * traffic.multiplier);
+  const trafficSuffix = traffic.isPeak ? ` (${traffic.trafficStatus} ${traffic.trafficIcon})` : '';
+
   return {
     ...res,
+    baseDurationMins: res.durationMins,
+    durationMins: adjustedMins,
     originName: origin.name,
-    label: `~${res.durationMins} דק׳ מ${origin.name}`,
+    trafficStatus: traffic.trafficStatus,
+    trafficIcon: traffic.trafficIcon,
+    isPeak: traffic.isPeak,
+    label: `~${adjustedMins} דק׳ מ${origin.name}${trafficSuffix}`,
+    shortLabel: `~${adjustedMins} דק׳ מ${origin.name}`,
   };
 };
