@@ -6,7 +6,7 @@
  * subregion keywords, attraction type bonus), cluster diversity selection,
  * and user clarification prompts.
  */
-
+import { TAXONOMY_CONCEPTS } from './AgentTaxonomy.js';
 /**
  * Compute human-readable match reasons ("Why this site?") for an asset proposal card
  * @param {Object} site - Hiking site asset
@@ -54,8 +54,8 @@ export function computeSiteReasons(site, state = {}, rawText = '') {
   // 4. Semantic Concept / Theme boosts
   if ((state.concept === 'cool_haven' || raw.includes('קריר') || raw.includes('מערה')) && (types.includes('מער') || site.name.includes('גוברין') || site.category === 'safe_haven')) {
     reasons.push('❄️ מערה קרירה');
-  } else if ((state.concept === 'history' || raw.includes('עתיקות') || raw.includes('מבצר') || raw.includes('ארכיאולוגיה')) && (types.includes('עתיקות') || types.includes('ארכיאולוגיה') || types.includes('מבצר') || site.name.includes('מצדה') || site.name.includes('נמרוד') || site.name.includes('ציפורי'))) {
-    reasons.push('🏛️ עתיקות ומבצר');
+  } else if ((state.concept === 'history' || raw.includes('עתיקות') || raw.includes('ארכיאולוגיה') || raw.includes('תל')) && (types.includes('עתיקות') || types.includes('ארכיאולוגיה') || types.includes('מבצר') || types.includes('תל') || types.includes('מורשת') || types.includes('עיר'))) {
+    reasons.push(site.name.includes('תל') ? '🏛️ עתיקות ותל מקראי' : '🏛️ עתיקות ומורשת');
   } else if ((state.concept === 'wildlife' || raw.includes('חיות') || raw.includes('ציפור')) && (types.includes('צפרות') || types.includes('אגם') || types.includes('עופות') || site.name.includes('צבאים') || site.name.includes('גמלא'))) {
     reasons.push('🦅 צפרות וטבע');
   } else if ((state.concept === 'sunset' || raw.includes('שקיעה') || raw.includes('תצפית')) && (types.includes('מצפור') || types.includes('תצפית') || site.name.includes('שלום') || site.name.includes('בנטל'))) {
@@ -199,9 +199,16 @@ export function rankCandidates(candidates, state, rawText = '') {
       if (aTypes.includes('מצפור') || aTypes.includes('תצפית') || a.name.includes('שלום') || a.name.includes('בנטל') || a.name.includes('מונפורט') || a.name.includes('אפולוניה')) scoreA += 20;
       if (bTypes.includes('מצפור') || bTypes.includes('תצפית') || b.name.includes('שלום') || b.name.includes('בנטל') || b.name.includes('מונפורט') || b.name.includes('אפולוניה')) scoreB += 20;
     }
-    if (state.concept === 'history') {
-      if (aTypes.includes('ארכיאולוגיה') || aTypes.includes('עתיקות') || aTypes.includes('מבצר') || a.name.includes('בית גוברין') || a.name.includes('ציפורי') || a.name.includes('מצדה') || a.name.includes('נמרוד')) scoreA += 20;
-      if (bTypes.includes('ארכיאולוגיה') || bTypes.includes('עתיקות') || bTypes.includes('מבצר') || b.name.includes('בית גוברין') || b.name.includes('ציפורי') || b.name.includes('מצדה') || b.name.includes('נמרוד')) scoreB += 20;
+    if (state.concept === 'history' || rawText.includes('עתיקות') || rawText.includes('ארכיאולוגיה') || (rawText.includes('תל') && !rawText.includes('תל אביב'))) {
+      const histConcept = TAXONOMY_CONCEPTS.history;
+      for (const tag of histConcept.siteTags) {
+        if (aTypes.includes(tag)) scoreA += 15;
+        if (bTypes.includes(tag)) scoreB += 15;
+      }
+      for (const kw of histConcept.queryKeywords) {
+        if (a.name.includes(kw)) scoreA += 10;
+        if (b.name.includes(kw)) scoreB += 10;
+      }
     }
     if (state.concept === 'blooming') {
       if (aTypes.includes('פריחה') || aTypes.includes('חורש') || aTypes.includes('אלונים') || a.name.includes('גמלא') || a.name.includes('אלוני אבא') || a.name.includes('גורן')) scoreA += 15;
@@ -210,6 +217,11 @@ export function rankCandidates(candidates, state, rawText = '') {
     if (state.concept === 'quiet') {
       if (aTypes.includes('מצפור') || aTypes.includes('חורש') || aTypes.includes('נוף') || a.name.includes('שלום') || a.name.includes('אודם') || a.name.includes('גמלא')) scoreA += 15;
       if (bTypes.includes('מצפור') || bTypes.includes('חורש') || bTypes.includes('נוף') || b.name.includes('שלום') || b.name.includes('אודם') || b.name.includes('גמלא')) scoreB += 15;
+    }
+
+    if (rawText.includes('ים המלח') || rawText.includes('מדבר יהודה')) {
+      if (a.region && (a.region.includes('ים המלח') || a.region.includes('מדבר יהודה'))) scoreA += 40;
+      if (b.region && (b.region.includes('ים המלח') || b.region.includes('מדבר יהודה'))) scoreB += 40;
     }
 
     if (scoreB !== scoreA) {

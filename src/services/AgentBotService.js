@@ -21,6 +21,7 @@ import {
   geocodeCity, 
   filterCandidatesByGeo 
 } from './agent/AgentGeoEngine.js';
+import { resolveTargetEntity } from './agent/AgentTaxonomy.js';
 
 import { 
   checkGuardrails, 
@@ -534,9 +535,10 @@ export class AgentBotService {
     }
 
     // 1.48 Check for explicit requested site / stream entity
-    const requestedEntity = extractRequestedSiteEntity(message);
-    if (requestedEntity) {
-      const matchedByEntity = assetsData.find((s) => 
+    const targetEntity = resolveTargetEntity(message, assetsData);
+    const requestedEntity = targetEntity ? targetEntity.name : extractRequestedSiteEntity(message);
+    if (targetEntity || requestedEntity) {
+      const matchedByEntity = targetEntity || assetsData.find((s) => 
         text.includes(s.name.toLowerCase()) || 
         s.name.toLowerCase().includes(requestedEntity.toLowerCase()) ||
         requestedEntity.toLowerCase().includes(s.name.toLowerCase())
@@ -1386,8 +1388,8 @@ export class AgentBotService {
       resultOptions.unshift(
         { label: '🏞️ בצפון', value: 'באזור הצפון', field: 'region' },
         { label: '🌾 במרכז', value: 'באזור המרכז והשרון', field: 'region' },
-        { label: '🏰 בירושלים', value: 'באזור ירושלים והשפלה', field: 'region' },
-        { label: '🏜️ בדרום', value: 'באזור הדרום וים המלח', field: 'region' }
+        { label: '🏰 בירושלים וים המלח', value: 'באזור ירושלים, מדבר יהודה וים המלח', field: 'region' },
+        { label: '🏜️ בדרום והנגב', value: 'באזור הדרום והנגב', field: 'region' }
       );
     }
     if (rainWarning) {

@@ -7,6 +7,7 @@
  */
 
 import { KNOWN_ORIGIN_CITIES } from './AgentGeoEngine.js';
+import { TAXONOMY_CONCEPTS, TAXONOMY_REGIONS, isGenuineOriginMention } from './AgentTaxonomy.js';
 
 // Phrases that legitimately contain a prohibited word (heritage / scenic hiking context) - stripped before matching
 export const HERITAGE_ALLOWLIST = [
@@ -1022,13 +1023,7 @@ export function extractParameters(message, currentState) {
   const distMatch = text.match(/(?:עד|ברדיוס של|בטווח של|במרחק של|מרחק של)?\s*(\d+)\s*(?:ק["״]?מ|קילומטר|קמ|קילומטרים)/);
 
   // Target Destination Regions detection
-  const isJerusalemRegion = (
-    text.includes('בירושלים') || text.includes('לירושלים') || text.includes('באזור ירושלים') ||
-    text.includes('סביב ירושלים') || text.includes('הרי ירושלים') || text.includes('בהרי ירושלים') ||
-    text.includes('ירושלים והסביבה') || text.includes('ירושלים') || text.includes('שפלת יהודה') ||
-    text.includes('בשפלה') || text.includes('לשפלה') || text.includes('שפלה') ||
-    text.includes('מטה יהודה') || text.includes('גוש עציון') || text.includes('עציון') || text.includes('בית שמש')
-  );
+  const isJerusalemRegion = TAXONOMY_REGIONS.jerusalem.keywords.some((kw) => text.includes(kw));
 
   const isWestGalileeRegion = (
     text.includes('גליל מערבי') || text.includes('בגליל המערבי') || text.includes('לגליל המערבי') ||
@@ -1072,20 +1067,16 @@ export function extractParameters(message, currentState) {
     text.includes('פולג') || text.includes('ירקון') || text.includes('גוש דן')
   );
 
-  const isSouthRegion = (
-    text.includes('בדרום') || text.includes('לדרום') || text.includes('באזור הדרום') ||
-    text.includes('דרום') || text.includes('נגב') || text.includes('בנגב') || text.includes('לנגב') ||
-    text.includes('מדבר') || text.includes('במדבר') || text.includes('למדבר') ||
-    text.includes('ים המלח') || text.includes('בים המלח') || text.includes('ערבה') || text.includes('בערבה') ||
-    text.includes('אילת') || text.includes('באילת') || text.includes('מכתש רמון') || text.includes('במכתש רמון') ||
-    text.includes('רמון') || text.includes('ברמון') || text.includes('עין יהב') || text.includes('ספיר') || text.includes('ירוחם')
-  );
+  const isSouthRegion = TAXONOMY_REGIONS.south.keywords.some((kw) => text.includes(kw)) ||
+    ((text.includes('מדבר') || text.includes('במדבר') || text.includes('למדבר')) && !text.includes('מדבר יהודה'));
 
   let foundCity = null;
   for (const city of KNOWN_ORIGIN_CITIES) {
     if (city.names.some((name) => text.includes(name))) {
-      foundCity = city;
-      break;
+      if (isGenuineOriginMention(city, text)) {
+        foundCity = city;
+        break;
+      }
     }
   }
 
@@ -1108,7 +1099,7 @@ export function extractParameters(message, currentState) {
     }
   } else if (isJerusalemRegion) {
     updated.region = 'jerusalem';
-    updated.regionLabel = 'ירושלים והסביבה';
+    updated.regionLabel = TAXONOMY_REGIONS.jerusalem.label;
     updated.maxDistanceKm = null;
     if (foundCity && !['ירושלים', 'בירה', 'מבשרת ציון', 'מעלה אדומים', 'בית שמש', 'גוש עציון'].some(n => foundCity.names.includes(n))) {
       updated.originCity = foundCity.label;
@@ -1175,7 +1166,7 @@ export function extractParameters(message, currentState) {
     }
   } else if (isSouthRegion) {
     updated.region = 'south';
-    updated.regionLabel = 'דרום, נגב וים המלח';
+    updated.regionLabel = TAXONOMY_REGIONS.south.label;
     updated.maxDistanceKm = null;
     if (foundCity) {
       updated.originCity = foundCity.label;
@@ -1361,13 +1352,7 @@ export function extractParameters(message, currentState) {
     text.includes('רואים עד הים') || text.includes('מצפור יפה') || text.includes('נוף הרים')
   );
 
-  const isHistoryIntent = (
-    text.includes('היסטוריה') || text.includes('סיפורים מעניינים') || text.includes('תנך') ||
-    text.includes('תנ"ך') || text.includes('רומאים') || text.includes('צלבנים') ||
-    text.includes('עתיקות') || text.includes('ארכיאולוגיה') || text.includes('מבצר') ||
-    text.includes('מבצרים') || text.includes('מערות מסתור') || text.includes('סיפורי קרבות') ||
-    text.includes('אתר מורשת')
-  );
+  const isHistoryIntent = TAXONOMY_CONCEPTS.history.queryKeywords.some((kw) => text.includes(kw));
 
   const isQuietIntent = (
     text.includes('שקט') || text.includes('בלי הרבה אנשים') || text.includes('בלי המונים') ||
@@ -1918,6 +1903,8 @@ export function isInScope(message) {
   const lower = message.toLowerCase().trim();
   if (lower.split(/\s+/).length <= 1) return true;
   if (SCOPE_SIGNALS.test(lower)) return true;
+  const allConceptKeywords = Object.values(TAXONOMY_CONCEPTS).flatMap((c) => c.queryKeywords);
+  if (allConceptKeywords.some((kw) => lower.includes(kw))) return true;
   return KNOWN_ORIGIN_CITIES.some((c) => c.names.some((n) => lower.includes(n)));
 }
 

@@ -37,7 +37,7 @@
     "name": "גן לאומי מצדה",
     "name_en": "Masada National Park",
     "region": "ים המלח ומדבר יהודה",
-    "region_group": "south",
+    "region_group": "jerusalem",
     "lat": 31.3156,
     "lng": 35.3537,
     "type": [
@@ -68,7 +68,7 @@
     "name": "שמורת טבע עין גדי",
     "name_en": "Ein Gedi Nature Reserve",
     "region": "ים המלח ומדבר יהודה",
-    "region_group": "south",
+    "region_group": "jerusalem",
     "lat": 31.4655,
     "lng": 35.3884,
     "type": [
@@ -459,7 +459,7 @@
     "name_en": "Ein Gedi Field School (SPNI)",
     "org": "החברה להגנת הטבע",
     "region": "ים המלח ומדבר יהודה",
-    "region_group": "south",
+    "region_group": "jerusalem",
     "lat": 31.465,
     "lng": 35.385,
     "type": [
@@ -995,7 +995,10 @@
     "lng": 35.0642,
     "type": [
       "גן לאומי",
+      "עתיקות",
       "ארכיאולוגיה",
+      "אתר מורשת עולמית",
+      "עיר נבטית",
       "מדבר"
     ],
     "type_en": [
@@ -1459,6 +1462,126 @@
     "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Tel_Lachish_mound.jpg/640px-Tel_Lachish_mound.jpg"
   },
   {
+    "id": 625,
+    "name": "גן לאומי תל ערד",
+    "name_en": "Tel Arad National Park",
+    "authority_id": "INPA-107",
+    "org": "רשות הטבע והגנים",
+    "region": "הנגב הצפוני ובקעת ערד",
+    "region_group": "south",
+    "lat": 31.2808,
+    "lng": 35.1252,
+    "category": "nature",
+    "type": [
+      "אתר מורשת לאומית",
+      "גן לאומי",
+      "תל מקראי",
+      "עתיקות",
+      "ארכיאולוגיה",
+      "מצודה ישראלית",
+      "עיר כנענית"
+    ],
+    "type_en": [
+      "National Heritage Site",
+      "National Park",
+      "Biblical Tel",
+      "Ancient Ruins",
+      "Archaeology",
+      "Israelite Fortress",
+      "Canaanite City"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בצהריים"
+    ],
+    "vulnerabilities_en": [
+      "Midday Heat"
+    ],
+    "description": "גן לאומי מרתק בבקעת ערד המשלב עיר כנענית מבוצרת בת כ-5,000 שנה ומצודה ישראלית מתקופת מלכי יהודה עם מקדש מקראי ייחודי ומפעל מים מרשים. שבילים מסודרים ומונגשים לעגלות ולכל המשפחה.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Tel_Arad_Fortress_2013.jpg/640px-Tel_Arad_Fortress_2013.jpg"
+  },
+  {
+    "id": 626,
+    "name": "גן לאומי תל באר שבע (תל שבע)",
+    "name_en": "Tel Be'er Sheva National Park (Tel Sheva)",
+    "authority_id": "INPA-108",
+    "org": "רשות הטבע והגנים",
+    "region": "דרום ומרכז הנגב",
+    "region_group": "south",
+    "lat": 31.2447,
+    "lng": 34.8436,
+    "category": "nature",
+    "type": [
+      "אתר מורשת עולמית",
+      "גן לאומי",
+      "תל מקראי",
+      "עתיקות",
+      "ארכיאולוגיה",
+      "מפעל מים קדום",
+      "באר מים מקראית"
+    ],
+    "type_en": [
+      "UNESCO World Heritage",
+      "National Park",
+      "Biblical Tel",
+      "Ancient Ruins",
+      "Archaeology",
+      "Ancient Water System"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום בצהריים"
+    ],
+    "vulnerabilities_en": [
+      "Midday Heat"
+    ],
+    "description": "אתר מורשת עולמית של אונסק\"ו במפגש נחל באר שבע ונחל חברון. עיר מקראית מתוכננת להפליא עם שער עיר קדום, מזבח קרנות, הבאר העמוקה בארץ (כ-70 מטר) ומפעל מים תת-קרקעי אדיר עם מדרגות ירידה נוחות.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Tel_Beer_Sheba_Aerial_View.jpg/640px-Tel_Beer_Sheba_Aerial_View.jpg"
+  },
+  {
+    "id": 627,
+    "name": "גן לאומי עבדת - דרך הבשמים",
+    "name_en": "Avdat National Park (Incense Route)",
+    "authority_id": "INPA-109",
+    "org": "רשות הטבע והגנים",
+    "region": "מרכז הנגב ורמת עבדת",
+    "region_group": "south",
+    "lat": 30.7944,
+    "lng": 34.7725,
+    "category": "nature",
+    "type": [
+      "אתר מורשת עולמית",
+      "גן לאומי",
+      "עיר נבטית",
+      "עתיקות",
+      "ארכיאולוגיה",
+      "דרך הבשמים"
+    ],
+    "type_en": [
+      "UNESCO World Heritage",
+      "National Park",
+      "Nabataean City",
+      "Ancient Ruins",
+      "Archaeology",
+      "Incense Route"
+    ],
+    "min_age": 0,
+    "age_group": "0+ עגלות",
+    "stroller_accessible": true,
+    "vulnerabilities": [
+      "עומס חום קיצוני"
+    ],
+    "vulnerabilities_en": [
+      "Extreme Heat"
+    ],
+    "description": "אתר מורשת עולמית של אונסק\"ו בלב הנגב. עיר נבטית, רומית וביזנטית מרשימה על רכס נישא מעל נחל צין, עם גתות עתיקות, כנסיות ומצודה המשקיפה למרחבי המדבר.",
+    "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Avdat_acropolis_view.jpg/640px-Avdat_acropolis_view.jpg"
+  },
+  {
     "id": 631,
     "name": "פארק עמק הצבאים (ירושלים)",
     "name_en": "Gazelle Valley Urban Wildlife Park",
@@ -1794,6 +1917,8 @@
     "category": "nature",
     "type": [
       "אתר מורשת עולמית",
+      "עתיקות",
+      "ארכיאולוגיה",
       "עיר נבטית",
       "כנסיות עתיקות",
       "שביל מונגש",
@@ -3293,7 +3418,7 @@
     "name": "עין מבוע (עין פוואר) - שמורת נחל פרת",
     "name_en": "Ein Mabua Spring - Prat Stream",
     "region": "מדבר יהודה וים המלח",
-    "region_group": "south",
+    "region_group": "jerusalem",
     "lat": 31.8385,
     "lng": 35.349,
     "type": [
@@ -3330,7 +3455,7 @@
     "name": "עין פרת (עין פארה) - שמורת נחל פרת",
     "name_en": "Ein Prat Nature Reserve",
     "region": "מדבר יהודה וים המלח",
-    "region_group": "south",
+    "region_group": "jerusalem",
     "lat": 31.8315,
     "lng": 35.3015,
     "type": [
@@ -3366,7 +3491,7 @@
     "name": "שמורת טבע עין בוקק",
     "name_en": "Ein Bokek Nature Reserve",
     "region": "ים המלח ומדבר יהודה",
-    "region_group": "south",
+    "region_group": "jerusalem",
     "lat": 31.1985,
     "lng": 35.362,
     "type": [
@@ -3438,7 +3563,7 @@
     "name": "שמורת טבע עינות צוקים (עין פשחה)",
     "name_en": "Einot Tzukim Nature Reserve (Ein Feshkha)",
     "region": "ים המלח ומדבר יהודה",
-    "region_group": "south",
+    "region_group": "jerusalem",
     "lat": 31.7145,
     "lng": 35.457,
     "type": [
